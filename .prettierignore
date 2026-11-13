@@ -1,0 +1,13 @@
+# Docs keep their hand-written tables; Prettier would reflow them.
+*.md
+.ai/
+.claude/
+
+node_modules/
+dist/
+coverage/
+.expo/
+ios/
+android/
+package-lock.json
+supabase/.temp/

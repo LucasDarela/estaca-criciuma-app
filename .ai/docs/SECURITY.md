@@ -1,42 +1,69 @@
 # Segurança e privacidade
 
-<!--
-Preenchido pelo /bootstrap-project. Usado pelo /create-spec (requisitos RNF de segurança), pelo /create-plan
-e como régua pelo agent assessor. Código gerado por IA tende a omitir autorização e validação de entrada;
-este arquivo existe para que isso seja verificado explicitamente.
--->
+Usado pelo `/create-spec` (requisitos RNF de segurança), pelo `/create-plan` e como régua pelo agent `assessor`.
+
+**Premissa:** saber que alguém é membro da Igreja revela **convicção religiosa**, dado pessoal sensível pela LGPD (art. 5º, II). Contas, vínculos com unidades e chamados são tratados como sensíveis.
 
 ## Dados tratados
 
 | Dado | Classificação | Onde fica | Base legal (LGPD) | Retenção |
 | ---- | ------------- | --------- | ----------------- | -------- |
-|      | público / interno / pessoal / sensível | | | |
+| Eventos, avisos do mural publicados | Público | Postgres (`events`, `posts`), Storage (imagens) | Legítimo interesse (comunicação institucional) | Enquanto publicados; rascunhos excluídos após 90 dias sem edição (A definir na spec) |
+| Organograma: nome e chamado de líderes | Público, com aviso ao líder | `leadership_positions` | Consentimento do líder ao ser cadastrado (art. 11, I) | Até sair do chamado |
+| Conta: e-mail, nome, idioma | Pessoal | `auth.users`, `profiles` | Consentimento | Até exclusão da conta |
+| Vínculo com unidade e papel | **Sensível** (revela filiação religiosa) | `memberships` | Consentimento específico e destacado (art. 11, I) | Até exclusão da conta |
+| Anotações pessoais (texto, desenho, lembretes) | **Sensível** | `notes` | Consentimento | Até a pessoa excluir ou excluir a conta |
+| Chamados (pessoa indicada, cargo, etapa) | **Sensível / confidencial** | `calling_processes` | A definir com assessoria jurídica da estaca: legítimo interesse **não** se aplica a dado sensível (art. 11); avaliar consentimento do indicado ou outra hipótese do art. 11, II | Excluir 12 meses após a designação (A definir) |
+| Tokens de push e preferências | Pessoal | `push_tokens`, `notification_preferences` | Consentimento (permissão do sistema) | Token removido ao sair, ao desinstalar (erro `DeviceNotRegistered`) ou ao excluir a conta |
+| Pauta, decisões e pendências de reuniões | **Confidencial** | `meeting_items` | Mesmo caso dos chamados (pautas podem citar membros): A definir com assessoria jurídica | A definir na spec da agenda |
+
+Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir a conta** pelo app, com exclusão em cascata de `profiles`, `memberships`, `notes`, `push_tokens`. Controlador: Estaca Criciúma. Encarregado (DPO): A definir com a presidência da estaca antes do lançamento. Política de privacidade publicada (exigida pelas lojas): A definir antes do envio às lojas.
 
 ## Autenticação e autorização
 
-<!-- Como a pessoa se autentica, como as sessões funcionam, qual o modelo de permissão (papéis, donos do recurso). -->
+- **Autenticação:** Supabase Auth (GoTrue) self-hosted. OTP de 6 dígitos por e-mail, Google e "Entrar com a Apple" (obrigatório na App Store quando há login social). Sem senha.
+- **Sessão:** JWT do Supabase com refresh token guardado no `expo-secure-store` (Keychain/Keystore), nunca em `AsyncStorage`.
+- **Visitante:** sem sessão; usa a anon key e só lê o que é público (RN-01).
+- **Modelo de permissão:** tabela `memberships(user_id, unit_id, role)` com `role in ('member','unit_leader','stake_leader','admin')`. Função SQL `has_role(unit_id, roles[])` (`security definer`, `stable`) usada em todas as políticas. `stake_leader` vale para todas as unidades.
+- **RLS ligada em todas as tabelas**, sem exceção. Regras-chave:
+  - `events`, `posts`, `leadership_positions`: `select` público só onde `published = true`; escrita conforme RN-02.
+  - `notes`: todas as operações só com `user_id = auth.uid()` (RN-03). Nenhuma política para admin.
+  - `calling_processes`, `meeting_items`: só `unit_leader` da unidade e `stake_leader` (RN-04). `admin` **não** tem política.
+  - `push_tokens`, `notification_preferences`: só o dono; leitura em massa só pela Edge Function com service role.
+- **Admin** gerencia unidades e papéis; promover alguém a `unit_leader`/`stake_leader` só por `stake_leader` ou `admin`, via RPC auditada.
+- Envio de push: só pela Edge Function `send-push`, que revalida no servidor se quem publicou tem papel na unidade e se o público escolhido é permitido (RN-02, RN-08).
 
 ## Segredos
 
-- Segredos só em variáveis de ambiente ou no cofre de segredos do ambiente. Nunca no código, em logs, em testes ou em commits.
+- Segredos só em variáveis de ambiente ou no cofre de segredos do ambiente (EAS Secrets, secrets das Edge Functions, GitHub Actions). Nunca no código, em logs, em testes ou em commits.
+- `EXPO_PUBLIC_*` vai para dentro do app e é **público**: só URL do Supabase, anon key e DSN do Sentry. Service role key, `EXPO_ACCESS_TOKEN`, `SENTRY_AUTH_TOKEN` jamais com esse prefixo.
 - `.env.example` documenta toda variável necessária, com valor fictício.
 - Agentes de IA não leem `.env*` (bloqueado em `.claude/settings.json`).
-- Segredo vazado é revogado e trocado na hora; remover do histórico não basta.
+- Segredo vazado é revogado e trocado na hora; remover do histórico não basta. Para JWT secret do Supabase, isso invalida todas as sessões.
+
+## Infra self-hosted
+
+- Postgres não exposto à internet; só o gateway (Kong) com TLS.
+- Backup diário do Postgres com retenção de 30 dias, cópia fora da VPS e teste de restauração trimestral (A definir: destino do backup).
+- Supabase Studio só via VPN/túnel SSH, nunca público.
+- Atualizações de segurança do stack Supabase e do SO aplicadas mensalmente.
 
 ## Checklist para toda feature
 
-Baseado no OWASP Top 10. O assessor verifica estes itens no diff.
+Baseado no OWASP Top 10 e OWASP MASVS. O assessor verifica estes itens no diff.
 
-- [ ] Toda rota ou ação nova verifica **autorização** (não só autenticação): a pessoa pode agir sobre **este** recurso?
-- [ ] Toda entrada externa é validada no servidor com schema (tipo, formato, tamanho), mesmo que o cliente também valide.
-- [ ] Consultas ao banco são parametrizadas; nada de SQL montado com concatenação.
-- [ ] Saída para HTML é escapada; nenhum `innerHTML` ou equivalente com dado do usuário.
-- [ ] Mensagens de erro não expõem stack trace, SQL ou a existência de registros (ex.: "e-mail não cadastrado").
-- [ ] Ações sensíveis (login, redefinição de senha, pagamento) têm rate limit.
-- [ ] Nenhum dado pessoal ou segredo em log (ver `O11Y.md`).
-- [ ] Uploads validam tipo e tamanho e não são servidos do mesmo domínio sem cuidado.
-- [ ] Dependências novas sem vulnerabilidades conhecidas.
+- [ ] Toda tabela nova tem RLS ligada e políticas para cada operação, com teste de acesso **negado** (`supabase/tests/`).
+- [ ] Toda ação verifica **autorização** no banco (RLS/RPC), não só escondendo botão no app: a pessoa pode agir sobre **este** recurso desta **unidade**?
+- [ ] Toda entrada externa é validada no servidor (constraints/`check` no Postgres, validação na RPC/Edge Function) com tipo, formato e tamanho, mesmo que o app também valide.
+- [ ] Consultas parametrizadas; nada de SQL montado com concatenação em RPC ou Edge Function.
+- [ ] Links de eventos aceitam só `https://`; conteúdo do usuário nunca é renderizado como HTML/WebView.
+- [ ] Mensagens de erro não expõem stack trace, SQL ou a existência de contas (ex.: OTP responde igual para e-mail cadastrado ou não).
+- [ ] Login por OTP e envio de push têm rate limit (GoTrue e Edge Function).
+- [ ] Nenhum dado pessoal, conteúdo de anotação ou chamado em log ou no Sentry (ver `O11Y.md`).
+- [ ] Uploads (imagens do mural) validam tipo (jpeg/png/webp) e tamanho (máx. 5 MB) no bucket do Storage.
+- [ ] Dado sensível novo atualiza a tabela "Dados tratados" acima e a exportação/exclusão de conta.
+- [ ] Dependências novas sem vulnerabilidades conhecidas (`npm audit --omit=dev`).
 
 ## Reporte de vulnerabilidades
 
-<!-- Para quem e como reportar. -->
+Enviar para o admin técnico do app (A definir: e-mail de contato publicado na página de suporte das lojas). Não abrir issue pública. Resposta em até 7 dias.

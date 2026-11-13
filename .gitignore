@@ -20,16 +20,28 @@ secrets/
 # Claude Code (configurações pessoais; settings.json do projeto é versionado)
 .claude/settings.local.json
 
-# Dependências e builds (ajuste conforme a stack)
+# Dependências e builds (Expo / React Native)
 node_modules/
 dist/
-build/
-.next/
+web-build/
 coverage/
-__pycache__/
-*.pyc
-.venv/
-target/
+.expo/
+expo-env.d.ts
+/ios/
+/android/
+*.jks
+*.p8
+*.p12
+*.keystore
+*.mobileprovision
+*.orig.*
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Maestro
+.maestro/screenshots/
 
 # Logs
 *.log

@@ -1,26 +1,31 @@
-# Code Base
+# Estaca Criciúma Mobile App
 
-Base para iniciar projetos com desenvolvimento assistido por IA: fluxo orientado a specs, contexto estruturado para agentes, portões de qualidade automáticos e rastreabilidade do requisito ao teste.
+App mobile (iOS e Android) da Estaca Criciúma de A Igreja de Jesus Cristo dos Santos dos Últimos Dias.
 
 ## Sobre este projeto
 
-<!-- O /bootstrap-project substitui esta seção pelo nome e pela descrição do projeto real. -->
+Reúne em um só lugar a **agenda** da estaca e das unidades (Alas Criciúma 1, 2 e 3, Içara, Araranguá e Ramo Gaivota), o **mural** de avisos, o **organograma da liderança**, **anotações pessoais**, o **acompanhamento de chamados** pelos líderes e **notificações push** por unidade. Agenda, mural e liderança são públicos; o restante exige login.
 
-Este repositório é um ponto de partida. Copie-o, rode `/bootstrap-project` e comece a primeira feature com `/create-spec`.
+- **Stack:** Expo (React Native) + TypeScript, expo-router, Supabase self-hosted (Postgres + RLS, Auth, Edge Functions), TanStack Query, Skia, i18next.
+- **Idiomas:** interface em pt-BR (padrão), en-US e es-MX; código em inglês.
+- **Estágio:** MVP para App Store e Google Play.
+- **Contexto completo:** [`AGENTS.md`](AGENTS.md) e [`.ai/docs/`](.ai/docs/). Design: projeto "Design System" no claude.ai/design.
+
+O projeto usa desenvolvimento assistido por IA com fluxo orientado a specs, portões de qualidade automáticos e rastreabilidade do requisito ao teste.
 
 ## Começando
 
-```bash
-# 1. Copie a base para o novo projeto
-cp -R code-base meu-projeto && cd meu-projeto
-rm -rf .git && git init
+Pré-requisitos: Node 26 LTS (`.nvmrc`; rode `nvm use` na pasta), [Supabase CLI](https://supabase.com/docs/guides/local-development) e Docker para o backend local, Maestro para E2E.
 
-# 2. Abra o Claude Code na pasta e configure o projeto
-claude
-> /bootstrap-project
+```bash
+cp .env.example .env      # preencha com os valores locais
+make setup                # npm ci
+supabase start            # Supabase local (Postgres, Auth, Storage)
+make dev                  # Expo dev server
+make check                # lint + test + build, o mesmo que a CI
 ```
 
-O bootstrap entrevista você (produto, domínio, stack, qualidade, segurança) e preenche `AGENTS.md`, os docs de `.ai/docs/`, o `Makefile` e a CI.
+Comandos e convenções: [`AGENTS.md`](AGENTS.md).
 
 ## Fluxo de uma feature
 
