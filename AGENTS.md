@@ -28,6 +28,8 @@ Todos os comandos passam pelo `Makefile`, que é a interface estável entre agen
 | `make format` | Prettier (aceita `FILE=caminho`) |
 | `make lint` | `expo lint` + `tsc --noEmit` + `prettier --check` |
 | `make test` | Jest com cobertura |
+| `make test-db` | pgTAP/RLS (`supabase/tests/`); precisa de Docker e `supabase start`; fora do `check` |
+| `make db-types` | Gera `src/lib/database.types.ts` a partir do banco local |
 | `make test-e2e` | Maestro (`.maestro/`), precisa de emulador; fora do `check` |
 | `make build` | `expo export` iOS + Android (bundle de produção, sem credenciais) |
 | `make check` | `lint` + `test` + `build`. É o que a CI roda e o que define "pronto". |

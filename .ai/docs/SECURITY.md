@@ -24,11 +24,22 @@ Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir 
 - **Autenticação:** Supabase Auth (GoTrue) self-hosted. OTP de 6 dígitos por e-mail, Google e "Entrar com a Apple" (obrigatório na App Store quando há login social). Sem senha.
 - **Sessão:** JWT do Supabase com refresh token guardado no `expo-secure-store` (Keychain/Keystore), nunca em `AsyncStorage`.
 - **Visitante:** sem sessão; usa a anon key e só lê o que é público (RN-01).
-- **Modelo de permissão:** tabela `memberships(user_id, unit_id, role)` com `role in ('member','unit_leader','stake_leader','admin')`. Função SQL `has_role(unit_id, roles[])` (`security definer`, `stable`) usada em todas as políticas. `stake_leader` vale para todas as unidades.
+- **Modelo de permissão:** "membro" é qualquer conta autenticada e **não** tem linha em `memberships`. Papéis elevados ficam em `memberships(user_id, unit_id, role, leadership_group)`:
+
+  | Papel | Quem é | Publica agenda, mural e liderança | Vê e edita pautas e chamados | Gerencia acessos |
+  | ----- | ------ | --------------------------------- | ---------------------------- | ---------------- |
+  | `unit_leader` | Bispado/presidência de ramo e secretários | Da própria unidade | Da própria unidade | Não |
+  | `unit_publisher` | Presidentes de organizações da unidade | Da própria unidade | **Não** | Não |
+  | `stake_leader` | Presidência, sumo conselho e secretários da estaca | Estaca e todas as unidades | Estaca e todas as unidades | Sim, exceto `admin` |
+  | `admin` | Responsável técnico | Estaca e todas as unidades | **Não** (RN-04) | Sim, inclusive `admin` |
+
+  `stake_leader` e `admin` só existem com `unit_id = 'estaca'`; `unit_leader` e `unit_publisher`, só em ala ou ramo (constraint `invalid_unit_for_role`).
+- **Funções SQL de permissão** (todas `security definer`, `stable`, `set search_path = public`): `has_role(unit, roles[])`, `can_publish(unit)` (líder ou publicador da unidade, qualquer `stake_leader` ou `admin`), `can_lead(unit)` (`unit_leader` da unidade ou qualquer `stake_leader`; nunca `admin` nem `unit_publisher`), `is_admin()` e `is_stake_leader()`. As mesmas regras existem em `src/domain/permissions.ts` para a UI; o banco é a barreira real.
+- `memberships` e `role_grants_log` **não têm política de escrita**: concessão e revogação de papéis só por RPCs `security definer` que gravam `role_grants_log` na mesma transação. Leitura de `memberships`: as próprias linhas, ou todas para `stake_leader` e `admin`. Leitura de `role_grants_log`: `stake_leader` e `admin`.
 - **RLS ligada em todas as tabelas**, sem exceção. Regras-chave:
   - `events`, `posts`, `leadership_positions`: `select` público só onde `published = true`; escrita conforme RN-02.
   - `notes`: todas as operações só com `user_id = auth.uid()` (RN-03). Nenhuma política para admin.
-  - `calling_processes`, `meeting_items`: só `unit_leader` da unidade e `stake_leader` (RN-04). `admin` **não** tem política.
+  - `calling_processes`, `meeting_items`: usam `can_lead(unit_id)` (só `unit_leader` da unidade e `stake_leader`, RN-04). `admin` **não** tem política.
   - `push_tokens`, `notification_preferences`: só o dono; leitura em massa só pela Edge Function com service role.
 - **Admin** gerencia unidades e papéis; promover alguém a `unit_leader`/`stake_leader` só por `stake_leader` ou `admin`, via RPC auditada.
 - Envio de push: só pela Edge Function `send-push`, que revalida no servidor se quem publicou tem papel na unidade e se o público escolhido é permitido (RN-02, RN-08).

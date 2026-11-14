@@ -10,6 +10,11 @@
  * `elevation` and `size`. The raw palette (`colors`) is only referenced inside this file.
  */
 
+// UnitId lives in the domain layer (it cannot import from here); re-exported for existing callers.
+import type { UnitId } from '@/domain/units';
+
+export type { UnitId };
+
 /** Base palette. Scales from the Church's communication guide (10 light → 40 dark). */
 export const colors = {
   blue5: '#E6F2F5', // derived
@@ -81,10 +86,6 @@ export const theme = {
   toastAccent: colors.blue10,
   scrim: 'rgba(0,48,87,0.4)', // derived · bottom sheet / modal backdrop
 } as const;
-
-/** A stake unit. The order is the display order (filters, lists). */
-export type UnitId =
-  'estaca' | 'criciuma1' | 'criciuma2' | 'criciuma3' | 'icara' | 'ararangua' | 'ramoGaivota';
 
 export type UnitColors = {
   /** Display name. A proper noun, so it is not translated. */

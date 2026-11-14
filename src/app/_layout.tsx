@@ -15,6 +15,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 
+import { ViewerProvider } from '@/features/viewer/ViewerProvider';
+
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -39,8 +41,11 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }} />
+      {/* auth-account replaces null with the Supabase session. */}
+      <ViewerProvider session={null}>
+        <StatusBar style="auto" />
+        <Stack screenOptions={{ headerShown: false }} />
+      </ViewerProvider>
     </QueryClientProvider>
   );
 }

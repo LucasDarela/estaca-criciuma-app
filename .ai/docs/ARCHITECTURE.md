@@ -2,7 +2,7 @@
 
 Estado atual: app Expo criado com a base (rotas, fontes, i18n, TanStack Query, tokens, lint e testes); nenhuma feature implementada. Versões exatas: `package.json` / `package-lock.json` — confirme lá.
 
-Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): `@supabase/supabase-js` e armazenamento seguro de sessão (spec de login), `@shopify/react-native-skia` (anotações), `expo-notifications` (push/lembretes), `@sentry/react-native`, persistência offline do TanStack Query.
+Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): armazenamento seguro de sessão (spec de login), `@shopify/react-native-skia` (anotações), `expo-notifications` (push/lembretes), `@sentry/react-native`, persistência offline do TanStack Query.
 
 ## Stack
 
@@ -25,6 +25,7 @@ Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec d
 ## Arquivos de configuração relevantes
 
 - `package.json` / `package-lock.json` — versões reais. `react-dom` fica fixado na mesma versão de `react` (19.3.0): sem isso, dependências web do expo-router puxam um `react-dom` incompatível e o `npm install` falha.
+- `src/lib/database.types.ts` — tipos do banco, gerados por `make db-types` (banco local rodando). Regenere a cada migration nova.
 - `app.config.ts` — configuração Expo (nome, ícones, splash, plugins). Não existe `app.json`: o `npx expo install` pode recriá-lo ao registrar plugin; mova o plugin para `app.config.ts` e apague o `app.json`.
 - `eas.json` — perfis de build (`development`, `preview`, `production`)
 - `tsconfig.json` (`strict: true`, `types: ["jest"]` — o TS 6 não carrega `@types/*` sozinho — e alias `@/` → `src/`), `eslint.config.js`, `.prettierrc` / `.prettierignore` (Markdown fica fora do Prettier), `jest.config.js` + `jest.setup.ts` (locale pt-BR nos testes)
@@ -83,8 +84,9 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 | Teste unitário (função pura) | `src/i18n/resolveLanguage.test.ts` |
 | Texto traduzido | `src/i18n/locales/*.json` (paridade verificada por `src/i18n/locales.test.ts`) |
 | Componente do design system | A definir: primeiro componente em `src/components/` |
-| Acesso a dados | A definir: `src/features/calendar/api.ts` (spec da agenda) |
-| Migration com RLS | A definir: primeira migration de `supabase/migrations/` |
+| Acesso a dados | `src/features/viewer/api.ts` (cliente de `src/lib/supabase.ts`, tipos de `src/lib/database.types.ts`) |
+| Migration com RLS | `supabase/migrations/*_base_units_profiles_roles.sql` |
+| Teste de RLS | `supabase/tests/base_rls.test.sql` (pgTAP; `make test-db`) |
 | Teste e2e | A definir: `.maestro/agenda-publica.yaml` |
 
 ## Integrações externas
