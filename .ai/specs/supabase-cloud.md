@@ -1,6 +1,6 @@
 # Backend no Supabase Cloud (projeto único de produção)
 
-> **Status:** Aguardando assessment
+> **Status:** Concluída
 > **Área:** `.github/workflows/`, `supabase/migrations/`, `supabase/seed.sql`, `supabase/snippets/`, `infra/backup/`, `docs/runbooks/`, `.ai/adrs/`, `.ai/docs/`, `AGENTS.md`, `README.md`
 > **Última atualização:** 2026-11-14
 
