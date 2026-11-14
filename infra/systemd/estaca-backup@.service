@@ -1,0 +1,6 @@
+[Unit]
+Description=Estaca backup (%i)
+
+[Service]
+Type=oneshot
+ExecStart=/opt/estaca/%i/app/infra/scripts/backup.sh %i

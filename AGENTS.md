@@ -27,6 +27,7 @@ Todos os comandos passam pelo `Makefile`, que é a interface estável entre agen
 | `make dev` | `expo start` (Expo Go / dev client) |
 | `make format` | Prettier (aceita `FILE=caminho`) |
 | `make lint` | `expo lint` + `tsc --noEmit` + `prettier --check` |
+| `make lint-infra` | ShellCheck em `infra/scripts/*.sh` (sem ShellCheck instalado, avisa e sai com 0) |
 | `make test` | Jest com cobertura |
 | `make test-db` | pgTAP/RLS (`supabase/tests/`); precisa de Docker e `supabase start`; fora do `check` |
 | `make db-types` | Gera `src/lib/database.types.ts` a partir do banco local |

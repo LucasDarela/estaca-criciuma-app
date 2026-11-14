@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily Estaca backup (%i)
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 America/Sao_Paulo
+Persistent=true
+
+[Install]
+WantedBy=timers.target

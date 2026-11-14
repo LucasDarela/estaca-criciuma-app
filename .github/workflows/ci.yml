@@ -27,6 +27,9 @@ jobs:
       - name: Instalar dependências
         run: make setup
 
+      - name: Lint dos scripts de infra
+        run: make lint-infra
+
       # A CI chama apenas o Makefile, a mesma interface usada por agentes e hooks.
       - name: Verificar (lint + test + build)
         run: make check

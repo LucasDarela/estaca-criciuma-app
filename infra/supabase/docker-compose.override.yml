@@ -1,0 +1,46 @@
+# Estaca overrides on top of supabase/docker at infra/supabase/VERSION (self-hosted/v0.8.4).
+# ENV_NAME and HOST_* come from /opt/estaca/<env>/.env. Requires Docker Compose >= 2.24.4 (!override/!reset).
+services:
+  studio:
+    container_name: estaca-${ENV_NAME}-studio
+    ports: !override
+      - 127.0.0.1:${HOST_STUDIO_PORT}:3000
+  api-gw:
+    container_name: estaca-${ENV_NAME}-envoy
+    ports: !override
+      - 127.0.0.1:${HOST_GW_PORT}:8000/tcp
+  auth:
+    container_name: estaca-${ENV_NAME}-auth
+    environment:
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${GOOGLE_ENABLED}
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_SECRET}
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${API_EXTERNAL_URL}/callback
+      GOTRUE_EXTERNAL_APPLE_ENABLED: ${APPLE_ENABLED}
+      GOTRUE_EXTERNAL_APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
+      GOTRUE_EXTERNAL_APPLE_SECRET: ${APPLE_SECRET}
+      GOTRUE_EXTERNAL_APPLE_REDIRECT_URI: ${API_EXTERNAL_URL}/callback
+  rest:
+    container_name: estaca-${ENV_NAME}-rest
+  realtime:
+    # The "realtime-dev." label is the realtime tenant id; keep it.
+    container_name: realtime-dev.estaca-${ENV_NAME}-realtime
+  storage:
+    container_name: estaca-${ENV_NAME}-storage
+  imgproxy:
+    container_name: estaca-${ENV_NAME}-imgproxy
+  meta:
+    container_name: estaca-${ENV_NAME}-meta
+  functions:
+    container_name: estaca-${ENV_NAME}-edge-functions
+  db:
+    container_name: estaca-${ENV_NAME}-db
+    ports: !override
+      - 127.0.0.1:${HOST_DB_PORT}:5432
+  supavisor:
+    container_name: estaca-${ENV_NAME}-pooler
+    ports: !reset []
+  analytics:
+    container_name: estaca-${ENV_NAME}-analytics
+  vector:
+    container_name: estaca-${ENV_NAME}-vector

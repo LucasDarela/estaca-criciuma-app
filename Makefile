@@ -7,7 +7,7 @@
 # criado (sem package.json), cada alvo avisa e sai com sucesso, para não
 # quebrar hooks e CI.
 
-.PHONY: help setup dev format lint test test-db db-types test-e2e build check
+.PHONY: help setup dev format lint lint-infra test test-db db-types test-e2e build check
 
 FILE ?= .
 
@@ -16,6 +16,9 @@ REQUIRE_APP = if [ ! -f package.json ]; then echo "[make $@] sem package.json: a
 
 # Prefixo das receitas de banco: sai com sucesso se a CLI do Supabase não está instalada.
 REQUIRE_SUPABASE = if ! command -v supabase >/dev/null 2>&1; then echo "[make $@] supabase CLI não encontrada: nada a fazer"; exit 0; fi;
+
+# Prefixo das receitas de infra: sai com sucesso se o ShellCheck não está instalado.
+REQUIRE_SHELLCHECK = if ! command -v shellcheck >/dev/null 2>&1; then echo "[make $@] shellcheck não encontrado: nada a fazer"; exit 0; fi;
 
 help: ## Lista os comandos
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -31,6 +34,9 @@ format: ## Formata o código (FILE=caminho para um arquivo só)
 
 lint: ## Lint + checagem de tipos + formatação
 	@$(REQUIRE_APP) npx expo lint && npx tsc --noEmit && npx prettier --check .
+
+lint-infra: ## Lint dos scripts de infra (ShellCheck)
+	@$(REQUIRE_SHELLCHECK) shellcheck -x infra/scripts/*.sh
 
 test: ## Testes automatizados (unitários e de componentes) com cobertura
 	@$(REQUIRE_APP) npx jest --ci --coverage

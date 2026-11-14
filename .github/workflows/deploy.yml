@@ -1,0 +1,56 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to deploy to production
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-hml:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    environment: hml
+    concurrency: { group: deploy-hml, cancel-in-progress: false }
+    steps:
+      - name: Deploy
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh "estaca-hml@$DEPLOY_HOST" "cd /opt/estaca/hml/app && git fetch --quiet origin && git checkout --quiet --force $SHA && infra/scripts/deploy.sh hml $SHA"
+
+  deploy-prod:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: { group: deploy-prod, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          SHA="$(git rev-parse HEAD)"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh "estaca-prod@$DEPLOY_HOST" "cd /opt/estaca/prod/app && git fetch --quiet origin && git checkout --quiet --force $SHA && infra/scripts/deploy.sh prod $SHA"

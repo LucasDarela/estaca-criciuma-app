@@ -1,0 +1,33 @@
+(estaca_site) {
+	header Strict-Transport-Security "max-age=31536000"
+	tls {
+		protocols tls1.2 tls1.3
+	}
+	handle /healthz/auth {
+		rewrite * /auth/v1/health
+		reverse_proxy 127.0.0.1:{args[0]} {
+			header_up apikey {env.{args[1]}}
+		}
+	}
+	handle /healthz/rest {
+		rewrite * /rest/v1/
+		reverse_proxy 127.0.0.1:{args[0]} {
+			header_up apikey {env.{args[1]}}
+		}
+	}
+	@api path /auth/v1/* /rest/v1/* /storage/v1/* /functions/v1/* /realtime/v1/*
+	handle @api {
+		reverse_proxy 127.0.0.1:{args[0]}
+	}
+	handle {
+		respond 404
+	}
+}
+
+api-hml.estacacriciuma.com.br {
+	import estaca_site 8100 HML_ANON_KEY
+}
+
+api.estacacriciuma.com.br {
+	import estaca_site 8000 PROD_ANON_KEY
+}

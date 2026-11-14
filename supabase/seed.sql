@@ -1,13 +1,4 @@
--- Local development seed: real units + fictitious accounts (no real member data).
-
-insert into public.units (id, kind, name, sort_order) values
-  ('estaca', 'stake', 'Estaca Criciúma', 1),
-  ('criciuma1', 'ward', 'Ala Criciúma 1', 2),
-  ('criciuma2', 'ward', 'Ala Criciúma 2', 3),
-  ('criciuma3', 'ward', 'Ala Criciúma 3', 4),
-  ('icara', 'ward', 'Ala Içara', 5),
-  ('ararangua', 'ward', 'Ala Araranguá', 6),
-  ('ramoGaivota', 'branch', 'Ramo Gaivota', 7);
+-- Local/hml seed: fictitious accounts only (no real member data). Units come from a migration.
 
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,

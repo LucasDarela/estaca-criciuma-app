@@ -14,10 +14,11 @@ Usado pelo `/create-spec` (requisitos RNF de segurança), pelo `/create-plan` e 
 | Vínculo com unidade e papel | **Sensível** (revela filiação religiosa) | `memberships` | Consentimento específico e destacado (art. 11, I) | Até exclusão da conta |
 | Anotações pessoais (texto, desenho, lembretes) | **Sensível** | `notes` | Consentimento | Até a pessoa excluir ou excluir a conta |
 | Chamados (pessoa indicada, cargo, etapa) | **Sensível / confidencial** | `calling_processes` | A definir com assessoria jurídica da estaca: legítimo interesse **não** se aplica a dado sensível (art. 11); avaliar consentimento do indicado ou outra hipótese do art. 11, II | Excluir 12 meses após a designação (A definir) |
+| E-mail do destinatário do OTP | Pessoal | Resend (EUA), só em trânsito | Consentimento | Não armazenado pelo app; logs do Resend conforme a política do fornecedor |
 | Tokens de push e preferências | Pessoal | `push_tokens`, `notification_preferences` | Consentimento (permissão do sistema) | Token removido ao sair, ao desinstalar (erro `DeviceNotRegistered`) ou ao excluir a conta |
 | Pauta, decisões e pendências de reuniões | **Confidencial** | `meeting_items` | Mesmo caso dos chamados (pautas podem citar membros): A definir com assessoria jurídica | A definir na spec da agenda |
 
-Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir a conta** pelo app, com exclusão em cascata de `profiles`, `memberships`, `notes`, `push_tokens`. Controlador: Estaca Criciúma. Encarregado (DPO): A definir com a presidência da estaca antes do lançamento. Política de privacidade publicada (exigida pelas lojas): A definir antes do envio às lojas.
+Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir a conta** pelo app, com exclusão em cascata de `profiles`, `memberships`, `notes`, `push_tokens`. Controlador: Estaca Criciúma. Encarregado (DPO): A definir com a presidência da estaca antes do lançamento. Política de privacidade publicada (exigida pelas lojas): A definir antes do envio às lojas. **Transferência internacional (LGPD, art. 33):** o Resend, nos EUA, processa o e-mail de quem pede o código de login; isso deve constar na política de privacidade. Todo o resto fica no Brasil (VM e Object Storage da Oracle na região de São Paulo).
 
 ## Autenticação e autorização
 
@@ -54,10 +55,13 @@ Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir 
 
 ## Infra self-hosted
 
-- Postgres não exposto à internet; só o gateway (Kong) com TLS.
-- Backup diário do Postgres com retenção de 30 dias, cópia fora da VPS e teste de restauração trimestral (A definir: destino do backup).
-- Supabase Studio só via VPN/túnel SSH, nunca público.
-- Atualizações de segurança do stack Supabase e do SO aplicadas mensalmente.
+- Hospedagem: uma VM Oracle Cloud Ampere A1 (Brasil) com dois stacks Supabase isolados (homologação e produção), decisão em [ADR 0003](../adrs/0003-hospedagem-supabase-oracle.md). Passo a passo em `docs/runbooks/provisioning.md`.
+- Portas públicas: só 22, 80 e 443 (Security List da Oracle e `ufw`). Todas as portas dos containers fazem bind em `127.0.0.1`; o Caddy (TLS, HSTS) encaminha ao gateway (Envoy) só `/auth/v1/`, `/rest/v1/`, `/storage/v1/`, `/functions/v1/` e `/realtime/v1/`; o resto responde 404.
+- Postgres e Supabase Studio só por túnel SSH (`ssh -L`), nunca públicos. SSH só por chave, sem login de root, `fail2ban` e `unattended-upgrades` ativos.
+- Isolamento entre ambientes: usuário Linux, diretório, projeto Compose, rede, volumes, segredos, senha do restic e check de backup próprios. Risco residual aceito: quem tem `root` ou acesso ao daemon Docker da VM alcança os dois ambientes.
+- Segredos em `/opt/estaca/<env>/.env` (modo 600, dono `estaca-<env>`), gerados no servidor e copiados para o gerenciador de senhas do admin técnico.
+- Backup diário às 03:00 (`America/Sao_Paulo`) com restic, cifrado no servidor, para o Oracle Object Storage (repositório por ambiente), retenção de 30 diários e teste de restauração trimestral (`docs/runbooks/backup.md`).
+- Atualizações de segurança do stack Supabase (commit fixado em `infra/supabase/VERSION`, aplicado primeiro na homologação) e do SO aplicadas mensalmente.
 
 ## Checklist para toda feature
 

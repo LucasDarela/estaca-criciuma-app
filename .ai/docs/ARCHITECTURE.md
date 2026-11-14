@@ -19,7 +19,7 @@ Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec d
 | i18n | `i18next` + `react-i18next` + `expo-localization` (pt-BR, en-US, es-MX) | i18next 27 · react-i18next 18 | 0002 |
 | Erros | `@sentry/react-native` | idem | 0002 |
 | Testes | Jest (`jest-expo`) + React Native Testing Library; Maestro (E2E) | Jest 30 · RNTL 14 | 0002 |
-| Hospedagem / deploy | App: EAS Build + EAS Submit. Backend: Supabase self-hosted (Docker) em VPS | — | 0002 |
+| Hospedagem / deploy | App: EAS Build + EAS Submit. Backend: Supabase self-hosted (Docker) em VM Oracle Ampere A1, Caddy na frente | — | 0002, [0003](../adrs/0003-hospedagem-supabase-oracle.md) |
 | Runtime de dev/CI/EAS | Node 26 LTS (`.nvmrc` para dev e CI; `eas.json` › `build.base.node` fixa o patch nos builds da EAS — mantenha os dois alinhados), npm | 26 (EAS: 26.13.1) | 0002 |
 
 ## Arquivos de configuração relevantes
@@ -30,7 +30,8 @@ Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec d
 - `eas.json` — perfis de build (`development`, `preview`, `production`)
 - `tsconfig.json` (`strict: true`, `types: ["jest"]` — o TS 6 não carrega `@types/*` sozinho — e alias `@/` → `src/`), `eslint.config.js`, `.prettierrc` / `.prettierignore` (Markdown fica fora do Prettier), `jest.config.js` + `jest.setup.ts` (locale pt-BR nos testes)
 - `supabase/config.toml`, `supabase/migrations/`, `supabase/functions/`
-- `.nvmrc`, `.env.example`, `Makefile`, `.github/workflows/ci.yml`
+- `infra/` — servidor: `scripts/` (provisionamento, deploy, backup, restauração, primeiro admin), `supabase/` (commit fixado, override do Compose, `env.template`), `caddy/Caddyfile`, `systemd/` (timer de backup). Runbooks em `docs/runbooks/`
+- `.nvmrc`, `.env.example`, `Makefile`, `.github/workflows/ci.yml`, `.github/workflows/deploy.yml`
 
 ## Estrutura de pastas
 
@@ -104,5 +105,5 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 | Ambiente | URL | Deploy | Observações |
 | -------- | --- | ------ | ----------- |
 | local | `http://localhost:54321` (Supabase CLI) | `make dev` + `supabase start` | Seed fictício em `supabase/seed.sql` |
-| preview | A definir: URL do Supabase de homologação | EAS Build perfil `preview` (TestFlight / teste interno) | Para líderes testarem antes do lançamento |
-| produção | A definir: domínio do Supabase self-hosted | EAS Build `production` + EAS Submit | Backups diários do Postgres obrigatórios (ver `SECURITY.md`) |
+| preview | `https://api-hml.estacacriciuma.com.br` | Backend: workflow `Deploy` automático a cada merge na `main` (`infra/scripts/deploy.sh`). App: EAS Build perfil `preview` (TestFlight / teste interno) | Para líderes testarem antes do lançamento; seed fictício |
+| produção | `https://api.estacacriciuma.com.br` | Backend: workflow `Deploy` manual (`workflow_dispatch`) com aprovação do Environment `production`. App: EAS Build `production` + EAS Submit | Backups diários do Postgres obrigatórios (ver `SECURITY.md`); mesma VM da homologação, stack isolado |
