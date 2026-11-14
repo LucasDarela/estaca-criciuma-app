@@ -431,6 +431,7 @@ Na criação, São Paulo não estava disponível no plano Free, e o usuário cri
 | CA-08 | passou | Run 43630879874: artefato `backup-prod-2026-11-14` (só `.tar.gz.age`, cabeçalho `age-encryption.org/v1`, 0 ocorrências de `CREATE TABLE` em `strings`), retenção até 2026-12-14 |
 | CA-03 | passou | OTP para conta Outlook: remetente `Estaca Criciúma <nao-responda@estacacriciuma.com.br>`, `spf=pass`, `dkim=pass`, `dmarc=pass`, `compauth=pass` |
 | CA-07 | passou | Varredura do CA-07 sem ocorrências (só o próprio padrão na spec) |
+| CA-05 | passou | Supabase local com as 2 migrations; migration de teste com `create table public.ca05_probe` seguido de SQL inválido: `supabase db push --local` saiu com código 1; `migration list --local` continuou com 2 migrations; `ca05_probe` não existe (sem estado parcial). Migration de teste apagada |
 
 Observações:
 
@@ -439,4 +440,4 @@ Observações:
 - O Supabase chama a anon key de **publishable key** (`sb_publishable_...`) e a service_role de **secret key** (`sb_secret_...`). Renomear em `.env.example` e no runbook na spec `auth-account`, quando o app passar a usar a chave.
 - CA-12 na produção depende de linha em `profiles`, que só existe depois do cadastro do app (`auth-account`); até lá, o snippet deve retornar `user has no profile yet`.
 
-Pendentes: CA-01, CA-09, CA-10, CA-11, CA-12, CA-13; CA-05 no Supabase local.
+Pendentes: CA-01, CA-09, CA-10, CA-11, CA-12, CA-13.
