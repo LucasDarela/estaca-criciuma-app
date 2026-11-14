@@ -16,7 +16,7 @@ gh run download <run-id> -n <nome-do-artefato>
 
 ## Decifrar e extrair
 
-A chave privada vem do gerenciador de senhas. No macOS, leia a chave da área de transferência, sem gravá-la em disco: cole o comando no terminal, **depois** copie só a linha `AGE-SECRET-KEY-1...` e então aperte Enter (se copiar a chave antes, a área de transferência terá o comando).
+A chave privada vem do gerenciador de senhas. No macOS, leia a chave da área de transferência, sem gravá-la em disco: cole o comando no terminal, **depois** copie só a linha da chave privada (a que começa com `AGE-SECRET-`) e então aperte Enter (se copiar a chave antes, a área de transferência terá o comando).
 
 ```bash
 age -d -i <(pbpaste) -o backup.tar.gz <artefato>.tar.gz.age

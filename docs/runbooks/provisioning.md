@@ -30,12 +30,12 @@ Crie o projeto `estaca-criciuma` na organização, plano Free:
 
 - **Região: `us-east-1`.** São Paulo não estava disponível no plano Free (spec, decisão 9). A região é irreversível: trocar depois exige outro projeto e migração dos dados.
 - Senha do banco: gere no gerenciador de senhas, com 32 caracteres só com letras e números.
-- Anote no gerenciador de senhas: `project-ref` (Project Settings › General), URL (`https://<project-ref>.supabase.co`), anon key (Project Settings › API) e a senha do banco.
+- Anote no gerenciador de senhas: `project-ref` (Project Settings › General), URL (`https://<project-ref>.supabase.co`), publishable key (Project Settings › API Keys, começa com `sb_publishable_`; é a antiga anon key) e a senha do banco.
 
 ## d) Resend (e-mail do código de login)
 
 1. Crie a conta no Resend, se ainda não existir, com o e-mail da estaca e **2FA** ligado.
-2. Em Domains, adicione `estacacriciuma.com.br` (região `sa-east-1` se o Resend oferecer; ela vale só para o envio de e-mail).
+2. Em Domains, adicione `estacacriciuma.com.br` Se o Resend pedir uma região de envio, escolha `sa-east-1` (São Paulo): é a região do Resend, só para o envio de e-mail, e não tem relação com a região do Supabase.
 3. Na **Cloudflare** (DNS › Records), crie os registros que o Resend mostrar: SPF (TXT), DKIM (TXT ou CNAME) e o MX de retorno. Deixe todos em modo **DNS only** (nuvem cinza, sem proxy).
 4. Crie também o registro DMARC, TXT em `_dmarc`: `v=DMARC1; p=none; rua=mailto:<e-mail do admin técnico>`.
 5. No Resend, clique em Verify e espere o domínio ficar `Verified` (pode levar de minutos a horas).
@@ -110,7 +110,7 @@ O `supabase/seed.sql` tem só contas fictícias e roda **apenas no Supabase loca
 | --- | --- |
 | Senha do banco (`estaca-criciuma`) | Gerenciador de senhas; Environment do GitHub (`SUPABASE_DB_PASSWORD`) |
 | `project-ref` do projeto | Gerenciador de senhas; Environment do GitHub (`SUPABASE_PROJECT_ID`) |
-| Anon key do projeto | Painel do Supabase; gerenciador de senhas; variável da EAS (spec futura) |
+| Publishable key do projeto (antiga anon key) | Painel do Supabase; gerenciador de senhas; variável da EAS (spec futura) |
 | Access token do Supabase | Gerenciador de senhas; Environments do GitHub (`SUPABASE_ACCESS_TOKEN`) |
 | Chave de API do Resend (`estaca-criciuma`) | Painel do Resend; gerenciador de senhas; SMTP Settings do projeto no Supabase |
 | Chave privada `age` | Só no gerenciador de senhas |

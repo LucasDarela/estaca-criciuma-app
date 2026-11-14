@@ -1,6 +1,6 @@
 # Backend no Supabase Cloud (projeto único de produção)
 
-> **Status:** Aguardando assessment
+> **Status:** Concluída
 > **Área:** `.github/workflows/`, `supabase/migrations/`, `supabase/seed.sql`, `supabase/snippets/`, `infra/backup/`, `docs/runbooks/`, `.ai/adrs/`, `.ai/docs/`, `AGENTS.md`, `README.md`
 > **Última atualização:** 2026-11-14
 
@@ -76,7 +76,7 @@ Um projeto do Supabase Cloud, `estaca-criciuma` (produção, região `us-east-1`
 | RNF-07 | Acesso ao painel do Supabase e ao Resend: só o admin técnico, com 2FA ligado nas duas contas. A organização do Supabase pertence a uma conta de e-mail da estaca, não a um e-mail pessoal. |
 | RNF-08 | Backup da produção: diário às 06:00 UTC (03:00 em `America/Sao_Paulo`), cifrado no runner antes do upload, retenção de 30 dias (`retention-days: 30`). O arquivo enviado nunca contém o dump em texto claro. |
 | RNF-09 | Transferência internacional: banco e Storage ficam nos EUA (`us-east-1`). Operadores, registrados em `SECURITY.md` › Dados tratados: Supabase Inc. (EUA), que opera e armazena o projeto, e Resend (EUA), que processa o e-mail de quem pede o código. O backup cifrado fica no GitHub (EUA). A política de privacidade (spec futura) informa a transferência. |
-| RNF-10 | A conexão dos workflows com o banco usa o **session pooler** (IPv4, porta `5432`, host mostrado no painel em Connect › Session pooler). A conexão direta do plano gratuito só aceita IPv6, que os runners do GitHub não têm. |
+| RNF-10 | Os workflows conectam no banco pelo projeto ligado (`supabase link` + `--linked`), que usa o pooler IPv4 do Supabase. A conexão direta do plano gratuito só aceita IPv6, que os runners do GitHub não têm. Se o `--linked` falhar por IPv6, a alternativa é `DB_URL` com a URL do session pooler (porta `5432`, painel › Connect › Session pooler). |
 | RNF-11 | Nenhum workflow imprime segredo ou URL de conexão com senha. Os workflows usam `::add-mask::` em todo valor derivado de secret. |
 
 ## 6. Escopo
@@ -128,7 +128,7 @@ Um projeto do Supabase Cloud, `estaca-criciuma` (produção, região `us-east-1`
 
 | ID | Requisito |
 | -- | --------- |
-| RF-09 | `infra/backup/dump.sh` faz o dump da produção: roda `supabase db dump --db-url "$DB_URL"` três vezes (com `--role-only`, sem flag e com `--data-only`), gerando `roles.sql`, `schema.sql` e `data.sql`; empacota os três num `tar.gz`, cifra com `age -R infra/backup/age-recipients.txt` e deixa só o arquivo `.tar.gz.age`. `DB_URL` é montada a partir dos secrets (session pooler, RNF-10). Os arquivos em texto claro são apagados ao final, em sucesso e em falha (via `trap`). O script é Bash com `set -euo pipefail` e passa no ShellCheck. |
+| RF-09 | `infra/backup/dump.sh` faz o dump da produção: roda `supabase db dump` quatro vezes (com `--role-only`, sem flag, com `--data-only --use-copy` e com `--data-only --use-copy -s public`), gerando `roles.sql`, `schema.sql`, `data.sql` e `data-public.sql` (este último para a restauração no lugar, só do schema `public`); empacota os quatro num `tar.gz`, cifra com `age -R infra/backup/age-recipients.txt` e deixa só o arquivo `.tar.gz.age`. A conexão é a do projeto ligado por `supabase link` (`--linked`, RNF-10); `DB_URL`, opcional, troca por `--db-url` (testes locais). Os arquivos em texto claro são apagados ao final, em sucesso e em falha (via `trap`). O script é Bash com `set -euo pipefail` e passa no ShellCheck. |
 | RF-10 | `.github/workflows/backup.yml` usa o Environment `production-backup` (mesmos três secrets da produção, sem revisor obrigatório, porque um job agendado não pode esperar aprovação), roda em `schedule: cron '0 6 * * *'` e por `workflow_dispatch`, executa `dump.sh` e envia o arquivo como artefato `backup-prod-<AAAA-MM-DD>` com `retention-days: 30`. |
 | RF-11 | Alerta: quando o `backup.yml` falha por qualquer motivo (projeto pausado, senha errada, falha de cifra, falha de upload), o GitHub envia e-mail ao admin técnico. O runbook `backup.md` explica como garantir esse e-mail: ligar as notificações de Actions por e-mail em Settings › Notifications da conta do admin e manter o admin técnico como quem fez a última alteração no `cron` do workflow (o GitHub notifica esse usuário em execuções agendadas). |
 | RF-12 | Restauração (`docs/runbooks/backup.md`): baixar o artefato, decifrar com `age -d -i <chave-privada>`, extrair e restaurar num Supabase local (`supabase start` e `supabase db reset --no-seed`), aplicando `roles.sql`, `schema.sql` e `data.sql` com `psql` na ordem da documentação do Supabase para restaurar dumps da CLI. O runbook termina com `select count(*)` em `public.units`, `public.profiles` e `public.memberships`. Restaurar por cima da produção é uma seção separada do runbook, só para perda de dados, com um dump `pre-restore` antes. |
@@ -232,14 +232,14 @@ Os CA marcados como **manual** dependem dos projetos reais e são verificados no
 
 ## 13. Definition of Done
 
-- [ ] `make check` passa (lint, tipos, testes, build)
-- [ ] `make test-db` passa localmente e na CI
-- [ ] Todo `CA` tem teste automatizado com o ID no nome, ou justificativa de teste manual no plano
-- [ ] Roteiro de QA executado sem divergências
-- [ ] Registro de implementação preenchido no plano
-- [ ] Nenhum segredo, dado pessoal ou log sensível introduzido (ver `.ai/docs/SECURITY.md`)
-- [ ] Project refs, senhas do banco, chaves do Resend, access token do Supabase e chave privada do `age` guardados no gerenciador de senhas do admin técnico
-- [ ] ADRs 0003 e 0004 e docs de RF-19 atualizados
+- [x] `make check` passa (lint, tipos, testes, build)
+- [x] `make test-db` passa localmente e na CI
+- [x] Todo `CA` tem teste automatizado com o ID no nome, ou justificativa de teste manual no plano
+- [x] Roteiro de QA executado; divergências registradas no plano (restauração exigiu fixar versões, corrigido em `backup.md`; CA-12 em produção adiado, decisão 11)
+- [x] Registro de implementação preenchido no plano
+- [x] Nenhum segredo, dado pessoal ou log sensível introduzido (ver `.ai/docs/SECURITY.md`)
+- [x] Project refs, senhas do banco, chaves do Resend, access token do Supabase e chave privada do `age` guardados no gerenciador de senhas do admin técnico
+- [x] ADRs 0003 e 0004 e docs de RF-19 atualizados
 
 ## 14. Decisões em aberto
 
@@ -266,6 +266,8 @@ Nenhuma decisão em aberto.
 | 7 | DNS do domínio | Registrado no registro.br com DNS delegado à Cloudflare (feito pelo usuário em 2026-11-14) | usuário |
 | 8 | Ambientes remotos | Um projeto só, `estaca-criciuma`, que é a produção. Sem homologação remota; testes no Supabase local e na CI (2026-11-14) | usuário |
 | 9 | Região | `us-east-1`: São Paulo não estava disponível ao criar o projeto no plano Free. Dados ficam nos EUA, com transferência internacional registrada em `SECURITY.md` (2026-11-14) | usuário |
+| 10 | Dump do backup | `--linked` (projeto ligado) em vez de URL montada dos secrets, e 4 arquivos (com `data-public.sql`); funcionou nos runs reais (assessment rodada 1, G-02) | usuário (2026-11-14) |
+| 11 | CA-12 em produção | Adiado para `auth-account`, que cria `profiles`; os 4 casos locais passaram (assessment rodada 1, G-01) | usuário (2026-11-14) |
 | A11 | Skills | `ecc:deployment-patterns`, `ecc:database-migrations`, `ecc:security-review` | padrão do projeto |
 
 ## 15. Próximos passos (fora desta entrega)
