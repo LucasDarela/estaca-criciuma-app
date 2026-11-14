@@ -1,6 +1,76 @@
 {
-  "home": {
-    "region": "SANTA CATARINA · BRASIL",
-    "comingSoon": "Próximamente: agenda, avisos y liderazgo de la estaca."
+  "common": {
+    "offline": "Sin conexión. Mostrando la última versión guardada.",
+    "back": "Volver",
+    "clear": "Borrar",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "comingSoon": "Esta sección llegará pronto.",
+    "profile": "Abrir perfil"
+  },
+  "tabs": {
+    "agenda": "Agenda",
+    "board": "Muro",
+    "leadership": "Liderazgo",
+    "notes": "Notas",
+    "callings": "Llamamientos",
+    "profile": "Perfil",
+    "signIn": "Entrar"
+  },
+  "dev": {
+    "catalog": {
+      "title": "Catálogo de componentes",
+      "section": {
+        "button": "Botón",
+        "textField": "Campo de texto",
+        "searchField": "Campo de búsqueda",
+        "filterChip": "Chip de filtro",
+        "unitTag": "Etiqueta de unidad",
+        "statusTag": "Etiqueta de estado",
+        "badge": "Contador",
+        "segmented": "Control segmentado",
+        "eventCard": "Tarjeta de evento",
+        "listItem": "Elemento de lista",
+        "avatar": "Avatar",
+        "switch": "Interruptor",
+        "toast": "Aviso rápido",
+        "tabBar": "Barra de pestañas",
+        "screenHeader": "Encabezado de pantalla",
+        "sheet": "Panel inferior",
+        "emptyState": "Estado vacío",
+        "offlineBanner": "Banner sin conexión",
+        "skeleton": "Cargando",
+        "icons": "Íconos"
+      },
+      "sample": {
+        "label": "Etiqueta de ejemplo",
+        "error": "Ingresa tu correo.",
+        "hint": "Texto de apoyo.",
+        "message": "Nota guardada",
+        "undo": "Deshacer",
+        "title": "Conferencia de estaca",
+        "time": "Sábado, 09:00",
+        "place": "Capilla central",
+        "name": "Maria da Silva",
+        "subtitle": "Subtítulo de ejemplo",
+        "open": "Abrir",
+        "confirm": "Confirmar",
+        "sheetTitle": "¿Borrar nota?",
+        "sheetMessage": "Esta acción no se puede deshacer.",
+        "delete": "Borrar",
+        "keep": "Conservar",
+        "search": "Buscar eventos",
+        "month": "Mes",
+        "week": "Semana",
+        "day": "Día",
+        "loading": "Cargando",
+        "disabled": "Deshabilitado",
+        "vanished": "Aviso",
+        "neutral": "Neutro",
+        "info": "Información",
+        "success": "Aprobado",
+        "warning": "Pendiente"
+      }
+    }
   }
 }

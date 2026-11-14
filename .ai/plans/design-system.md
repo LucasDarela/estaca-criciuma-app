@@ -285,77 +285,77 @@ export function DevComponentsRoute(): React.JSX.Element; // __DEV__ ? <Component
 
 ## 4. Tarefas
 
-- [ ] **T-01 — Dependências e tokens**
+- [x] **T-01 — Dependências e tokens**
   - Arquivos: `alterar package.json` · `alterar package-lock.json` · `alterar src/theme/theme.ts`
   - O que fazer: `npx expo install react-native-svg`; `npm install --save-dev --save-exact @material-symbols/svg-400@0.49.0`; script `"icons": "node scripts/generate-icons.mjs"` no `package.json`. Acrescentar os tokens da seção 2.1, cada um com `// derived`, e incluir `stroke` e `motion` em `tokens`.
   - Referência: `src/theme/theme.ts:55` (comentário `derived`); `src/theme/theme.ts:134` (`size`)
   - Cobre: base para RNF-01
   - Verificar: `make lint`
 
-- [ ] **T-02 — Ícones**
+- [x] **T-02 — Ícones**
   - Arquivos: `criar scripts/generate-icons.mjs` · `criar src/components/icons/glyphs.ts` (gerado) · `criar src/components/icons/LICENSE` (gerado) · `criar src/components/icons/Icon.tsx` · `criar src/components/icons/Icon.test.tsx`
   - O que fazer: contratos da seção 2.2. Rodar `npm run icons` e commitar o resultado (formatado pelo Prettier). Testes: `CA-15: outlined and filled render different paths` (comparar a prop `d` dos `Path`); `CA-15: unknown icon names do not type-check` (linha `// @ts-expect-error unknown icon name` antes de `<Icon name="not_an_icon" />`, validada pelo `tsc` do `make lint`); e um teste de que os 54 nomes de RF-16 existem em `glyphs` com `outlined` e `filled` não vazios.
   - Referência: `src/lib/secrets.test.ts:1-14` (`node:fs` em teste)
   - Cobre: CA-15, RNF-04, RNF-10
   - Verificar: `npm run icons && git diff --exit-code src/components/icons/` (regenerar não muda nada); `make test`; `make lint`
 
-- [ ] **T-03 — Textos comuns**
+- [x] **T-03 — Textos comuns**
   - Arquivos: `alterar src/i18n/locales/pt-BR.json` · `alterar src/i18n/locales/en-US.json` · `alterar src/i18n/locales/es-MX.json`
   - O que fazer: chaves `common.*` e `tabs.*` da seção 2.5 (mantém `home.*` até a T-11).
   - Referência: `src/i18n/locales.test.ts:15` (paridade de chaves)
   - Cobre: RNF-02
   - Verificar: `make test`
 
-- [ ] **T-04 — Button, Badge, UnitTag e StatusTag**
+- [x] **T-04 — Button, Badge, UnitTag e StatusTag**
   - Arquivos: `criar src/components/pressable.ts` · `criar src/components/Button.tsx` · `criar src/components/Button.test.tsx` · `criar src/components/Badge.tsx` · `criar src/components/Badge.test.tsx` · `criar src/components/UnitTag.tsx` · `criar src/components/StatusTag.tsx` · `criar src/components/Tags.test.tsx`
   - O que fazer: contratos da seção 2.3; cores e medidas do `DESIGN_SYSTEM.md` › Componentes.
   - Referência: `src/features/home/HomeScreen.tsx:25-38` (StyleSheet só com tokens); `src/features/home/HomeScreen.test.tsx:7-11` (busca por papel)
   - Cobre: CA-01, CA-02, CA-06, CA-07
   - Verificar: `make test`
 
-- [ ] **T-05 — TextField e SearchField**
+- [x] **T-05 — TextField e SearchField**
   - Arquivos: `criar src/components/TextField.tsx` · `criar src/components/TextField.test.tsx` · `criar src/components/SearchField.tsx` · `criar src/components/SearchField.test.tsx`
   - O que fazer: seção 2.3. Foco por `onFocus`/`onBlur` internos. Em teste, `jest.spyOn(AccessibilityInfo, 'announceForAccessibility')` para RNF-09.
   - Referência: `src/features/home/HomeScreen.test.tsx`
   - Cobre: CA-03, CA-04
   - Verificar: `make test`
 
-- [ ] **T-06 — FilterChip, Segmented e Switch**
+- [x] **T-06 — FilterChip, Segmented e Switch**
   - Arquivos: `criar src/components/FilterChip.tsx` · `criar src/components/Segmented.tsx` · `criar src/components/Switch.tsx` · `criar src/components/Selection.test.tsx`
   - O que fazer: seção 2.3.
   - Referência: `src/features/home/HomeScreen.test.tsx`
   - Cobre: CA-05, CA-10
   - Verificar: `make test`
 
-- [ ] **T-07 — Avatar, ListItem, EventCard, EmptyState, OfflineBanner e Skeleton**
+- [x] **T-07 — Avatar, ListItem, EventCard, EmptyState, OfflineBanner e Skeleton**
   - Arquivos: `criar src/domain/initials.ts` · `criar src/domain/initials.test.ts` · `criar src/components/Avatar.tsx` · `criar src/components/ListItem.tsx` · `criar src/components/EventCard.tsx` · `criar src/components/EmptyState.tsx` · `criar src/components/OfflineBanner.tsx` · `criar src/components/Skeleton.tsx` · `criar src/components/Display.test.tsx`
   - O que fazer: seção 2.3, com os casos de 7.5 da spec para `initials`.
   - Referência: `src/domain/units.ts:17` (função pura com docstring); `src/domain/units.test.ts`
   - Cobre: CA-08, CA-09, CA-14
   - Verificar: `make test`
 
-- [ ] **T-08 — Toast**
+- [x] **T-08 — Toast**
   - Arquivos: `criar src/components/toast/ToastProvider.tsx` · `criar src/components/toast/ToastProvider.test.tsx`
   - O que fazer: seção 2.3. Teste com `jest.useFakeTimers()`: dois `show` seguidos → só a segunda mensagem na tela; some em 4000 ms; com `actionLabel`, ainda visível em 5999 ms e some em 6000 ms.
   - Referência: `src/features/viewer/ViewerProvider.test.tsx:19-26` (wrapper de provider em teste)
   - Cobre: CA-11
   - Verificar: `make test`
 
-- [ ] **T-09 — Sheet e ConfirmSheet**
+- [x] **T-09 — Sheet e ConfirmSheet**
   - Arquivos: `criar src/components/Sheet.tsx` · `criar src/components/ConfirmSheet.tsx` · `criar src/components/Sheet.test.tsx`
   - O que fazer: seção 2.3. Teste: tocar no fundo (`getByLabelText('Fechar')`) chama `onCancel` e não `onConfirm`; tocar em confirmar chama `onConfirm`. Mockar `AccessibilityInfo.isReduceMotionEnabled` para resolver `false`.
   - Referência: `src/features/home/HomeScreen.test.tsx`
   - Cobre: CA-13
   - Verificar: `make test`
 
-- [ ] **T-10 — ScreenHeader e contexto do avatar**
+- [x] **T-10 — ScreenHeader e contexto do avatar**
   - Arquivos: `criar src/components/HeaderAvatarContext.tsx` · `criar src/components/ScreenHeader.tsx` · `criar src/components/ScreenHeader.test.tsx`
   - O que fazer: seção 2.3. Teste `CA-12` com `HeaderAvatarProvider value={{ name: 'Maria Souza', onPress }}`: aparece `MS`; tocar em `Abrir perfil` chama `onPress`. Sem provider ou com `null`, nenhum avatar. (A navegação real para `/profile` é testada na T-11.)
   - Referência: `src/features/viewer/ViewerProvider.tsx:34-77` (contexto + hook; aqui o hook devolve `null` fora do provider)
   - Cobre: CA-12
   - Verificar: `make test`
 
-- [ ] **T-11 — Abas por perfil, telas provisórias e redirecionamentos**
+- [x] **T-11 — Abas por perfil, telas provisórias e redirecionamentos**
   - Arquivos: `criar src/domain/tabs.ts` · `criar src/domain/tabs.test.ts` · `criar src/components/TabBar.tsx` · `criar src/features/navigation/TabsLayout.tsx` · `criar src/features/navigation/ViewerHeaderAvatar.tsx` · `criar src/features/navigation/RootRedirect.tsx` · `criar src/features/navigation/TabsLayout.test.tsx` · `criar src/features/placeholder/ComingSoonScreen.tsx` · `criar src/features/placeholder/screens.tsx` · `criar src/app/(tabs)/_layout.tsx` · `criar src/app/(tabs)/agenda.tsx`, `board.tsx`, `leadership.tsx`, `notes.tsx`, `callings.tsx`, `profile.tsx`, `sign-in.tsx` · `alterar src/app/index.tsx` (re-export de `RootRedirect`) · `alterar src/app/_layout.tsx` (dentro do `ViewerProvider`: `ToastProvider` › `ViewerHeaderAvatar` › `Stack`) · `remover src/features/home/HomeScreen.tsx` e `HomeScreen.test.tsx` · `alterar src/i18n/locales/*.json` (remover `home.*`)
   - O que fazer: seção 2.4. Testes com `renderRouter` de `expo-router/testing-library`, montando as rotas com os componentes reais (`TabsLayout`, `RootRedirect` e os placeholders), dentro de `ToastProvider` e `ViewerHeaderAvatar`, e mockando `@/features/viewer/ViewerProvider` com `useViewer` que lê um `kind` e um `profile` controlados pelo teste:
     - `CA-16`: para `visitor`, `member` e `leader`, os `tab` visíveis e a ordem batem com RF-17; o da rota atual tem `selected`. `tabs.test.ts` cobre a tabela pura.
@@ -367,14 +367,14 @@ export function DevComponentsRoute(): React.JSX.Element; // __DEV__ ? <Component
   - Cobre: CA-12, CA-16, CA-17, CA-18
   - Verificar: `make test`; `make build`
 
-- [ ] **T-12 — Catálogo `/dev/components`**
+- [x] **T-12 — Catálogo `/dev/components`**
   - Arquivos: `criar src/features/dev/ComponentCatalogScreen.tsx` · `criar src/features/dev/DevComponentsRoute.tsx` · `criar src/features/dev/DevComponentsRoute.test.tsx` · `criar src/app/dev/components.tsx` · `alterar src/i18n/locales/*.json` (`dev.catalog.*`)
   - O que fazer: uma seção por componente, com todas as variantes e estados de RF-21 (padrão, desabilitado, carregando, erro), e a grade dos 54 ícones, contornados e preenchidos, com o nome embaixo (o nome do ícone é identificador técnico, não texto de UI). `ScrollView` simples. Teste: com `__DEV__` falso (alterar o global e restaurar no `afterEach`), `renderRouter` em `/dev/components` termina em `/agenda`; com `__DEV__` verdadeiro, mostra o título do catálogo e o título de seção de cada componente de RF-01 a RF-15.
   - Referência: `src/features/navigation/RootRedirect.tsx` (T-11)
   - Cobre: CA-19
   - Verificar: `make test`
 
-- [ ] **T-13 — Regras do design system e documentação**
+- [x] **T-13 — Regras do design system e documentação**
   - Arquivos: `criar src/components/designRules.test.ts` · `alterar .ai/docs/DESIGN_SYSTEM.md` · `alterar .ai/docs/ARCHITECTURE.md`
   - O que fazer: teste `CA-20: no literal colors in components` (varre `src/components/**/*.tsx`, sem `icons/glyphs.ts`, procurando `#[0-9A-Fa-f]{3,8}\b` e `rgba?\(`) e `CA-20: no literal UI text in components` (procura texto em JSX: `/>\s*[A-Za-zÀ-ÿ][^<{]*</`). `DESIGN_SYSTEM.md`: coluna "Onde está" com os caminhos reais; linhas de `Icon`, `EmptyState`, `OfflineBanner`, `Skeleton`, `Sheet`/`ConfirmSheet`; tamanho `small` (36) do `Avatar`; trocar o aviso "ainda não construídos". `ARCHITECTURE.md`: tirar "Hoje: tela inicial provisória" e "A criar" de `(tabs)`; citar `features/navigation` e `features/placeholder`.
   - Referência: `src/lib/secrets.test.ts:1-30`
@@ -428,8 +428,48 @@ export function DevComponentsRoute(): React.JSX.Element; // __DEV__ ? <Component
 
 ### Arquivos criados e alterados
 
+Criados:
+- `scripts/generate-icons.mjs`
+- `src/components/icons/{glyphs.ts,Icon.tsx,Icon.test.tsx,LICENSE}`
+- `src/components/{pressable.ts,Button,Badge,Tag,UnitTag,StatusTag,TextField,SearchField,FilterChip,Segmented,Switch,Avatar,ListItem,EventCard,EmptyState,OfflineBanner,Skeleton,Sheet,ConfirmSheet,HeaderAvatarContext,ScreenHeader,TabBar}.ts(x)`
+- `src/components/toast/ToastProvider.tsx`
+- Testes: `src/components/{Button,Badge,Tags,TextField,SearchField,Selection,Display,Sheet,ScreenHeader,designRules}.test.ts(x)`, `src/components/toast/ToastProvider.test.tsx`, `src/domain/{initials,tabs}.test.ts`, `src/features/navigation/TabsLayout.test.tsx`, `src/features/dev/DevComponentsRoute.test.tsx`
+- `src/domain/{initials.ts,tabs.ts}`
+- `src/features/navigation/{TabsLayout,ViewerHeaderAvatar,RootRedirect}.tsx`
+- `src/features/placeholder/{ComingSoonScreen,screens}.tsx`
+- `src/features/dev/{ComponentCatalogScreen,DevComponentsRoute}.tsx`
+- `src/app/(tabs)/{_layout,agenda,board,leadership,notes,callings,profile,sign-in}.tsx`, `src/app/dev/components.tsx`
+
+Alterados: `package.json`, `package-lock.json` (`react-native-svg` 15.16.0; `@material-symbols/svg-400` 0.49.0 exata em devDependencies; script `icons`), `src/theme/theme.ts` (tokens `derived`; `stroke` e `motion` em `tokens`), `src/i18n/locales/*.json` (`common`, `tabs`, `dev.catalog`; `home` removido), `src/app/index.tsx`, `src/app/_layout.tsx` (`ToastProvider` e `ViewerHeaderAvatar` dentro do `ViewerProvider`), `.ai/docs/DESIGN_SYSTEM.md`, `.ai/docs/ARCHITECTURE.md`.
+
+Removidos: `src/features/home/HomeScreen.tsx` e `HomeScreen.test.tsx`.
+
 ### Desvios do plano
+
+- **`href: null` não é usado na `TabsLayout`** (plano, seção 1 e 2.4). No expo-router 58, `href: null` vira `hidden: true`, e o navegador redireciona para a primeira aba visível quando a tela oculta recebe foco: o Líder não conseguiria abrir `/profile` pelo avatar (RF-19, CA-17). Todas as rotas são `Tabs.Screen` comuns e o `TabBar` próprio mostra só as abas de `tabsFor(kind)`. Sem mudança de comportamento visível; o teste "a leader can open /profile and stays there" cobre.
+- **`Tabs` vem de `expo-router/js-tabs`**, não de `expo-router` (o export da raiz está marcado como `@deprecated` no SDK 58).
+- **`onSelect` do `TabBar` usa `router.navigate('/<rota>')`** em vez de `navigateToTab(key)`, para não depender da chave do estado do navegador.
+- **Paddings sem token exato usam o token mais próximo**: 3 px (UnitTag, StatusTag, trilho do Segmented) e 14 px (TextField, EventCard) viraram `space.xs` (4) e `space.lg` (16). O plano não previa tokens novos para eles (RNF-01).
+- **Tipo do ref do `TextField`** é `ComponentRef<typeof TextInput>` (o `TextInput` do RN 0.88 não serve como tipo de instância).
+- **`Tag.tsx` (interno) criado** para dividir a forma entre `UnitTag` e `StatusTag`.
+- **`Sheet` sem `accessibilityViewIsModal`**: o `Modal` nativo já confina o foco do leitor de tela, e a flag escondia o fundo ("Fechar") da árvore de acessibilidade. Sem animação de saída (só a de entrada da seção 8 da spec).
+- **`npm run icons`** também roda o Prettier no `glyphs.ts`, para a regeneração não gerar diff (plano pedia `git diff --exit-code` após regenerar).
+- **Ícones pequenos (20 px) usam `size.iconSearch`** em chips, cartões e Segmented; não há token de ícone pequeno genérico.
+- **Chaves extras de i18n `dev.catalog.section.*` e `dev.catalog.sample.*`** (textos de exemplo do catálogo, para respeitar RNF-02); o plano citava só "um rótulo por seção".
+- **`designRules.test.ts` ignora `*.test.tsx`** (dados de exemplo em teste); a regra vale para o código entregue.
+- **Teste de `Button` e demais controles usam `userEvent`** em vez de `fireEvent`: o `fireEvent.press` sobe a árvore e acha o `onPress` do próprio `Button`, contornando a guarda de `loading`.
 
 ### Decisões durante a implementação
 
+- `react-native-svg` roda no Jest sem mock em `jest.setup.ts` (o preset `jest-expo` já resolve); o risco da seção 6 não se concretizou.
+- `Switch` próprio: o polegar é posicionado por `marginLeft` (sem animação, fora do escopo da spec).
+- `Toast`: sem animação de entrada/saída (a spec só exige o timer); anúncio com `announceForAccessibility` só no iOS e `accessibilityLiveRegion="polite"` no contêiner.
+- O `ViewerHeaderAvatar`/`TabsLayout` importam `useViewer` de `features/viewer` (import entre features previsto no plano; `viewer` é a fundação de `app-foundation`).
+- Nenhum ADR criado: nada vale para o projeto além do que a spec e o `DESIGN_SYSTEM.md` já registram.
+
 ### CA sem teste automatizado
+
+- **CA-21** (VoiceOver/TalkBack, fonte 1,6x, alvos de toque >= 44 pt, contraste): manual, T-14.
+- **CA-19**, parte "build de produção": o teste automatizado cobre `__DEV__` falso e verdadeiro; a conferência num build de produção real fica na T-14, passo 7.
+- **T-14 (roteiro de QA em aparelho): PENDENTE**, da sessão principal com o usuário. Não executada.
+- Itens visuais de RNF-12 (contraste conferido no catálogo) e a aparência fiel ao design (anel de foco, sombra do Segmented, tracejado do EmptyState) só se confirmam no aparelho, na T-14.
