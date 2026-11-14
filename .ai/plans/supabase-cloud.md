@@ -443,6 +443,6 @@ Observações:
 - O Supabase chama a anon key de **publishable key** (`sb_publishable_...`) e a service_role de **secret key** (`sb_secret_...`). Renomear em `.env.example` e no runbook na spec `auth-account`, quando o app passar a usar a chave.
 - CA-12 na produção depende de linha em `profiles`, que só existe depois do cadastro do app (`auth-account`); até lá, o snippet deve retornar `user has no profile yet`.
 
-CA-13: organização com só o admin técnico e 2FA ligado no Supabase; falta confirmar o 2FA do Resend.
+| CA-13 | passou | Organização do Supabase só com o admin técnico; 2FA ligado no Supabase e no Resend (conferido pelo usuário) |
 
-Pendentes: CA-10, CA-12, CA-13 (Resend).
+Pendentes: CA-10 (restauração, precisa da chave privada `age`) e CA-12 (depende de `auth-account`).
