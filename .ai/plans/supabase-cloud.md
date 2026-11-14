@@ -435,6 +435,7 @@ Na criação, São Paulo não estava disponível no plano Free, e o usuário cri
 | CA-09 | passou | Run 43634006932 com `SUPABASE_DB_PASSWORD` errada em `production-backup`: `dump.sh` falhou (`error: dump failed`), upload pulado, nenhum artefato; log mostra só `SUPABASE_DB_PASSWORD: ***`; e-mail "Run failed" do GitHub recebido pelo admin. Senha restaurada; run 43634769428 voltou a passar |
 | CA-01 | passou | Projeto `estaca-criciuma`, plano Free, `us-east-1`, sem add-on pago (conferido pelo usuário) |
 | CA-11 | passou | SQL Editor da produção: `public.units` = 7; contas `@exemplo.org` em `auth.users` = 0 |
+| CA-13 | passou | Organização do Supabase só com o admin técnico; 2FA ligado no Supabase e no Resend (conferido pelo usuário) |
 
 Observações:
 
@@ -442,7 +443,5 @@ Observações:
 - O e-mail caiu no lixo eletrônico do Outlook (SCL 5) com autenticação válida: domínio novo e template padrão do Supabase (inglês, só link para `supabase.co`). Tratar em `auth-account` com templates em pt-BR e código em destaque.
 - O Supabase chama a anon key de **publishable key** (`sb_publishable_...`) e a service_role de **secret key** (`sb_secret_...`). Renomear em `.env.example` e no runbook na spec `auth-account`, quando o app passar a usar a chave.
 - CA-12 na produção depende de linha em `profiles`, que só existe depois do cadastro do app (`auth-account`); até lá, o snippet deve retornar `user has no profile yet`.
-
-| CA-13 | passou | Organização do Supabase só com o admin técnico; 2FA ligado no Supabase e no Resend (conferido pelo usuário) |
 
 Pendentes: CA-10 (restauração, precisa da chave privada `age`) e CA-12 (depende de `auth-account`).
