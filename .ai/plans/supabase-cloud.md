@@ -422,3 +422,21 @@ Na criação, São Paulo não estava disponível no plano Free, e o usuário cri
 - `SECURITY.md` e ADR 0004: transferência internacional (dados nos EUA) e ausência de homologação remota. `ARCHITECTURE.md`, `AGENTS.md`, `README.md`, `.env.example`, `supabase-down.md`, `backup.md` e o comentário do `seed.sql` alinhados.
 - Risco novo: com um projeto só, a pausa por inatividade atinge a produção. O backup diário conecta no banco todo dia, o que deve contar como atividade; confirmar na primeira semana.
 
+
+### QA da T-09 (2026-11-14, em andamento)
+
+| CA | Resultado | Evidência |
+| -- | --------- | --------- |
+| CA-04, CA-06, CA-16 | passou | Run 43630545216: aprovação do Environment `production` exigida; `pre-deploy-43630545216` enviado antes do `db push`; as 2 migrations aplicadas; passo de functions pulado (`no Edge Functions to deploy`) |
+| CA-08 | passou | Run 43630879874: artefato `backup-prod-2026-11-14` (só `.tar.gz.age`, cabeçalho `age-encryption.org/v1`, 0 ocorrências de `CREATE TABLE` em `strings`), retenção até 2026-12-14 |
+| CA-03 | passou | OTP para conta Outlook: remetente `Estaca Criciúma <nao-responda@estacacriciuma.com.br>`, `spf=pass`, `dkim=pass`, `dmarc=pass`, `compauth=pass` |
+| CA-07 | passou | Varredura do CA-07 sem ocorrências (só o próprio padrão na spec) |
+
+Observações:
+
+- Primeiro envio falhou com `535 Invalid username`: o campo Username do SMTP não era `resend`. Corrigido no painel; o runbook já indica `resend`.
+- O e-mail caiu no lixo eletrônico do Outlook (SCL 5) com autenticação válida: domínio novo e template padrão do Supabase (inglês, só link para `supabase.co`). Tratar em `auth-account` com templates em pt-BR e código em destaque.
+- O Supabase chama a anon key de **publishable key** (`sb_publishable_...`) e a service_role de **secret key** (`sb_secret_...`). Renomear em `.env.example` e no runbook na spec `auth-account`, quando o app passar a usar a chave.
+- CA-12 na produção depende de linha em `profiles`, que só existe depois do cadastro do app (`auth-account`); até lá, o snippet deve retornar `user has no profile yet`.
+
+Pendentes: CA-01, CA-09, CA-10, CA-11, CA-12, CA-13; CA-05 no Supabase local.
