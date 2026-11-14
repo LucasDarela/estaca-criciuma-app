@@ -11,7 +11,7 @@ Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec d
 | Linguagem | TypeScript (`strict`) | 6.0 | [0002](../adrs/0002-stack-inicial.md) |
 | Framework | React Native + Expo (managed, dev client), expo-router | Expo SDK 58 · RN 0.88 · React 19.3 · expo-router 58 | 0002 |
 | Estado de servidor | TanStack Query (cache persistido para offline) | 5.x | 0002 |
-| Banco de dados | PostgreSQL do Supabase self-hosted | Versão do stack Docker do Supabase | 0002 |
+| Banco de dados | PostgreSQL do Supabase Cloud | gerenciada pelo Supabase | 0002 |
 | Acesso a dados | `@supabase/supabase-js` direto (PostgREST) + RLS; RPC para lógica que precisa ser atômica | idem | 0002 |
 | Autenticação | Supabase Auth (GoTrue): OTP por e-mail, Google, Apple | idem | 0002 |
 | Push | `expo-notifications` + Expo Push Service, disparado por Edge Function | idem | 0002 |
@@ -19,7 +19,7 @@ Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec d
 | i18n | `i18next` + `react-i18next` + `expo-localization` (pt-BR, en-US, es-MX) | i18next 27 · react-i18next 18 | 0002 |
 | Erros | `@sentry/react-native` | idem | 0002 |
 | Testes | Jest (`jest-expo`) + React Native Testing Library; Maestro (E2E) | Jest 30 · RNTL 14 | 0002 |
-| Hospedagem / deploy | App: EAS Build + EAS Submit. Backend: Supabase self-hosted (Docker) em VPS | — | 0002 |
+| Hospedagem / deploy | App: EAS Build + EAS Submit. Backend: Supabase Cloud (Free, `us-east-1`, projeto único `estaca-criciuma`); deploy por `.github/workflows/deploy.yml` | — | 0004 |
 | Runtime de dev/CI/EAS | Node 26 LTS (`.nvmrc` para dev e CI; `eas.json` › `build.base.node` fixa o patch nos builds da EAS — mantenha os dois alinhados), npm | 26 (EAS: 26.13.1) | 0002 |
 
 ## Arquivos de configuração relevantes
@@ -93,7 +93,7 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 
 | Serviço | Para quê | Onde está o cliente | Variáveis de ambiente |
 | ------- | -------- | ------------------- | --------------------- |
-| Supabase self-hosted (API, Auth, Storage) | Dados, login, imagens do mural | `src/lib/supabase.ts` | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` |
+| Supabase Cloud (API, Auth, Storage) | Dados, login, imagens do mural | `src/lib/supabase.ts` | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` |
 | Expo Push Service | Entrega de push (APNs/FCM) | `supabase/functions/send-push` | `EXPO_ACCESS_TOKEN` (secret da function) |
 | Google / Apple Sign-In | Login social | Supabase Auth + `expo-auth-session` / `expo-apple-authentication` | Configurados no GoTrue (servidor) |
 | Sentry | Crashes e erros do app | `src/lib/sentry.ts` | `EXPO_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` (só build) |
@@ -104,5 +104,5 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 | Ambiente | URL | Deploy | Observações |
 | -------- | --- | ------ | ----------- |
 | local | `http://localhost:54321` (Supabase CLI) | `make dev` + `supabase start` | Seed fictício em `supabase/seed.sql` |
-| preview | A definir: URL do Supabase de homologação | EAS Build perfil `preview` (TestFlight / teste interno) | Para líderes testarem antes do lançamento |
-| produção | A definir: domínio do Supabase self-hosted | EAS Build `production` + EAS Submit | Backups diários do Postgres obrigatórios (ver `SECURITY.md`) |
+| preview | `https://<project-ref>.supabase.co` (o mesmo projeto da produção) | EAS Build perfil `preview` (TestFlight / teste interno) | Para líderes testarem antes do lançamento. Não há homologação remota: usa o backend de produção, com dados reais |
+| produção | `https://<project-ref>.supabase.co` | EAS Build `production` + EAS Submit; backend: `deploy-prod`, manual com aprovação e dump prévio | Backup diário por `backup.yml` (ver `SECURITY.md` e `docs/runbooks/backup.md`) |

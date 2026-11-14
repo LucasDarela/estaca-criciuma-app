@@ -17,11 +17,13 @@ Usado pelo `/create-spec` (requisitos RNF de segurança), pelo `/create-plan` e 
 | Tokens de push e preferências | Pessoal | `push_tokens`, `notification_preferences` | Consentimento (permissão do sistema) | Token removido ao sair, ao desinstalar (erro `DeviceNotRegistered`) ou ao excluir a conta |
 | Pauta, decisões e pendências de reuniões | **Confidencial** | `meeting_items` | Mesmo caso dos chamados (pautas podem citar membros): A definir com assessoria jurídica | A definir na spec da agenda |
 
+**Operadores e transferência internacional:** o banco e o Storage ficam nos EUA (Supabase Cloud, região `us-east-1`, ADR 0004), o que é transferência internacional de dados pessoais (LGPD, art. 33). Os operadores são empresas dos EUA: Supabase Inc. (opera e armazena o projeto), Resend (processa o e-mail de quem pede o código de login) e GitHub (guarda o backup cifrado com `age`). A política de privacidade deve informar esses operadores e a transferência internacional.
+
 Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir a conta** pelo app, com exclusão em cascata de `profiles`, `memberships`, `notes`, `push_tokens`. Controlador: Estaca Criciúma. Encarregado (DPO): A definir com a presidência da estaca antes do lançamento. Política de privacidade publicada (exigida pelas lojas): A definir antes do envio às lojas.
 
 ## Autenticação e autorização
 
-- **Autenticação:** Supabase Auth (GoTrue) self-hosted. OTP de 6 dígitos por e-mail, Google e "Entrar com a Apple" (obrigatório na App Store quando há login social). Sem senha.
+- **Autenticação:** Supabase Auth (Supabase Cloud). OTP de 6 dígitos por e-mail, Google e "Entrar com a Apple" (obrigatório na App Store quando há login social). Sem senha.
 - **Sessão:** JWT do Supabase com refresh token guardado no `expo-secure-store` (Keychain/Keystore), nunca em `AsyncStorage`.
 - **Visitante:** sem sessão; usa a anon key e só lê o que é público (RN-01).
 - **Modelo de permissão:** "membro" é qualquer conta autenticada e **não** tem linha em `memberships`. Papéis elevados ficam em `memberships(user_id, unit_id, role, leadership_group)`:
@@ -52,12 +54,12 @@ Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir 
 - Agentes de IA não leem `.env*` (bloqueado em `.claude/settings.json`).
 - Segredo vazado é revogado e trocado na hora; remover do histórico não basta. Para JWT secret do Supabase, isso invalida todas as sessões.
 
-## Infra self-hosted
+## Infra (Supabase Cloud)
 
-- Postgres não exposto à internet; só o gateway (Kong) com TLS.
-- Backup diário do Postgres com retenção de 30 dias, cópia fora da VPS e teste de restauração trimestral (A definir: destino do backup).
-- Supabase Studio só via VPN/túnel SSH, nunca público.
-- Atualizações de segurança do stack Supabase e do SO aplicadas mensalmente.
+- O Postgres só é acessível pela API do Supabase e pelo session pooler, com senha de banco de 32 caracteres.
+- Painel do Supabase e do Resend só para o admin técnico, com 2FA ligado (organização do Supabase com e-mail da estaca).
+- Backup diário da produção, cifrado com `age` antes do upload, artefato de 30 dias, com teste de restauração trimestral (`docs/runbooks/backup.md`). A chave privada existe só no gerenciador de senhas do admin técnico.
+- Segredos só em Environments do GitHub (`production`, `production-backup`), nos painéis e no gerenciador de senhas; nunca no repositório nem em log de workflow.
 
 ## Checklist para toda feature
 

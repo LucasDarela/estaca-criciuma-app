@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref (branch, tag or SHA) to deploy to production
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.84.2
+      - run: sudo apt-get install -y -qq age
+      - run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+      - name: Pre-deploy backup
+        run: |
+          infra/backup/dump.sh "pre-deploy-${{ github.run_id }}.tar.gz.age" || { echo "error: pre-deploy backup failed"; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pre-deploy-${{ github.run_id }}
+          path: pre-deploy-${{ github.run_id }}.tar.gz.age
+          retention-days: 30
+          if-no-files-found: error
+      - run: supabase db push --linked --yes
+      - name: Deploy Edge Functions
+        run: |
+          if [ -d supabase/functions ] && find supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name '_*' | grep -q .; then
+            supabase functions deploy --project-ref "$SUPABASE_PROJECT_ID"
+          else
+            echo "no Edge Functions to deploy"
+          fi
