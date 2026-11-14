@@ -9,6 +9,7 @@ Define o que é "testado o suficiente" neste projeto. O agent `implementer` escr
 | Formatar | `make format` (ou `make format FILE=src/x.ts`) |
 | Lint + tipos + formatação | `make lint` |
 | Testes unitários e de componentes | `make test` |
+| Testes de banco (pgTAP/RLS; precisa de Docker e `supabase start`) | `make test-db` |
 | E2E (local, com emulador) | `make test-e2e` |
 | Tudo (o que a CI roda) | `make check` |
 

@@ -30,3 +30,16 @@ jobs:
       # A CI chama apenas o Makefile, a mesma interface usada por agentes e hooks.
       - name: Verificar (lint + test + build)
         run: make check
+
+  db:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.84.2
+      - name: Subir Supabase local (migrations + seed)
+        run: supabase start
+      - name: Testes de banco (RLS)
+        run: make test-db

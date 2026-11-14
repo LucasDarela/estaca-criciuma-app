@@ -38,13 +38,13 @@ Agenda, mural e liderança são públicos: um visitante entende o que acontece e
 | RN-11 | Nada de curtidas, contadores de popularidade ou gamificação. | Princípio "Centrado em Cristo" do design |
 | RN-12 | Textos seguem o guia de comunicação da Igreja: nome completo na primeira menção, sem "SUD", "LDS" ou "mórmon"; símbolo oficial só com aprovação do VIO. | Guia de Comunicação da Igreja |
 
-A definir na spec de contas/papéis: se presidentes de organizações da unidade (Sociedade de Socorro, Quórum de Élderes, Primária, Moças, Rapazes) também publicam eventos e avisos, ou só o bispado.
+Presidentes de organizações da unidade (Sociedade de Socorro, Quórum de Élderes, Primária, Moças, Rapazes) são `unit_publisher`: publicam eventos e avisos da própria unidade e não veem pautas nem chamados.
 
 ## Entidades principais
 
 - **Unit** (unidade): a estaca ou uma das 6 unidades (alas e ramo). Tem cor fixa (`units` em `src/theme/theme.ts`).
 - **Profile** (perfil): uma pessoa com conta (`auth.users` 1–1 `profiles`). Tem N **Memberships**.
-- **Membership**: liga Profile a Unit com um **Role** (`member`, `unit_leader`, `stake_leader`, `admin`). Uma pessoa pode ter papéis em unidades diferentes.
+- **Membership**: liga Profile a Unit com um **Role** (`unit_leader`, `unit_publisher`, `stake_leader`, `admin`) e, opcionalmente, um `leadership_group` (`stake_presidency`, `bishops`, `presidents`). Membro comum não tem Membership: é só uma conta autenticada. Uma pessoa pode ter papéis em unidades diferentes.
 - **Event**: pertence a 1 Unit; tem tipo, início/fim, local, notas, links e opcionalmente público de push. Evento do tipo Reunião tem N **MeetingItems** (`agenda` | `decision` | `pending`).
 - **Post** (aviso do mural): pertence a 1 Unit; pode ser fixado; pode ter imagem.
 - **LeadershipPosition**: posição no organograma (unidade, chamado/cargo, nome exibido, ordem). Não precisa estar ligada a um Profile.
@@ -67,6 +67,7 @@ A definir na spec de contas/papéis: se presidentes de organizações da unidade
 | Apoio | Etapa em que a congregação apoia o chamado (no domingo) | `sustaining` | — |
 | Designação | Etapa final em que a pessoa é designada | `set_apart` | — |
 | Bispado / Presidência de ramo | Liderança de uma ala / de um ramo | `unit_leader` (role) | Liderança da estaca |
+| Publicador de unidade | Presidente de organização que publica pela própria unidade, sem ver pautas e chamados | `unit_publisher` (role) | Bispado (`unit_leader`) |
 | Liderança | Organograma público de quem serve onde | `leadership_positions` | Role / papel de acesso |
 | Perfil (de acesso) | Visitante, Membro, Líder (no design) | `role` (visitante = sem sessão) | `profiles` (dados da pessoa) |
 | Organizações | Sociedade de Socorro, Quórum de Élderes, Moças, Rapazes, Primária | `organization` (`relief_society`, `elders_quorum`, `young_women`, `young_men`, `primary`) | Unidade |

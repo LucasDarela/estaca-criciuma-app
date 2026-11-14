@@ -21,6 +21,7 @@ module.exports = {
     '!src/**/*.test.{ts,tsx}',
     '!src/app/**/_layout.tsx',
     '!src/i18n/locales/**',
+    '!src/lib/database.types.ts',
   ],
   coverageThreshold,
 };

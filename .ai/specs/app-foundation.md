@@ -1,6 +1,6 @@
 # Fundação do app: Supabase, dados base e permissões
 
-> **Status:** Pronta para planejamento
+> **Status:** Concluída
 > **Área:** `src/lib/supabase.ts`, `src/domain/permissions.ts`, `src/features/viewer/`, `supabase/migrations/`, `supabase/tests/`, `Makefile`, CI
 > **Última atualização:** 2026-11-13
 
