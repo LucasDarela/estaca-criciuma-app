@@ -35,7 +35,7 @@ Crie o projeto `estaca-criciuma` na organização, plano Free:
 ## d) Resend (e-mail do código de login)
 
 1. Crie a conta no Resend, se ainda não existir, com o e-mail da estaca e **2FA** ligado.
-2. Em Domains, adicione `estacacriciuma.com.br` (região `sa-east-1` se o Resend oferecer; ela vale só para o envio de e-mail).
+2. Em Domains, adicione `estacacriciuma.com.br` Se o Resend pedir uma região de envio, escolha `sa-east-1` (São Paulo): é a região do Resend, só para o envio de e-mail, e não tem relação com a região do Supabase.
 3. Na **Cloudflare** (DNS › Records), crie os registros que o Resend mostrar: SPF (TXT), DKIM (TXT ou CNAME) e o MX de retorno. Deixe todos em modo **DNS only** (nuvem cinza, sem proxy).
 4. Crie também o registro DMARC, TXT em `_dmarc`: `v=DMARC1; p=none; rua=mailto:<e-mail do admin técnico>`.
 5. No Resend, clique em Verify e espere o domínio ficar `Verified` (pode levar de minutos a horas).

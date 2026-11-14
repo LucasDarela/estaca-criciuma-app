@@ -1,4 +1,4 @@
-# Plano: Backend no Supabase Cloud (homologação e produção)
+# Plano: Backend no Supabase Cloud (projeto único de produção)
 
 > **Spec:** `.ai/specs/supabase-cloud.md`
 > **Criado em:** 2026-11-14
@@ -331,7 +331,7 @@ As tarefas T-01 a T-08 são executadas pelo agent `implementer` e verificáveis 
   - Cobre: CA-14
   - Verificar: `make lint`; `grep -rn -i 'self-hosted' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist . | grep -v '^./.ai/\(specs\|adrs\|plans\|assessments\)/' | grep -v '^./supabase/config.toml'` → nenhuma linha; `grep -n 'A definir' .ai/docs/ARCHITECTURE.md .ai/docs/SECURITY.md .ai/docs/O11Y.md` não mostra ambientes, backup nem uptime
 
-- [ ] **T-09 — Provisionar e executar o QA (sessão principal, com o usuário)**
+- [x] **T-09 — Provisionar e executar o QA (sessão principal, com o usuário)** — feita em 2026-11-14, exceto CA-12 em produção (adiado para `auth-account`, decisão 11 da spec)
   - Arquivos: `alterar infra/backup/age-recipients.txt` (chave pública real, item g)
   - O que fazer: seguir `provisioning.md` (a) a (k) e o roteiro de QA da spec (seção 12), anotando desvios no Registro de implementação.
   - Cobre: CA-01, CA-03 a CA-06, CA-08 a CA-13, CA-16
@@ -430,7 +430,7 @@ Na criação, São Paulo não estava disponível no plano Free, e o usuário cri
 | CA-04, CA-06, CA-16 | passou | Run 43630545216: aprovação do Environment `production` exigida; `pre-deploy-43630545216` enviado antes do `db push`; as 2 migrations aplicadas; passo de functions pulado (`no Edge Functions to deploy`) |
 | CA-08 | passou | Run 43630879874: artefato `backup-prod-2026-11-14` (só `.tar.gz.age`, cabeçalho `age-encryption.org/v1`, 0 ocorrências de `CREATE TABLE` em `strings`), retenção até 2026-12-14 |
 | CA-03 | passou | OTP para conta Outlook: remetente `Estaca Criciúma <nao-responda@estacacriciuma.com.br>`, `spf=pass`, `dkim=pass`, `dmarc=pass`, `compauth=pass` |
-| CA-07 | passou | Varredura do CA-07 sem ocorrências (só o próprio padrão na spec) |
+| CA-07 | passou | Varredura do CA-07: nenhuma chave real. A rodada 1 do assessment achou o texto de instrução `AGE-SECRET-KEY-1...` em `backup.md` (G-03); reescrito sem o literal, a varredura passou a voltar vazia |
 | CA-05 | passou | Supabase local com as 2 migrations; migration de teste com `create table public.ca05_probe` seguido de SQL inválido: `supabase db push --local` saiu com código 1; `migration list --local` continuou com 2 migrations; `ca05_probe` não existe (sem estado parcial). Migration de teste apagada |
 | CA-09 | passou | Run 43634006932 com `SUPABASE_DB_PASSWORD` errada em `production-backup`: `dump.sh` falhou (`error: dump failed`), upload pulado, nenhum artefato; log mostra só `SUPABASE_DB_PASSWORD: ***`; e-mail "Run failed" do GitHub recebido pelo admin. Senha restaurada; run 43634769428 voltou a passar |
 | CA-01 | passou | Projeto `estaca-criciuma`, plano Free, `us-east-1`, sem add-on pago (conferido pelo usuário) |
