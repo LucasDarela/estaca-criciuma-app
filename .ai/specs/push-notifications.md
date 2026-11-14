@@ -28,6 +28,7 @@ O aparelho (com ou sem conta) se registra para receber push das unidades escolhi
 | Sino na Agenda e rota `/notifications` provisória | `calendar` | Alterar: ponto de não lidas e tela real |
 | `profiles.organizations`, `memberships.leadership_group` | `app-foundation` | Usar para destinatários |
 | Perfil | `auth-account` | Alterar: seção `Avisos` |
+| `export_my_data`, `delete_my_account` | `auth-account` (exporta perfil e papéis) | Alterar `export_my_data` para incluir tokens e preferências de push (decisão 16 de `auth-account`); a exclusão já cobre pelo `on delete cascade` |
 | `units`, `can_publish` | `app-foundation` | Usar na Edge Function |
 | Projeto EAS | Não vinculado (`eas init` pendente) | Pré-requisito: `projectId` em `app.config.ts` para o token Expo |
 

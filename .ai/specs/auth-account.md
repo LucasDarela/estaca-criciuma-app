@@ -103,7 +103,7 @@ Uma pessoa entra com código por e-mail, aceita o consentimento no primeiro aces
 | -- | --------- |
 | RF-11 | `/profile` (aba Perfil do Membro; via avatar para todos): `ScreenHeader` `Perfil`; `Avatar large` + nome + e-mail; itens: `Nome`, `Unidade` (valor atual ou `Não informada`), `Idioma` (`Português (Brasil)`, `English (US)`, `Español (México)`), `Acessos` (só `stake_leader`/`admin`), `Exportar meus dados`, `Política de privacidade`, `Sair`, `Excluir conta` (texto `danger`). |
 | RF-12 | Editar `Nome` e `Unidade` usa as mesmas regras e mensagens de RF-08/RF-09; salvar mostra o toast `Perfil atualizado`. Mudar `Idioma` troca a interface na hora e grava `profiles.locale`. |
-| RF-13 | `Exportar meus dados`: RPC `export_my_data()` retorna JSON com perfil, papéis, anotações e preferências de push; o app salva `meus-dados-estaca-criciuma.json` e abre o compartilhamento do sistema. Botão em `loading` durante a geração. |
+| RF-13 | `Exportar meus dados`: RPC `export_my_data()` retorna JSON com perfil e papéis (as specs `notes` e `push-notifications` acrescentam anotações e preferências de push à mesma função, decisão 16); o app salva `meus-dados-estaca-criciuma.json` e abre o compartilhamento do sistema. Botão em `loading` durante a geração. |
 | RF-14 | `Excluir conta`: `Sheet` com título `Excluir conta`, texto `Isso apaga sua conta, suas anotações e suas preferências. Não dá para desfazer. Digite EXCLUIR para confirmar.`, campo de texto e botão `Excluir conta` (`danger`), habilitado só com o texto exatamente `EXCLUIR`. Confirmado: RPC `delete_my_account()` (RNF-06), encerra a sessão, vai para `/agenda` e mostra o toast `Conta excluída.` `Sair` encerra a sessão e vai para `/agenda`. |
 
 ### 7.4 Acessos
@@ -189,7 +189,7 @@ src/i18n/locales/*.json                       # chaves auth.*, account.*
 | CA-09 | RF-07, RF-08, RF-09, RF-10 | primeiro login | toco em `Começar` sem marcar o consentimento | vejo a mensagem de RF-09; marcando, o perfil é salvo com `consented_at` e vou para a Agenda |
 | CA-10 | RF-10 | a tela `/welcome` | saio sem concluir | a sessão é encerrada |
 | CA-11 | RF-11, RF-12 | perfil de membro | mudo o idioma para `English (US)` | a interface muda na hora e `profiles.locale = 'en-US'` |
-| CA-12 | RF-13 | perfil com anotações | toco em `Exportar meus dados` | abre o compartilhamento com `meus-dados-estaca-criciuma.json` contendo perfil, papéis, anotações e preferências |
+| CA-12 | RF-13 | perfil com papéis | toco em `Exportar meus dados` | abre o compartilhamento com `meus-dados-estaca-criciuma.json` contendo perfil e papéis |
 | CA-13 | RF-14, RNF-06 | o sheet de exclusão | digito `excluir` (minúsculo) | o botão continua desabilitado; com `EXCLUIR`, a conta e as anotações são apagadas, vou para a Agenda e vejo `Conta excluída.` |
 | CA-14 | RF-15 | conta `membro` | abro `/profile/access` | vejo `Acesso restrito` |
 | CA-15 | RF-16, RF-18 | conta `estaca` | concedo `Liderança da unidade` em `Ala Içara` com grupo `Bispos` a `membro@exemplo.org` | toast `Acesso concedido`, a linha aparece na lista e em `role_grants_log` |
@@ -244,6 +244,7 @@ Nenhuma decisão em aberto.
 | A5 | Exclusão de conta | Imediata, digitando `EXCLUIR` | padrão do projeto (DESIGN.md) |
 | A6 | Formato da exportação | JSON pelo compartilhamento do sistema | padrão do projeto |
 | 14 | Google e Apple | Fora desta entrega; só código por e-mail (2026-11-14) | usuário |
+| 16 | Exportação com dados de specs futuras | `export_my_data` sai com perfil e papéis; `notes` e `push-notifications` estendem a função. A exclusão já cobre as tabelas futuras pelo `on delete cascade` (2026-11-14) | usuário |
 | 15 | Template do e-mail e nome da chave | Template pt-BR com código em destaque e `PUBLISHABLE_KEY`, pendências levadas de `supabase-cloud` (assessment G-04, plano QA da T-09) (2026-11-14) | usuário |
 
 ## 15. Próximos passos (fora desta entrega)
