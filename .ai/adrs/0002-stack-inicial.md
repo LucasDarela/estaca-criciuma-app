@@ -3,6 +3,7 @@
 > **Status:** Aceito
 > **Data:** 2026-11-12
 > **Origem:** `/bootstrap-project`
+> **Hospedagem substituída por:** [0004](0004-supabase-cloud.md) (Supabase Cloud em vez de self-hosted; o resto da decisão continua valendo).
 
 ## Contexto
 

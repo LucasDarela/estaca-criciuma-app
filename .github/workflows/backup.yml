@@ -1,0 +1,39 @@
+name: Backup
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 03:00 America/Sao_Paulo
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-prod
+  cancel-in-progress: false
+
+jobs:
+  backup-prod:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production-backup
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.84.2
+      - run: sudo apt-get install -y -qq age
+      - run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+      - id: name
+        run: echo "name=backup-prod-$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - run: infra/backup/dump.sh "${{ steps.name.outputs.name }}.tar.gz.age"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.name }}
+          path: ${{ steps.name.outputs.name }}.tar.gz.age
+          retention-days: 30
+          if-no-files-found: error

@@ -6,7 +6,7 @@ App mobile (iOS e Android) da Estaca Criciúma de A Igreja de Jesus Cristo dos S
 
 Reúne em um só lugar a **agenda** da estaca e das unidades (Alas Criciúma 1, 2 e 3, Içara, Araranguá e Ramo Gaivota), o **mural** de avisos, o **organograma da liderança**, **anotações pessoais**, o **acompanhamento de chamados** pelos líderes e **notificações push** por unidade. Agenda, mural e liderança são públicos; o restante exige login.
 
-- **Stack:** Expo (React Native) + TypeScript, expo-router, Supabase self-hosted (Postgres + RLS, Auth, Edge Functions), TanStack Query, Skia, i18next.
+- **Stack:** Expo (React Native) + TypeScript, expo-router, Supabase Cloud (plano Free, região us-east-1; Postgres + RLS, Auth, Edge Functions), TanStack Query, Skia, i18next.
 - **Idiomas:** interface em pt-BR (padrão), en-US e es-MX; código em inglês.
 - **Estágio:** MVP para App Store e Google Play.
 - **Contexto completo:** [`AGENTS.md`](AGENTS.md) e [`.ai/docs/`](.ai/docs/). Design: projeto "Design System" no claude.ai/design.
