@@ -435,6 +435,7 @@ Na criação, São Paulo não estava disponível no plano Free, e o usuário cri
 | CA-09 | passou | Run 43634006932 com `SUPABASE_DB_PASSWORD` errada em `production-backup`: `dump.sh` falhou (`error: dump failed`), upload pulado, nenhum artefato; log mostra só `SUPABASE_DB_PASSWORD: ***`; e-mail "Run failed" do GitHub recebido pelo admin. Senha restaurada; run 43634769428 voltou a passar |
 | CA-01 | passou | Projeto `estaca-criciuma`, plano Free, `us-east-1`, sem add-on pago (conferido pelo usuário) |
 | CA-11 | passou | SQL Editor da produção: `public.units` = 7; contas `@exemplo.org` em `auth.users` = 0 |
+| CA-10 | passou | `backup-prod-2026-11-14` decifrado com a chave privada (lida da área de transferência, sem gravar em disco), restaurado num Supabase local novo pelo procedimento A de `backup.md`: `units` = 7, `profiles` = 0, `memberships` = 0, iguais à produção no momento do dump. Exigiu fixar Auth `v2.197.0` e Storage `v1.94.2` (ver observação). Arquivos em texto claro apagados ao final |
 | CA-13 | passou | Organização do Supabase só com o admin técnico; 2FA ligado no Supabase e no Resend (conferido pelo usuário) |
 
 Observações:
@@ -444,4 +445,6 @@ Observações:
 - O Supabase chama a anon key de **publishable key** (`sb_publishable_...`) e a service_role de **secret key** (`sb_secret_...`). Renomear em `.env.example` e no runbook na spec `auth-account`, quando o app passar a usar a chave.
 - CA-12 na produção depende de linha em `profiles`, que só existe depois do cadastro do app (`auth-account`); até lá, o snippet deve retornar `user has no profile yet`.
 
-Pendentes: CA-10 (restauração, precisa da chave privada `age`) e CA-12 (depende de `auth-account`).
+- **Desvio encontrado no CA-10:** a primeira restauração falhou. A imagem local da CLI 2.84.2 sobe Auth `v2.188.1` e Storage `v1.44.11`, mas o `data.sql` da produção tem colunas de Auth `v2.197.0` e Storage `v1.94.2` (`custom_claims_allowlist` em `auth.custom_oauth_providers`, `versioning_status` em `storage.buckets`). Como a restauração é numa transação só, nada foi gravado. Correção: o procedimento A de `backup.md` passou a fixar as versões de Auth e Storage da produção em `supabase/.temp/gotrue-version` e `storage-version` antes do `supabase start`; o decifrar passou a ler a chave com `<(pbpaste)`. Com isso a restauração passou. O teste local da T-04 não pegava isso porque dump e restauração usavam as mesmas imagens.
+
+Pendente: CA-12 na produção (`granted` para o admin técnico), que depende de `auth-account` criar o perfil. Os 4 casos do snippet já passaram no Supabase local (T-02).
