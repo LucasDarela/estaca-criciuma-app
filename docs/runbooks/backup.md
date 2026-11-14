@@ -16,20 +16,31 @@ gh run download <run-id> -n <nome-do-artefato>
 
 ## Decifrar e extrair
 
-A chave privada vem do gerenciador de senhas; salve-a num arquivo temporário e apague-o ao final.
+A chave privada vem do gerenciador de senhas. No macOS, leia a chave da área de transferência, sem gravá-la em disco: cole o comando no terminal, **depois** copie só a linha `AGE-SECRET-KEY-1...` e então aperte Enter (se copiar a chave antes, a área de transferência terá o comando).
 
 ```bash
-age -d -i <arquivo-da-chave-privada> -o backup.tar.gz <artefato>.tar.gz.age
+age -d -i <(pbpaste) -o backup.tar.gz <artefato>.tar.gz.age
 mkdir restore && tar -xzf backup.tar.gz -C restore
 ```
+
+Sem `pbpaste`, salve a chave num arquivo temporário, use `-i <arquivo>` e apague-o ao final. Ao terminar, copie outro texto para limpar a área de transferência.
 
 ## A) Testar a restauração num Supabase local novo
 
 Serve para o teste trimestral e para conferir um backup. Não toca na produção.
 
+O `data.sql` traz as tabelas internas de `auth` e `storage` na versão da produção. O Supabase Cloud atualiza esses serviços antes da imagem local da CLI, e uma coluna a mais faz a restauração inteira falhar (ex.: `column "custom_claims_allowlist" of relation "custom_oauth_providers" does not exist`). Por isso o Supabase de teste sobe **com as mesmas versões de Auth e Storage da produção**:
+
+- Auth: painel › Project Settings › Infrastructure (linha Auth, ex.: `2.197.0`).
+- Storage: `curl -s https://<project-ref>.supabase.co/storage/v1/version` (público, ex.: `1.94.2`).
+
 ```bash
 supabase stop                                  # na pasta do projeto, se estiver rodando
-tmp="$(mktemp -d)" && (cd "$tmp" && supabase init && supabase start)
+tmp="$(mktemp -d)" && (cd "$tmp" && supabase init \
+  && mkdir -p supabase/.temp \
+  && echo "v<versão-do-auth>" > supabase/.temp/gotrue-version \
+  && echo "v<versão-do-storage>" > supabase/.temp/storage-version \
+  && supabase start)
 psql --single-transaction --variable ON_ERROR_STOP=1 \
   --file restore/roles.sql --file restore/schema.sql \
   --command 'SET session_replication_role = replica' \
@@ -91,3 +102,4 @@ Os backups existentes ficam ilegíveis. Gere um par novo (`age-keygen`, item g d
 
 | Data | Artefato | `units` | `profiles` | `memberships` | Quem |
 | --- | --- | --- | --- | --- | --- |
+| 2026-11-14 | `backup-prod-2026-11-14` (run 43630879874) | 7 | 0 | 0 | admin técnico (QA da spec `supabase-cloud`; Auth `v2.197.0`, Storage `v1.94.2`) |
