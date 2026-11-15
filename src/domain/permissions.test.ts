@@ -2,7 +2,6 @@ import {
   canLead,
   canPublish,
   isAdmin,
-  isLeadershipGroup,
   isRole,
   isStakeLeader,
   leadableUnits,
@@ -13,22 +12,11 @@ import {
 import { unitIds, type UnitId } from './units';
 
 const session = { userId: 'u1' };
-const unitLeader = (unitId: UnitId): Membership => ({
-  unitId,
-  role: 'unit_leader',
-  leadershipGroup: 'bishops',
-});
-const unitPublisher = (unitId: UnitId): Membership => ({
-  unitId,
-  role: 'unit_publisher',
-  leadershipGroup: null,
-});
-const stakeLeader: Membership = {
-  unitId: 'estaca',
-  role: 'stake_leader',
-  leadershipGroup: 'stake_presidency',
-};
-const admin: Membership = { unitId: 'estaca', role: 'admin', leadershipGroup: null };
+const unitLeader = (unitId: UnitId): Membership => ({ unitId, role: 'unit_leader' });
+const unitPublisher = (unitId: UnitId): Membership => ({ unitId, role: 'unit_publisher' });
+const stakeLeader: Membership = { unitId: 'estaca', role: 'stake_leader' };
+const stakePublisher: Membership = { unitId: 'estaca', role: 'stake_publisher' };
+const admin: Membership = { unitId: 'estaca', role: 'admin' };
 
 describe('CA-08: viewerKind', () => {
   it('is visitor without a session', () => {
@@ -53,6 +41,10 @@ describe('CA-08: viewerKind', () => {
 
   it('is leader with stake_leader', () => {
     expect(viewerKind(session, [stakeLeader])).toBe('leader');
+  });
+
+  it('[roles] CA-06: is member with stake_publisher alone', () => {
+    expect(viewerKind(session, [stakePublisher])).toBe('member');
   });
 
   it('is member with admin alone', () => {
@@ -107,6 +99,15 @@ describe('CA-08: canPublish / canLead', () => {
     expect(leadableUnits(m)).toEqual([...unitIds]);
   });
 
+  it('[roles] CA-06: stake_publisher publishes only to the stake and never leads', () => {
+    const m = [stakePublisher];
+    expect(canPublish(m, 'estaca')).toBe(true);
+    expect(canPublish(m, 'icara')).toBe(false);
+    expect(canLead(m, 'estaca')).toBe(false);
+    expect(publishableUnits(m)).toEqual(['estaca']);
+    expect(leadableUnits(m)).toEqual([]);
+  });
+
   it('admin alone: publishes everywhere, leads nowhere (RN-04)', () => {
     const m = [admin];
     for (const id of unitIds) {
@@ -132,11 +133,10 @@ describe('CA-08: canPublish / canLead', () => {
 });
 
 describe('role guards and flags', () => {
-  it('isRole and isLeadershipGroup', () => {
+  it('isRole', () => {
     expect(isRole('admin')).toBe(true);
+    expect(isRole('stake_publisher')).toBe(true);
     expect(isRole('member')).toBe(false);
-    expect(isLeadershipGroup('bishops')).toBe(true);
-    expect(isLeadershipGroup('x')).toBe(false);
   });
 
   it('isAdmin and isStakeLeader', () => {

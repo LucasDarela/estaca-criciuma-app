@@ -155,30 +155,107 @@
       "grant": "Conceder acesso",
       "email": "E-mail da conta",
       "unit": "Unidade",
-      "role": "Papel",
-      "group": "Grupo de liderança",
       "submit": "Conceder",
-      "granted": "Acesso concedido",
+      "granted": "Chamado concedido",
       "noAccount": "Nenhuma conta com este e-mail. Peça para a pessoa entrar no app primeiro.",
-      "alreadyGranted": "Esta pessoa já tem este acesso.",
-      "revokeTitle": "Remover acesso?",
-      "revokeMessage": "{{name}} deixa de ter \"{{role}}\" em {{unit}}.",
+      "alreadyGranted": "Esta pessoa já tem este chamado nesta unidade.",
+      "revokeTitle": "Remover chamado?",
+      "revokeMessage": "{{name}} deixa de ter o chamado \"{{calling}}\" em {{unit}}.",
       "revoke": "Remover",
       "cannotRevokeSelf": "Você não pode remover o próprio acesso.",
       "noHomeUnit": "Esta pessoa precisa informar a unidade no Perfil antes de receber um acesso.",
-      "wrongUnit": "Esta pessoa frequenta outra unidade. Papéis de unidade só podem ser dados na unidade dela."
-    },
-    "roles": {
-      "unit_leader": "Liderança da unidade",
+      "wrongUnit": "Esta pessoa frequenta outra unidade. Papéis de unidade só podem ser dados na unidade dela.",
+      "calling": "Chamado",
+      "callingPlaceholder": "Selecione",
+      "admin": "Administração",
+      "revoked": "Chamado removido",
+      "itemA11y": "{{name}}, {{calling}}, {{unit}}"
+    }
+  },
+  "callings": {
+    "access": {
+      "none": "Nenhum",
       "unit_publisher": "Publicação da unidade",
-      "stake_leader": "Liderança da estaca",
-      "admin": "Administração"
+      "unit_leader": "Liderança da unidade",
+      "stake_publisher": "Publicação da estaca",
+      "stake_leader": "Liderança da estaca"
+    },
+    "levels": {
+      "stake": "Estaca",
+      "ward": "Ala",
+      "branch": "Ramo",
+      "ward_branch": "Ala e ramo"
     },
     "groups": {
       "stake_presidency": "Presidência da estaca",
-      "bishops": "Bispos",
-      "presidents": "Presidentes",
+      "high_council": "Sumo conselho",
+      "bishoprics": "Bispados",
+      "elders_quorum_presidency": "Presidências do Quórum de Élderes",
+      "relief_society_presidency": "Presidências da Sociedade de Socorro",
+      "young_women_presidency": "Presidências das Moças",
+      "primary_presidency": "Presidências da Primária",
+      "sunday_school_presidency": "Presidências da Escola Dominical",
+      "clerks": "Secretários",
+      "missionaries": "Missionários",
+      "temple_family_history_workers": "Consultores de Templo e História da Família",
+      "music": "Música",
+      "young_single_adult_leaders": "Líderes de JAS",
       "none": "Nenhum"
+    },
+    "sections": {
+      "stake_presidency": "Presidência da estaca",
+      "high_council": "Sumo conselho",
+      "stake_clerks": "Secretários da estaca",
+      "stake_organizations": "Organizações da estaca",
+      "bishopric": "Bispado",
+      "unit_clerks": "Secretários",
+      "unit_organizations": "Organizações",
+      "bishopric_branch": "Presidência do ramo",
+      "none": "Não aparece"
+    },
+    "mine": {
+      "title": "MEUS CHAMADOS",
+      "showInOrgChart": "Mostrar no organograma",
+      "showInOrgChartA11y": "Mostrar {{calling}} no organograma"
+    },
+    "consent": {
+      "message": "Você recebeu o chamado {{calling}} em {{unit}}. Quer que seu nome e seu chamado apareçam no organograma público da estaca?",
+      "show": "Mostrar",
+      "notNow": "Agora não",
+      "shown": "Seu nome aparece no organograma."
+    },
+    "catalog": {
+      "title": "Catálogo de chamados",
+      "new": "Novo chamado",
+      "search": "Buscar chamado",
+      "tabStake": "Estaca",
+      "tabUnits": "Alas e ramo",
+      "inactive": "Inativo",
+      "empty": "Nenhum chamado encontrado para \"{{term}}\"."
+    },
+    "form": {
+      "namePt": "Nome (português)",
+      "nameEn": "Nome (inglês)",
+      "nameEs": "Nome (espanhol)",
+      "level": "Nível",
+      "access": "Acesso",
+      "group": "Grupo de aviso",
+      "section": "Seção do organograma",
+      "active": "Ativo",
+      "save": "Salvar",
+      "saved": "Chamado salvo",
+      "errors": {
+        "nameRequired": "Informe o nome.",
+        "nameLength": "Use entre 2 e 80 caracteres.",
+        "nameTaken": "Já existe um chamado com este nome neste nível.",
+        "levelLocked": "Não dá para mudar o nível de um chamado que alguém tem.",
+        "inUse": "Remova este chamado das {{count}} pessoas que o têm antes de desativá-lo."
+      },
+      "confirmAccess": {
+        "title": "Mudar o acesso?",
+        "message": "{{count}} pessoas com este chamado passam a ter \"{{access}}\".",
+        "confirm": "Mudar"
+      }
     }
   }
 }

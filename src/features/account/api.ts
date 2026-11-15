@@ -1,7 +1,8 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
-import { isLeadershipGroup, isRole, type LeadershipGroup, type Role } from '@/domain/permissions';
+import { callingFromRow, type Calling } from '@/domain/callings';
+import { normalizeEmail } from '@/domain/email';
 import type { Locale } from '@/domain/profile';
 import { isUnitId, type UnitId } from '@/domain/units';
 import { signOut } from '@/lib/authSession';
@@ -17,6 +18,13 @@ export type AccountErrorCode =
   | 'wrong_unit'
   | 'home_unit_locked'
   | 'not_authorized'
+  | 'invalid_calling'
+  | 'invalid_unit_for_calling'
+  | 'name_taken'
+  | 'level_locked'
+  | 'in_use'
+  | 'invalid_access'
+  | 'invalid_section'
   | 'network'
   | 'unknown';
 
@@ -36,6 +44,13 @@ const knownCodes: readonly AccountErrorCode[] = [
   'no_home_unit',
   'wrong_unit',
   'home_unit_locked',
+  'invalid_calling',
+  'invalid_unit_for_calling',
+  'name_taken',
+  'level_locked',
+  'in_use',
+  'invalid_access',
+  'invalid_section',
 ];
 
 /** RPCs return a short code in `message`; a failed fetch is `network`; anything else is `unknown`. */
@@ -87,59 +102,140 @@ export async function deleteMyAccount(): Promise<void> {
 }
 
 export type AccessEntry = {
-  membershipId: string;
+  /** `member_calls.id` for a calling, `memberships.id` for the admin. */
+  entryId: string;
+  kind: 'calling' | 'admin';
   userId: string;
   displayName: string;
   email: string;
   unitId: UnitId;
-  role: Role;
-  leadershipGroup: LeadershipGroup | null;
+  /** Null for the admin ("Administração"). */
+  calling: Pick<Calling, 'id' | 'namePt' | 'nameEn' | 'nameEs'> | null;
 };
 
 export const accessQueryKey = ['access'] as const;
 
-/** RF-15. Rows with an unknown unit or role are dropped (never show or grant on unexpected data). */
+/** RF-12. Rows with an unknown unit or kind are dropped (never show or grant on unexpected data). */
 export async function listAccess(): Promise<AccessEntry[]> {
   const { data, error } = await getSupabase().rpc('list_access');
   if (error) throw toAccountError(error);
   const entries: AccessEntry[] = [];
   for (const row of data ?? []) {
-    if (!isUnitId(row.unit_id) || !isRole(row.role)) continue;
-    entries.push({
-      membershipId: row.membership_id,
+    if (!isUnitId(row.unit_id)) continue;
+    const base = {
+      entryId: row.entry_id,
       userId: row.user_id,
       displayName: row.display_name,
       email: row.email,
       unitId: row.unit_id,
-      role: row.role,
-      leadershipGroup:
-        row.leadership_group && isLeadershipGroup(row.leadership_group)
-          ? row.leadership_group
-          : null,
-    });
+    };
+    if (row.kind === 'admin') {
+      entries.push({ ...base, kind: 'admin', calling: null });
+    } else if (row.kind === 'calling' && row.calling_id && row.calling_name_pt) {
+      entries.push({
+        ...base,
+        kind: 'calling',
+        calling: {
+          id: row.calling_id,
+          namePt: row.calling_name_pt,
+          nameEn: row.calling_name_en,
+          nameEs: row.calling_name_es,
+        },
+      });
+    }
   }
   return entries;
 }
 
-export async function grantRole(input: {
+/** RF-13. The e-mail is normalized here; the database revalidates every rule. */
+export async function grantCalling(input: {
   email: string;
   unitId: UnitId;
-  role: Role;
-  leadershipGroup: LeadershipGroup | null;
+  callingId: string;
 }): Promise<void> {
-  const { data, error } = await getSupabase().rpc('grant_role', {
-    p_email: input.email,
+  const { data, error } = await getSupabase().rpc('grant_calling', {
+    p_email: normalizeEmail(input.email),
     p_unit_id: input.unitId,
-    p_role: input.role,
-    // The generated type is `string`, but the SQL function accepts null (no group).
-    p_leadership_group: input.leadershipGroup as string,
+    p_calling_id: input.callingId,
   });
   if (error) throw toAccountError(error);
-  track('role_granted', { membership_id: data });
+  track('calling_granted', { membership_id: data, calling_id: input.callingId });
 }
 
-export async function revokeRole(membershipId: string): Promise<void> {
-  const { error } = await getSupabase().rpc('revoke_role', { p_membership_id: membershipId });
+/** RF-14. */
+export async function revokeCalling(memberCallId: string): Promise<void> {
+  const { error } = await getSupabase().rpc('revoke_calling', { p_member_call_id: memberCallId });
   if (error) throw toAccountError(error);
-  track('role_revoked', { membership_id: membershipId });
+  track('calling_revoked', { membership_id: memberCallId });
+}
+
+/** RF-15: only the admin can give "Administração". */
+export async function grantAdmin(email: string): Promise<void> {
+  const { error } = await getSupabase().rpc('grant_admin', { p_email: normalizeEmail(email) });
+  if (error) throw toAccountError(error);
+  track('role_granted');
+}
+
+export async function revokeAdmin(userId: string): Promise<void> {
+  const { error } = await getSupabase().rpc('revoke_admin', { p_user_id: userId });
+  if (error) throw toAccountError(error);
+  track('role_revoked');
+}
+
+export const callingCatalogQueryKey = ['callingCatalog'] as const;
+
+/** RF-06: the active callings for everybody; the admin also gets the inactive ones. */
+export async function fetchCallingCatalog(): Promise<Calling[]> {
+  const { data, error } = await getSupabase()
+    .from('calling_catalog')
+    .select(
+      'id, name_pt, name_en, name_es, level, access, notify_group, org_chart_section, sort_order, active',
+    )
+    .order('level')
+    .order('sort_order');
+  if (error) throw toAccountError(error);
+  const catalog: Calling[] = [];
+  for (const row of data ?? []) {
+    const calling = callingFromRow(row);
+    if (calling) catalog.push(calling);
+  }
+  return catalog;
+}
+
+/** RF-07, RF-21. `id: null` creates a calling. Returns the calling id. */
+export async function saveCalling(
+  input: Omit<Calling, 'id' | 'sortOrder'> & { id: string | null },
+): Promise<string> {
+  // The generated types say `string`, but the SQL function accepts null for these arguments.
+  const { data, error } = await getSupabase().rpc('save_calling', {
+    p_id: input.id as string,
+    p_name_pt: input.namePt,
+    p_name_en: input.nameEn as string,
+    p_name_es: input.nameEs as string,
+    p_level: input.level,
+    p_access: input.access,
+    p_notify_group: input.notifyGroup as string,
+    p_org_chart_section: input.orgChartSection as string,
+    p_active: input.active,
+  });
+  if (error) throw toAccountError(error);
+  track('calling_catalog_saved', { calling_id: data });
+  return data;
+}
+
+/** RF-21, RF-22: how many people have the calling (admin only). */
+export async function callingHolderCount(id: string): Promise<number> {
+  const { data, error } = await getSupabase().rpc('calling_holder_count', { p_id: id });
+  if (error) throw toAccountError(error);
+  return data;
+}
+
+/** RF-17, RF-19. */
+export async function setOrgChartConsent(memberCallId: string, accepted: boolean): Promise<void> {
+  const { error } = await getSupabase().rpc('set_org_chart_consent', {
+    p_member_call_id: memberCallId,
+    p_accepted: accepted,
+  });
+  if (error) throw toAccountError(error);
+  track('org_chart_consent_changed', { membership_id: memberCallId });
 }

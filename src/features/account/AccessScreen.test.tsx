@@ -8,7 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import type { Membership } from '@/domain/permissions';
 
-import { listAccess, revokeRole, type AccessEntry } from './api';
+import { listAccess, revokeAdmin, revokeCalling, type AccessEntry } from './api';
 import { AccessScreen } from './AccessScreen';
 
 let mockMemberships: Membership[] = [];
@@ -16,8 +16,11 @@ jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn() }) }));
 jest.mock('./api', () => ({
   ...jest.requireActual('./api'),
   listAccess: jest.fn(),
-  revokeRole: jest.fn(),
-  grantRole: jest.fn(),
+  revokeCalling: jest.fn(),
+  revokeAdmin: jest.fn(),
+  grantCalling: jest.fn(),
+  grantAdmin: jest.fn(),
+  fetchCallingCatalog: jest.fn().mockResolvedValue([]),
 }));
 jest.mock('../viewer/ViewerProvider', () => ({
   useViewer: () => ({ userId: 'u-estaca', memberships: mockMemberships }),
@@ -30,22 +33,36 @@ const metrics = {
 
 const entries: AccessEntry[] = [
   {
-    membershipId: 'm-estaca',
+    entryId: 'mc-estaca',
+    kind: 'calling',
     userId: 'u-estaca',
     displayName: 'Daniela Exemplo',
     email: 'estaca@exemplo.org',
     unitId: 'estaca',
-    role: 'stake_leader',
-    leadershipGroup: 'stake_presidency',
+    calling: {
+      id: 'stake_first_counselor',
+      namePt: 'Primeiro Conselheiro na Presidência da Estaca',
+      nameEn: null,
+      nameEs: null,
+    },
   },
   {
-    membershipId: 'm-bispo',
+    entryId: 'm-admin',
+    kind: 'admin',
+    userId: 'u-admin',
+    displayName: 'Eduardo Exemplo',
+    email: 'admin@exemplo.org',
+    unitId: 'estaca',
+    calling: null,
+  },
+  {
+    entryId: 'mc-bispo',
+    kind: 'calling',
     userId: 'u-bispo',
     displayName: 'Carlos Exemplo',
     email: 'bispo@exemplo.org',
     unitId: 'criciuma1',
-    role: 'unit_leader',
-    leadershipGroup: 'bishops',
+    calling: { id: 'bishop', namePt: 'Bispo', nameEn: 'Bishop', nameEs: 'Obispo' },
   },
 ];
 
@@ -65,10 +82,11 @@ async function setup() {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockMemberships = [{ unitId: 'estaca', role: 'stake_leader', leadershipGroup: null }];
+  mockMemberships = [{ unitId: 'estaca', role: 'stake_leader' }];
   jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   (listAccess as jest.Mock).mockResolvedValue(entries);
-  (revokeRole as jest.Mock).mockResolvedValue(undefined);
+  (revokeCalling as jest.Mock).mockResolvedValue(undefined);
+  (revokeAdmin as jest.Mock).mockResolvedValue(undefined);
 });
 afterEach(() => jest.restoreAllMocks());
 
@@ -80,33 +98,54 @@ describe('AccessScreen', () => {
     expect(listAccess).not.toHaveBeenCalled();
   });
 
-  it('lists people grouped by unit with e-mail, role and group', async () => {
+  it('[roles] CA-09: lists people grouped by unit with e-mail and calling', async () => {
     await setup();
     expect(await screen.findByText('Daniela Exemplo')).toBeTruthy();
     expect(screen.getByText('Estaca')).toBeTruthy();
     expect(screen.getByText('Criciúma 1')).toBeTruthy();
-    expect(screen.getByText('bispo@exemplo.org · Liderança da unidade · Bispos')).toBeTruthy();
+    expect(screen.getByText('bispo@exemplo.org · Bispo')).toBeTruthy();
+    expect(screen.getByText('admin@exemplo.org · Administração')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Conceder acesso' })).toBeTruthy();
   });
 
-  it('CA-18: tapping the own item shows the message and does not call revokeRole', async () => {
+  it('[roles] RNF-07: each item is announced as name, calling, unit', async () => {
+    await setup();
+    expect(
+      await screen.findByRole('button', { name: 'Carlos Exemplo, Bispo, Criciúma 1' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Eduardo Exemplo, Administração, Estaca' }),
+    ).toBeTruthy();
+  });
+
+  it('CA-18: tapping the own item shows the message and does not revoke', async () => {
     await setup();
     await fireEvent.press(await screen.findByRole('button', { name: /Daniela Exemplo/ }));
     expect(await screen.findByText('Você não pode remover o próprio acesso.')).toBeTruthy();
-    expect(screen.queryByText('Remover acesso?')).toBeNull();
-    expect(revokeRole).not.toHaveBeenCalled();
+    expect(screen.queryByText('Remover chamado?')).toBeNull();
+    expect(revokeCalling).not.toHaveBeenCalled();
   });
 
-  it('revoking another item asks first and calls revokeRole after the confirmation', async () => {
+  it('[roles] CA-12: removing a calling asks first, calls revokeCalling and shows the toast', async () => {
     await setup();
     await fireEvent.press(await screen.findByRole('button', { name: /Carlos Exemplo/ }));
-    expect(screen.getByText('Remover acesso?')).toBeTruthy();
+    expect(screen.getByText('Remover chamado?')).toBeTruthy();
     expect(
-      screen.getByText('Carlos Exemplo deixa de ter "Liderança da unidade" em Criciúma 1.'),
+      screen.getByText('Carlos Exemplo deixa de ter o chamado "Bispo" em Criciúma 1.'),
     ).toBeTruthy();
-    expect(revokeRole).not.toHaveBeenCalled();
+    expect(revokeCalling).not.toHaveBeenCalled();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Remover' }));
-    await waitFor(() => expect(revokeRole).toHaveBeenCalledWith('m-bispo'));
+    await waitFor(() => expect(revokeCalling).toHaveBeenCalledWith('mc-bispo'));
+    expect(await screen.findByText('Chamado removido')).toBeTruthy();
+  });
+
+  it('[roles] removing Administração calls revokeAdmin with the user id', async () => {
+    mockMemberships = [{ unitId: 'estaca', role: 'admin' }];
+    await setup();
+    await fireEvent.press(await screen.findByRole('button', { name: /Eduardo Exemplo/ }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Remover' }));
+    await waitFor(() => expect(revokeAdmin).toHaveBeenCalledWith('u-admin'));
+    expect(revokeCalling).not.toHaveBeenCalled();
   });
 });

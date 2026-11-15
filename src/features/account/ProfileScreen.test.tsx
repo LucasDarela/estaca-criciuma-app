@@ -83,7 +83,7 @@ describe('ProfileScreen', () => {
   });
 
   it('Acessos appears for a stake leader and opens /profile/access', async () => {
-    mockMemberships = [{ unitId: 'estaca', role: 'stake_leader', leadershipGroup: null }];
+    mockMemberships = [{ unitId: 'estaca', role: 'stake_leader' }];
     await setup();
     await fireEvent.press(screen.getByRole('button', { name: 'Acessos' }));
     expect(mockPush).toHaveBeenCalledWith('/profile/access');

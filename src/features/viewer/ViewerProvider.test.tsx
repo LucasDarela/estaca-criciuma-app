@@ -2,7 +2,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
+import type { Calling, MemberCall } from '@/domain/callings';
 import type { ViewerSession } from '@/domain/permissions';
+import { tabsFor } from '@/domain/tabs';
 
 import { fetchViewerData, viewerQueryKey, type ViewerData } from './api';
 import { useViewer, ViewerProvider } from './ViewerProvider';
@@ -13,8 +15,22 @@ const fetchMock = fetchViewerData as jest.Mock;
 
 const leaderData: ViewerData = {
   profile: null,
-  memberships: [{ unitId: 'criciuma1', role: 'unit_leader', leadershipGroup: 'bishops' }],
+  memberships: [{ unitId: 'criciuma1', role: 'unit_leader' }],
+  calls: [],
 };
+
+const calling = (id: string, access: Calling['access'], level: Calling['level']): Calling => ({
+  id,
+  namePt: id,
+  nameEn: null,
+  nameEs: null,
+  level,
+  access,
+  notifyGroup: null,
+  orgChartSection: null,
+  sortOrder: 10,
+  active: true,
+});
 
 function setup(session: ViewerSession | null, queryClient = newClient()) {
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -51,6 +67,32 @@ describe('ViewerProvider', () => {
     expect(result.current.canLead('criciuma1')).toBe(true);
     expect(result.current.canLead('icara')).toBe(false);
     expect(result.current.leadableUnits).toEqual(['criciuma1']);
+  });
+
+  it('[roles] CA-07: high_councilor and sunday_school_teacher make a leader with the Chamados tab', async () => {
+    const calls: MemberCall[] = [
+      {
+        id: 'mc1',
+        unitId: 'estaca',
+        calling: calling('high_councilor', 'stake_leader', 'stake'),
+        orgChartConsent: null,
+      },
+      {
+        id: 'mc2',
+        unitId: 'criciuma3',
+        calling: calling('sunday_school_teacher', 'none', 'ward_branch'),
+        orgChartConsent: null,
+      },
+    ];
+    fetchMock.mockResolvedValue({
+      profile: null,
+      memberships: [{ unitId: 'estaca', role: 'stake_leader' }],
+      calls,
+    });
+    const { result } = await setup({ userId: 'u-sumo' });
+    await waitFor(() => expect(result.current.kind).toBe('leader'));
+    expect(tabsFor(result.current.kind).map((tab) => tab.route)).toContain('callings');
+    expect(result.current.calls).toHaveLength(2);
   });
 
   it('CA-11: a failed load with no cache is a member without permissions', async () => {

@@ -155,30 +155,107 @@
       "grant": "Grant access",
       "email": "Account email",
       "unit": "Unit",
-      "role": "Role",
-      "group": "Leadership group",
       "submit": "Grant",
-      "granted": "Access granted",
+      "granted": "Calling granted",
       "noAccount": "No account with this email. Ask the person to sign in to the app first.",
-      "alreadyGranted": "This person already has this access.",
-      "revokeTitle": "Remove access?",
-      "revokeMessage": "{{name}} will no longer have \"{{role}}\" in {{unit}}.",
+      "alreadyGranted": "This person already has this calling in this unit.",
+      "revokeTitle": "Remove calling?",
+      "revokeMessage": "{{name}} will no longer have the calling \"{{calling}}\" in {{unit}}.",
       "revoke": "Remove",
       "cannotRevokeSelf": "You cannot remove your own access.",
       "noHomeUnit": "This person needs to set their unit in Profile before receiving access.",
-      "wrongUnit": "This person attends another unit. Unit roles can only be given in their own unit."
-    },
-    "roles": {
-      "unit_leader": "Unit leadership",
+      "wrongUnit": "This person attends another unit. Unit roles can only be given in their own unit.",
+      "calling": "Calling",
+      "callingPlaceholder": "Select",
+      "admin": "Administration",
+      "revoked": "Calling removed",
+      "itemA11y": "{{name}}, {{calling}}, {{unit}}"
+    }
+  },
+  "callings": {
+    "access": {
+      "none": "None",
       "unit_publisher": "Unit publishing",
-      "stake_leader": "Stake leadership",
-      "admin": "Administration"
+      "unit_leader": "Unit leadership",
+      "stake_publisher": "Stake publishing",
+      "stake_leader": "Stake leadership"
+    },
+    "levels": {
+      "stake": "Stake",
+      "ward": "Ward",
+      "branch": "Branch",
+      "ward_branch": "Ward and branch"
     },
     "groups": {
       "stake_presidency": "Stake presidency",
-      "bishops": "Bishops",
-      "presidents": "Presidents",
+      "high_council": "High council",
+      "bishoprics": "Bishoprics",
+      "elders_quorum_presidency": "Elders quorum presidencies",
+      "relief_society_presidency": "Relief Society presidencies",
+      "young_women_presidency": "Young Women presidencies",
+      "primary_presidency": "Primary presidencies",
+      "sunday_school_presidency": "Sunday School presidencies",
+      "clerks": "Clerks",
+      "missionaries": "Missionaries",
+      "temple_family_history_workers": "Temple and family history consultants",
+      "music": "Music",
+      "young_single_adult_leaders": "Young single adult leaders",
       "none": "None"
+    },
+    "sections": {
+      "stake_presidency": "Stake presidency",
+      "high_council": "High council",
+      "stake_clerks": "Stake clerks",
+      "stake_organizations": "Stake organizations",
+      "bishopric": "Bishopric",
+      "unit_clerks": "Clerks",
+      "unit_organizations": "Organizations",
+      "bishopric_branch": "Branch presidency",
+      "none": "Does not appear"
+    },
+    "mine": {
+      "title": "MY CALLINGS",
+      "showInOrgChart": "Show on the org chart",
+      "showInOrgChartA11y": "Show {{calling}} on the org chart"
+    },
+    "consent": {
+      "message": "You received the calling {{calling}} in {{unit}}. Do you want your name and calling to appear on the stake's public org chart?",
+      "show": "Show",
+      "notNow": "Not now",
+      "shown": "Your name appears on the org chart."
+    },
+    "catalog": {
+      "title": "Calling catalog",
+      "new": "New calling",
+      "search": "Search calling",
+      "tabStake": "Stake",
+      "tabUnits": "Wards and branch",
+      "inactive": "Inactive",
+      "empty": "No calling found for \"{{term}}\"."
+    },
+    "form": {
+      "namePt": "Name (Portuguese)",
+      "nameEn": "Name (English)",
+      "nameEs": "Name (Spanish)",
+      "level": "Level",
+      "access": "Access",
+      "group": "Notification group",
+      "section": "Org chart section",
+      "active": "Active",
+      "save": "Save",
+      "saved": "Calling saved",
+      "errors": {
+        "nameRequired": "Enter the name.",
+        "nameLength": "Use between 2 and 80 characters.",
+        "nameTaken": "A calling with this name already exists at this level.",
+        "levelLocked": "The level of a calling that someone has cannot be changed.",
+        "inUse": "Remove this calling from the {{count}} people who have it before deactivating it."
+      },
+      "confirmAccess": {
+        "title": "Change the access?",
+        "message": "{{count}} people with this calling will now have \"{{access}}\".",
+        "confirm": "Change"
+      }
     }
   }
 }

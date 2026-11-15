@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext, useMemo } from 'react';
 
+import type { MemberCall } from '@/domain/callings';
 import {
   canLead,
   canPublish,
@@ -25,6 +26,8 @@ export type Viewer = {
   loaded: boolean;
   profile: Profile | null;
   memberships: readonly Membership[];
+  /** The person's callings (RF-16), oldest grant first. */
+  calls: readonly MemberCall[];
   canPublish: (unitId: UnitId) => boolean;
   canLead: (unitId: UnitId) => boolean;
   publishableUnits: UnitId[];
@@ -35,7 +38,7 @@ export type Viewer = {
 
 const ViewerContext = createContext<Viewer | null>(null);
 
-const emptyData: ViewerData = { profile: null, memberships: [] };
+const emptyData: ViewerData = { profile: null, memberships: [], calls: [] };
 
 export function ViewerProvider({
   session,
@@ -56,13 +59,14 @@ export function ViewerProvider({
   const data = userId === null ? emptyData : (query.data ?? emptyData);
 
   const viewer = useMemo<Viewer>(() => {
-    const { profile, memberships } = data;
+    const { profile, memberships, calls } = data;
     return {
       kind: viewerKind(userId === null ? null : { userId }, memberships),
       userId,
       loaded: userId === null || query.isSuccess,
       profile,
       memberships,
+      calls,
       canPublish: (unitId) => canPublish(memberships, unitId),
       canLead: (unitId) => canLead(memberships, unitId),
       publishableUnits: publishableUnits(memberships),

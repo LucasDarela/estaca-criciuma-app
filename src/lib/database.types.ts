@@ -28,12 +28,145 @@ export type Database = {
   };
   public: {
     Tables: {
+      calling_catalog: {
+        Row: {
+          access: string;
+          active: boolean;
+          id: string;
+          level: string;
+          name_en: string | null;
+          name_es: string | null;
+          name_pt: string;
+          notify_group: string | null;
+          org_chart_section: string | null;
+          sort_order: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          access?: string;
+          active?: boolean;
+          id: string;
+          level: string;
+          name_en?: string | null;
+          name_es?: string | null;
+          name_pt: string;
+          notify_group?: string | null;
+          org_chart_section?: string | null;
+          sort_order: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          access?: string;
+          active?: boolean;
+          id?: string;
+          level?: string;
+          name_en?: string | null;
+          name_es?: string | null;
+          name_pt?: string;
+          notify_group?: string | null;
+          org_chart_section?: string | null;
+          sort_order?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      calling_catalog_log: {
+        Row: {
+          actor_id: string | null;
+          after: Json;
+          before: Json | null;
+          calling_id: string;
+          created_at: string;
+          id: string;
+        };
+        Insert: {
+          actor_id?: string | null;
+          after: Json;
+          before?: Json | null;
+          calling_id: string;
+          created_at?: string;
+          id?: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          after?: Json;
+          before?: Json | null;
+          calling_id?: string;
+          created_at?: string;
+          id?: string;
+        };
+        Relationships: [];
+      };
+      member_calls: {
+        Row: {
+          calling_id: string;
+          granted_at: string;
+          granted_by: string | null;
+          id: string;
+          org_chart_consent: string | null;
+          org_chart_consent_at: string | null;
+          unit_id: string;
+          user_id: string;
+        };
+        Insert: {
+          calling_id: string;
+          granted_at?: string;
+          granted_by?: string | null;
+          id?: string;
+          org_chart_consent?: string | null;
+          org_chart_consent_at?: string | null;
+          unit_id: string;
+          user_id: string;
+        };
+        Update: {
+          calling_id?: string;
+          granted_at?: string;
+          granted_by?: string | null;
+          id?: string;
+          org_chart_consent?: string | null;
+          org_chart_consent_at?: string | null;
+          unit_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'member_calls_calling_id_fkey';
+            columns: ['calling_id'];
+            isOneToOne: false;
+            referencedRelation: 'calling_catalog';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'member_calls_granted_by_fkey';
+            columns: ['granted_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'member_calls_unit_id_fkey';
+            columns: ['unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'member_calls_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       memberships: {
         Row: {
           granted_at: string;
           granted_by: string | null;
           id: string;
-          leadership_group: string | null;
           role: string;
           unit_id: string;
           user_id: string;
@@ -42,7 +175,6 @@ export type Database = {
           granted_at?: string;
           granted_by?: string | null;
           id?: string;
-          leadership_group?: string | null;
           role: string;
           unit_id: string;
           user_id: string;
@@ -51,7 +183,6 @@ export type Database = {
           granted_at?: string;
           granted_by?: string | null;
           id?: string;
-          leadership_group?: string | null;
           role?: string;
           unit_id?: string;
           user_id?: string;
@@ -125,6 +256,7 @@ export type Database = {
         Row: {
           action: string;
           actor_id: string | null;
+          calling_id: string | null;
           created_at: string;
           id: string;
           leadership_group: string | null;
@@ -135,6 +267,7 @@ export type Database = {
         Insert: {
           action: string;
           actor_id?: string | null;
+          calling_id?: string | null;
           created_at?: string;
           id?: string;
           leadership_group?: string | null;
@@ -145,6 +278,7 @@ export type Database = {
         Update: {
           action?: string;
           actor_id?: string | null;
+          calling_id?: string | null;
           created_at?: string;
           id?: string;
           leadership_group?: string | null;
@@ -180,6 +314,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      calling_holder_count: { Args: { p_id: string }; Returns: number };
       can_lead: { Args: { p_unit: string }; Returns: boolean };
       can_publish: { Args: { p_unit: string }; Returns: boolean };
       complete_welcome: {
@@ -192,13 +327,9 @@ export type Database = {
       };
       delete_my_account: { Args: never; Returns: undefined };
       export_my_data: { Args: never; Returns: Json };
-      grant_role: {
-        Args: {
-          p_email: string;
-          p_leadership_group: string;
-          p_role: string;
-          p_unit_id: string;
-        };
+      grant_admin: { Args: { p_email: string }; Returns: undefined };
+      grant_calling: {
+        Args: { p_calling_id: string; p_email: string; p_unit_id: string };
         Returns: string;
       };
       has_role: {
@@ -207,19 +338,67 @@ export type Database = {
       };
       is_admin: { Args: never; Returns: boolean };
       is_stake_leader: { Args: never; Returns: boolean };
+      is_stake_publisher: { Args: never; Returns: boolean };
+      legacy_role_to_calling: {
+        Args: { p_group: string; p_role: string; p_unit_kind: string };
+        Returns: string;
+      };
       list_access: {
         Args: never;
         Returns: {
+          calling_id: string;
+          calling_name_en: string;
+          calling_name_es: string;
+          calling_name_pt: string;
           display_name: string;
           email: string;
-          leadership_group: string;
-          membership_id: string;
-          role: string;
+          entry_id: string;
+          kind: string;
           unit_id: string;
           user_id: string;
         }[];
       };
-      revoke_role: { Args: { p_membership_id: string }; Returns: undefined };
+      my_accesses: {
+        Args: never;
+        Returns: {
+          access: string;
+          unit_id: string;
+        }[];
+      };
+      org_chart_members: {
+        Args: never;
+        Returns: {
+          calling_id: string;
+          calling_name_en: string;
+          calling_name_es: string;
+          calling_name_pt: string;
+          display_name: string;
+          member_call_id: string;
+          section: string;
+          sort_order: number;
+          unit_id: string;
+        }[];
+      };
+      revoke_admin: { Args: { p_user_id: string }; Returns: undefined };
+      revoke_calling: { Args: { p_member_call_id: string }; Returns: undefined };
+      save_calling: {
+        Args: {
+          p_access: string;
+          p_active: boolean;
+          p_id: string;
+          p_level: string;
+          p_name_en: string;
+          p_name_es: string;
+          p_name_pt: string;
+          p_notify_group: string;
+          p_org_chart_section: string;
+        };
+        Returns: string;
+      };
+      set_org_chart_consent: {
+        Args: { p_accepted: boolean; p_member_call_id: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

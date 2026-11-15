@@ -378,7 +378,7 @@ Nenhuma.
   - Cobre: CA-08, CA-09, CA-12, CA-13, CA-14, CA-15, CA-18, CA-19, CA-23 (banco)
   - Verificar: `supabase db reset && make test-db && make db-types && make lint`
 
-- [ ] **T-04 — Domínio (RF-03, RF-09, RF-13, RF-20, RF-21)**
+- [x] **T-04 — Domínio (RF-03, RF-09, RF-13, RF-20, RF-21)**
   - Arquivos: `criar src/domain/callings.ts` (+ `callings.test.ts`) · `alterar src/domain/units.ts` (+ teste) · `alterar src/domain/permissions.ts` (+ teste) · `alterar src/domain/access.ts` (+ teste)
   - O que fazer:
     - Implementar o contrato 2.3.
@@ -393,7 +393,7 @@ Nenhuma.
   - Cobre: CA-05, CA-06, CA-10, CA-17, CA-24 (domínio)
   - Verificar: `make test`
 
-- [ ] **T-05 — Viewer com chamados (RF-09)**
+- [x] **T-05 — Viewer com chamados (RF-09)**
   - Arquivos: `alterar src/features/viewer/api.ts` (+ teste) · `alterar src/features/viewer/ViewerProvider.tsx` (+ teste) · `alterar src/lib/telemetry.ts` (+ teste) · `alterar` os usos de `leadershipGroup` em `src/features/account/*`, só o necessário para compilar (a interface muda nas T-07 a T-09)
   - O que fazer:
     - Implementar o contrato 2.4 (`ViewerData` e `Viewer.calls`) e os eventos novos de telemetria.
@@ -402,7 +402,7 @@ Nenhuma.
   - Cobre: CA-07
   - Verificar: `make check`
 
-- [ ] **T-06 — API da conta e i18n**
+- [x] **T-06 — API da conta e i18n**
   - Arquivos: `alterar src/features/account/api.ts` (+ `api.test.ts`) · `alterar src/i18n/locales/*.json` (seção 2.6)
   - O que fazer:
     - Implementar o contrato 2.4: chamar as RPCs e traduzir o `message` de erro para `AccountErrorCode`.
@@ -415,7 +415,7 @@ Nenhuma.
   - Cobre: base para CA-09 a CA-20
   - Verificar: `make test`
 
-- [ ] **T-07 — Acessos por chamado (RF-12 a RF-15)**
+- [x] **T-07 — Acessos por chamado (RF-12 a RF-15)**
   - Arquivos: `alterar src/features/account/AccessScreen.tsx` (+ teste) · `alterar src/features/account/GrantAccessSheet.tsx` (+ teste) · `criar src/features/account/CallingPickerSheet.tsx` (+ teste)
   - O que fazer:
     - Cada item da lista tem o subtítulo `{e-mail} · {chamado}` (`Administração` para `admin`) e o `accessibilityLabel` `{nome}, {chamado}, {unidade}` (RNF-07).

@@ -24,10 +24,20 @@ export type ListItemProps = {
     | { kind: 'switch'; value: boolean; onValueChange: (value: boolean) => void; label: string };
   /** Marks the row as the chosen option of a list (screen readers announce it as selected). */
   selected?: boolean;
+  /** Overrides the default `title, subtitle` announcement when the row needs another wording. */
+  accessibilityLabel?: string;
   onPress?: () => void;
 };
 
-export function ListItem({ title, subtitle, leading, trailing, selected, onPress }: ListItemProps) {
+export function ListItem({
+  title,
+  subtitle,
+  leading,
+  trailing,
+  selected,
+  accessibilityLabel,
+  onPress,
+}: ListItemProps) {
   const content = (
     <>
       {leading?.kind === 'avatar' ? <Avatar name={leading.name} /> : null}
@@ -59,7 +69,7 @@ export function ListItem({ title, subtitle, leading, trailing, selected, onPress
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
+      accessibilityLabel={accessibilityLabel ?? (subtitle ? `${title}, ${subtitle}` : title)}
       accessibilityState={{
         ...(selected === undefined ? {} : { selected }),
         busy: trailing?.kind === 'loading',

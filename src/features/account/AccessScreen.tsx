@@ -12,10 +12,19 @@ import { ListItem } from '@/components/ListItem';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useToast } from '@/components/toast/ToastProvider';
 import { canManageAccess } from '@/domain/access';
+import { callingName } from '@/domain/callings';
+import { useLocale } from '@/i18n/useLocale';
 import { space, stroke, theme, type, unitOrder, units } from '@/theme/theme';
 
 import { useViewer } from '../viewer/ViewerProvider';
-import { AccountError, accessQueryKey, listAccess, revokeRole, type AccessEntry } from './api';
+import {
+  AccountError,
+  accessQueryKey,
+  listAccess,
+  revokeAdmin,
+  revokeCalling,
+  type AccessEntry,
+} from './api';
 import { GrantAccessSheet } from './GrantAccessSheet';
 
 export function AccessScreen() {
@@ -23,6 +32,7 @@ export function AccessScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const locale = useLocale();
   const viewer = useViewer();
   const allowed = canManageAccess(viewer.memberships);
   const [revoking, setRevoking] = useState<AccessEntry | null>(null);
@@ -43,6 +53,11 @@ export function AccessScreen() {
     [query.data],
   );
 
+  /** The calling name in the interface language, or "Administração". */
+  function labelOf(entry: AccessEntry): string {
+    return entry.calling ? callingName(entry.calling, locale) : t('account.access.admin');
+  }
+
   function select(entry: AccessEntry) {
     if (entry.userId === viewer.userId) {
       toast.show({ message: t('account.access.cannotRevokeSelf') });
@@ -56,11 +71,13 @@ export function AccessScreen() {
     if (!entry) return;
     setRevoking(null);
     try {
-      await revokeRole(entry.membershipId);
+      if (entry.kind === 'admin') await revokeAdmin(entry.userId);
+      else await revokeCalling(entry.entryId);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: accessQueryKey }),
         queryClient.invalidateQueries({ queryKey: ['viewer'] }),
       ]);
+      toast.show({ message: t('account.access.revoked'), tone: 'success' });
     } catch (thrown) {
       const code = thrown instanceof AccountError ? thrown.code : 'unknown';
       toast.show({
@@ -105,7 +122,7 @@ export function AccessScreen() {
           style={styles.list}
           contentContainerStyle={styles.listContent}
           sections={sections}
-          keyExtractor={(entry) => entry.membershipId}
+          keyExtractor={(entry) => `${entry.kind}-${entry.entryId}`}
           renderSectionHeader={({ section }) => (
             <Text accessibilityRole="header" style={styles.section}>
               {section.title}
@@ -115,13 +132,12 @@ export function AccessScreen() {
             <ListItem
               leading={{ kind: 'avatar', name: item.displayName }}
               title={item.displayName}
-              subtitle={[
-                item.email,
-                t(`account.roles.${item.role}`),
-                item.leadershipGroup ? t(`account.groups.${item.leadershipGroup}`) : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
+              subtitle={`${item.email} · ${labelOf(item)}`}
+              accessibilityLabel={t('account.access.itemA11y', {
+                name: item.displayName,
+                calling: labelOf(item),
+                unit: units[item.unitId].label,
+              })}
               onPress={() => select(item)}
             />
           )}
@@ -138,7 +154,7 @@ export function AccessScreen() {
           revoking
             ? t('account.access.revokeMessage', {
                 name: revoking.displayName,
-                role: t(`account.roles.${revoking.role}`),
+                calling: labelOf(revoking),
                 unit: units[revoking.unitId].label,
               })
             : ''
