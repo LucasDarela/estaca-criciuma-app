@@ -28,6 +28,8 @@ const config: ExpoConfig = {
     'expo-status-bar',
     'expo-font',
     'expo-localization',
+    'expo-secure-store',
+    'expo-sharing',
     [
       'expo-splash-screen',
       {

@@ -72,6 +72,15 @@ describe('ViewerProvider', () => {
     expect(result.current.kind).toBe('leader');
   });
 
+  it('7.6: reloads the viewer every 5 minutes so a revoked role reaches the app', async () => {
+    fetchMock.mockResolvedValue(leaderData);
+    const queryClient = newClient();
+    await setup({ userId: 'u1' }, queryClient);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const query = queryClient.getQueryCache().find({ queryKey: viewerQueryKey('u1') });
+    expect(query?.observers[0]?.options.refetchInterval).toBe(5 * 60_000);
+  });
+
   it('useViewer throws outside the provider', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     await expect(renderHook(() => useViewer())).rejects.toThrow(

@@ -47,6 +47,8 @@ export function ViewerProvider({
     queryKey: viewerQueryKey(userId ?? ''),
     queryFn: () => fetchViewerData(userId as string),
     enabled: userId !== null,
+    // 7.6: a revoked role reaches the app on the next load (return to the app or every 5 min).
+    refetchInterval: 5 * 60_000,
   });
   // Without a session, or on a failure with no cache, `data` is empty and nothing is granted.
   const data = userId === null ? emptyData : (query.data ?? emptyData);

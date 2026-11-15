@@ -97,7 +97,7 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 
 | Serviço | Para quê | Onde está o cliente | Variáveis de ambiente |
 | ------- | -------- | ------------------- | --------------------- |
-| Supabase Cloud (API, Auth, Storage) | Dados, login, imagens do mural | `src/lib/supabase.ts` | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` |
+| Supabase Cloud (API, Auth, Storage) | Dados, login, imagens do mural | `src/lib/supabase.ts` | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
 | Expo Push Service | Entrega de push (APNs/FCM) | `supabase/functions/send-push` | `EXPO_ACCESS_TOKEN` (secret da function) |
 | Google / Apple Sign-In | Login social | Supabase Auth + `expo-auth-session` / `expo-apple-authentication` | Configurados no GoTrue (servidor) |
 | Sentry | Crashes e erros do app | `src/lib/sentry.ts` | `EXPO_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` (só build) |
