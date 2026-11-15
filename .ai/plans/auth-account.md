@@ -573,6 +573,20 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-01 (aparelho), CA-21 (logs do Supabase), CA-22, CA-23 e o passo 10
   - Verificar: roteiro de QA
 
+- [ ] **T-15 — Idioma em Boas-vindas (RF-08b, decisão 22; ajuste pós-merge)**
+  - Arquivos: `criar src/components/LanguageSheet.tsx` (+ teste) · `remover src/features/account/LanguageSheet.tsx` · `alterar src/features/account/ProfileScreen.tsx` · `alterar src/features/auth/WelcomeScreen.tsx` (+ teste)
+  - O que fazer:
+    - Mover o `LanguageSheet` para o design system, porque uma feature não importa outra. O componente recebe por props `title`, `options: readonly { value: Locale; label: string }[]`, `value`, `onSelect` e `onClose`, e não importa `features/` nem `lib/`. O Perfil passa a usá-lo de lá, sem mudar o comportamento.
+    - Em `WelcomeScreen`, acrescentar o `ListItem` `Idioma` (chave `account.profile.language` já existente, ou uma chave nova `auth.welcome.language` com o mesmo texto `Idioma` nos 3 locales), entre a unidade e o consentimento, mostrando o idioma atual com as chaves `account.languages.*`.
+    - Escolher o idioma chama `i18n.changeLanguage`. O `completeWelcome` já envia o locale de `i18n.language`, então não muda.
+    - Testes:
+      - "CA-27": escolher `Español (México)` muda os textos da tela e faz `completeWelcome` receber `es-MX`;
+      - o `LanguageSheet` marca a opção atual e chama `onSelect`;
+      - o teste "CA-11" do Perfil continua passando.
+  - Referência: `src/features/account/LanguageSheet.tsx`, `src/components/UnitPickerSheet.tsx` (componente do design system com rótulos por props)
+  - Cobre: CA-27
+  - Verificar: `make check`
+
 ## 5. Matriz de cobertura
 
 | CA | Tarefa | Tipo de teste | Arquivo de teste |
@@ -601,6 +615,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 | CA-24 | T-14 | banco + componente | `account.test.sql`, `GrantAccessSheet.test.tsx` |
 | CA-25 | T-14 | banco + componente | `account.test.sql`, `GrantAccessSheet.test.tsx` |
 | CA-26 | T-14 | banco + componente | `account.test.sql`, `ProfileScreen.test.tsx` |
+| CA-27 | T-15 | componente | `src/features/auth/WelcomeScreen.test.tsx` |
 | CA-22 | T-13 | manual (VoiceOver/TalkBack) | roteiro de QA |
 | CA-23 | T-06, T-13 | manual (Inbucket e produção) | roteiro de QA |
 

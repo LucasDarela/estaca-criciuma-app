@@ -94,6 +94,7 @@ Uma pessoa entra com código por e-mail, aceita o consentimento no primeiro aces
 | ID | Requisito |
 | -- | --------- |
 | RF-08 | `/welcome`: título `Boas-vindas`; campo `Como podemos chamar você?` (obrigatório, `trim`, 2–60 caracteres); campo `Unidade que você frequenta` com as 6 unidades (ordem de `unitOrder`, sem Estaca) e `Prefiro não informar` (padrão); caixa de consentimento (texto em 7.5); link `Política de privacidade` (abre `EXPO_PUBLIC_PRIVACY_URL`); botão `Começar`. |
+| RF-08b | Ajuste de 2026-11-15 (decisão 22): `/welcome` mostra também `Idioma`, entre `Unidade que você frequenta` e a caixa de consentimento, como `ListItem` com o idioma atual (`Português (Brasil)`, `English (US)` ou `Español (México)`; padrão: o idioma do aparelho). Tocar abre a lista dos 3 idiomas; escolher troca a interface na hora. `Começar` grava o idioma escolhido em `profiles.locale`. |
 | RF-09 | Erros: nome vazio → `Informe como podemos chamar você.`; fora de 2–60 → `Use entre 2 e 60 caracteres.`; consentimento não marcado → `Para usar sua conta, é preciso concordar com o tratamento dos dados.` |
 | RF-10 | `Começar` cria ou atualiza `profiles` com `display_name`, `home_unit_id` (ou nulo), `locale` atual e `consented_at = now()`. Sair desta tela sem concluir encerra a sessão (conta sem consentimento não é usada). |
 
@@ -188,6 +189,7 @@ src/i18n/locales/*.json                       # chaves auth.*, account.*
 | CA-07 | RF-02, decisão 14 | iOS e Android | abro a aba Entrar | não há botão de Google nem de Apple; só o campo `E-mail` e `Receber código` |
 | CA-08 | RF-20 | o repositório | busco `SUPABASE_ANON_KEY` em `src/`, `.env.example` e docs | nenhuma ocorrência; o cliente lê `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
 | CA-09 | RF-07, RF-08, RF-09, RF-10 | primeiro login | toco em `Começar` sem marcar o consentimento | vejo a mensagem de RF-09; marcando, o perfil é salvo com `consented_at` e vou para a Agenda |
+| CA-27 | RF-08b | a tela `/welcome` em pt-BR | escolho `Español (México)` e toco em `Começar` com dados válidos | a interface fica em espanhol na hora e `profiles.locale = 'es-MX'` |
 | CA-10 | RF-10 | a tela `/welcome` | saio sem concluir | a sessão é encerrada |
 | CA-11 | RF-11, RF-12 | perfil de membro | mudo o idioma para `English (US)` | a interface muda na hora e `profiles.locale = 'en-US'` |
 | CA-12 | RF-13 | perfil com papéis | toco em `Exportar meus dados` | abre o compartilhamento com `meus-dados-estaca-criciuma.json` contendo perfil e papéis |
@@ -253,6 +255,7 @@ Nenhuma decisão em aberto.
 | 19 | Unidade de quem recebe papel | Todo papel exige unidade informada; papéis de unidade só na unidade da pessoa; `stake_leader` vale para qualquer unidade (2026-11-15, QA) | usuário |
 | 20 | Troca de unidade com acesso | Bloqueada enquanto o acesso existir; a liderança remove o acesso antes (2026-11-15, QA) | usuário |
 | 21 | Lista completa de grupos de liderança | Fora desta entrega: spec própria, que também alimenta organograma e avisos; aqui ficam os 3 grupos atuais (2026-11-15, QA) | usuário |
+| 22 | Idioma em Boas-vindas | A pessoa escolhe o idioma já no primeiro acesso, além da unidade (pedido do usuário no QA, 2026-11-15) | usuário |
 | 18 | Biblioteca de cifra da sessão | `expo-crypto` (AES-256-GCM nativo, do SDK, funciona no Expo Go) no lugar de `aes-js` + `react-native-get-random-values` (2026-11-14) | usuário (`/create-plan`) |
 | 15 | Template do e-mail e nome da chave | Template pt-BR com código em destaque e `PUBLISHABLE_KEY`, pendências levadas de `supabase-cloud` (assessment G-04, plano QA da T-09) (2026-11-14) | usuário |
 
