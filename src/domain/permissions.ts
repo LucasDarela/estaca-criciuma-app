@@ -1,21 +1,22 @@
 import type { UnitId } from './units';
 import { unitIds } from './units';
 
-export type Role = 'unit_leader' | 'unit_publisher' | 'stake_leader' | 'admin';
-export type LeadershipGroup = 'stake_presidency' | 'bishops' | 'presidents';
-export type Membership = { unitId: UnitId; role: Role; leadershipGroup: LeadershipGroup | null };
+/** Access levels: derived from callings (RF-09), plus `admin`, which is not a calling. */
+export type Role = 'unit_leader' | 'unit_publisher' | 'stake_publisher' | 'stake_leader' | 'admin';
+export type Membership = { unitId: UnitId; role: Role };
 export type ViewerSession = { userId: string };
 export type ViewerKind = 'visitor' | 'member' | 'leader';
 
-const roles: readonly string[] = ['unit_leader', 'unit_publisher', 'stake_leader', 'admin'];
-const leadershipGroups: readonly string[] = ['stake_presidency', 'bishops', 'presidents'];
+const roles: readonly string[] = [
+  'unit_leader',
+  'unit_publisher',
+  'stake_publisher',
+  'stake_leader',
+  'admin',
+];
 
 export function isRole(value: string): value is Role {
   return roles.includes(value);
-}
-
-export function isLeadershipGroup(value: string): value is LeadershipGroup {
-  return leadershipGroups.includes(value);
 }
 
 export function isAdmin(memberships: readonly Membership[]): boolean {
@@ -37,11 +38,12 @@ export function viewerKind(
     : 'member';
 }
 
-/** Same rule as SQL can_publish (RF-06). */
+/** Same rule as SQL can_publish (RF-09): stake_publisher only publishes to the stake. */
 export function canPublish(memberships: readonly Membership[], unitId: UnitId): boolean {
   return (
     isStakeLeader(memberships) ||
     isAdmin(memberships) ||
+    (unitId === 'estaca' && memberships.some((m) => m.role === 'stake_publisher')) ||
     memberships.some(
       (m) => m.unitId === unitId && (m.role === 'unit_leader' || m.role === 'unit_publisher'),
     )

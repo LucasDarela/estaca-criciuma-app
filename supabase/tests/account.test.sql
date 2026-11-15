@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(48);
+select plan(49);
 
 -- Seed users (see supabase/seed.sql):
 --   ...001 membro, ...002 publicador (icara), ...003 bispo (criciuma1), ...004 estaca, ...005 admin
@@ -23,8 +23,8 @@ select throws_ok($$ select public.complete_welcome('Ana', null, 'pt-BR') $$, '42
 select throws_ok($$ select public.export_my_data() $$, '42501', null, 'anon cannot run export_my_data');
 select throws_ok($$ select public.delete_my_account() $$, '42501', null, 'anon cannot run delete_my_account');
 select throws_ok($$ select * from public.list_access() $$, '42501', null, 'anon cannot run list_access');
-select throws_ok($$ select public.grant_role('a@b.co', 'icara', 'unit_leader', null) $$, '42501', null, 'anon cannot run grant_role');
-select throws_ok($$ select public.revoke_role(gen_random_uuid()) $$, '42501', null, 'anon cannot run revoke_role');
+select throws_ok($$ select public.grant_calling('a@b.co', 'icara', 'bishop') $$, '42501', null, 'anon cannot run grant_calling');
+select throws_ok($$ select public.revoke_calling(gen_random_uuid()) $$, '42501', null, 'anon cannot run revoke_calling');
 
 -- membro (...001)
 set local role authenticated;
@@ -52,51 +52,54 @@ select is(public.export_my_data() -> 'profile' ->> 'display_name', 'Ana Nova',
   'CA-12: export has the caller profile');
 select is(jsonb_array_length(public.export_my_data() -> 'memberships'), 0,
   'CA-12: export has the caller memberships only (member has none)');
+select is(jsonb_array_length(public.export_my_data() -> 'calls'), 0,
+  'CA-12: export has the caller callings only (member has none)');
 
 select throws_ok($$ select * from public.list_access() $$, 'P0001', 'not_authorized', 'member cannot list_access');
-select throws_ok($$ select public.grant_role('a@b.co', 'icara', 'unit_leader', null) $$, 'P0001', 'not_authorized',
-  'member cannot grant_role');
+select throws_ok($$ select public.grant_calling('a@b.co', 'icara', 'bishop') $$, 'P0001', 'not_authorized',
+  'member cannot grant_calling');
 
 -- bispo (...003)
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}';
 select throws_ok($$ select * from public.list_access() $$, 'P0001', 'not_authorized', 'unit leader cannot list_access');
-select throws_ok($$ select public.grant_role('membro@exemplo.org', 'criciuma1', 'unit_leader', null) $$,
-  'P0001', 'not_authorized', 'unit leader cannot grant_role');
-select is(jsonb_array_length(public.export_my_data() -> 'memberships'), 1,
-  'CA-12: export lists the leader roles');
+select throws_ok($$ select public.grant_calling('membro@exemplo.org', 'criciuma1', 'unit_clerk') $$,
+  'P0001', 'not_authorized', 'unit leader cannot grant_calling');
+select is(jsonb_array_length(public.export_my_data() -> 'calls'), 1,
+  'CA-12: export lists the leader callings');
 
 -- estaca (...004)
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}';
-select throws_ok($$ select public.grant_role('nobody@exemplo.org', 'icara', 'unit_leader', 'bishops') $$,
+select throws_ok($$ select public.grant_calling('nobody@exemplo.org', 'icara', 'bishop') $$,
   'P0001', 'no_account', 'CA-16: e-mail without account is no_account');
-select throws_ok($$ select public.grant_role('membro@exemplo.org', 'icara', 'admin', null) $$,
+select throws_ok($$ select public.grant_admin('membro@exemplo.org') $$,
   'P0001', 'not_authorized', 'CA-19: stake leader cannot grant admin');
-select throws_ok($$ select public.grant_role('membro@exemplo.org', 'icara', 'unit_leader', 'stake_presidency') $$,
-  'P0001', 'invalid_group', 'stake_presidency outside the stake is invalid_group');
-select throws_ok($$ select public.grant_role('membro@exemplo.org', 'estaca', 'unit_leader', null) $$,
-  'P0001', 'invalid_unit_for_role', 'unit_leader on the stake is invalid_unit_for_role');
-select throws_ok($$ select public.grant_role('sem.unidade@exemplo.org', 'icara', 'unit_leader', 'bishops') $$,
-  'P0001', 'no_home_unit', 'CA-25: a person without a home unit cannot receive a unit role');
-select throws_ok($$ select public.grant_role('sem.unidade@exemplo.org', 'estaca', 'stake_leader', 'stake_presidency') $$,
-  'P0001', 'no_home_unit', 'CA-25: a person without a home unit cannot receive stake_leader');
-select throws_ok($$ select public.grant_role('membro@exemplo.org', 'criciuma2', 'unit_leader', 'bishops') $$,
-  'P0001', 'wrong_unit', 'CA-24: unit_leader in another unit than the home unit is wrong_unit');
-select throws_ok($$ select public.grant_role('membro@exemplo.org', 'criciuma2', 'unit_publisher', null) $$,
-  'P0001', 'wrong_unit', 'CA-24: unit_publisher in another unit than the home unit is wrong_unit');
-select lives_ok($$ select public.grant_role(' Membro@Exemplo.org ', 'icara', 'unit_leader', 'bishops') $$,
-  'CA-15: stake leader grants unit_leader/icara/bishops');
+select throws_ok($$ select public.grant_calling('membro@exemplo.org', 'icara', 'no_such_calling') $$,
+  'P0001', 'invalid_calling', 'an unknown calling is invalid_calling');
+select throws_ok($$ select public.grant_calling('membro@exemplo.org', 'estaca', 'bishop') $$,
+  'P0001', 'invalid_unit_for_calling', 'a ward calling on the stake is invalid_unit_for_calling');
+select throws_ok($$ select public.grant_calling('sem.unidade@exemplo.org', 'icara', 'bishop') $$,
+  'P0001', 'no_home_unit', 'CA-25: a person without a home unit cannot receive a unit calling');
+select throws_ok($$ select public.grant_calling('sem.unidade@exemplo.org', 'estaca', 'high_councilor') $$,
+  'P0001', 'no_home_unit', 'CA-25: a person without a home unit cannot receive a stake calling');
+select throws_ok($$ select public.grant_calling('membro@exemplo.org', 'criciuma2', 'bishop') $$,
+  'P0001', 'wrong_unit', 'CA-24: a unit calling in another unit than the home unit is wrong_unit');
+select throws_ok($$ select public.grant_calling('membro@exemplo.org', 'criciuma2', 'unit_activities_committee_chair') $$,
+  'P0001', 'wrong_unit', 'CA-24: a publisher calling in another unit than the home unit is wrong_unit');
+select lives_ok($$ select public.grant_calling(' Membro@Exemplo.org ', 'icara', 'bishop') $$,
+  'CA-15: stake leader grants bishop in icara');
 select results_eq(
-  $$ select role, unit_id, leadership_group, granted_by from public.memberships
+  $$ select calling_id, unit_id, granted_by, org_chart_consent from public.member_calls
      where user_id = '00000000-0000-4000-8000-000000000001' $$,
-  $$ values ('unit_leader'::text, 'icara'::text, 'bishops'::text, '00000000-0000-4000-8000-000000000004'::uuid) $$,
-  'CA-15: the membership exists');
+  $$ values ('bishop'::text, 'icara'::text, '00000000-0000-4000-8000-000000000004'::uuid, 'pending'::text) $$,
+  'CA-15: the calling exists, pending the org chart consent');
 select results_eq(
-  $$ select action, role, unit_id, actor_id from public.role_grants_log
+  $$ select action, role, unit_id, calling_id, actor_id from public.role_grants_log
      where user_id = '00000000-0000-4000-8000-000000000001' and unit_id = 'icara' $$,
-  $$ values ('granted'::text, 'unit_leader'::text, 'icara'::text, '00000000-0000-4000-8000-000000000004'::uuid) $$,
-  'CA-15: role_grants_log has the grant with actor_id');
-select throws_ok($$ select public.grant_role('membro@exemplo.org', 'icara', 'unit_leader', 'bishops') $$,
-  'P0001', 'already_granted', 'granting the same role again is already_granted');
+  $$ values ('granted'::text, 'unit_leader'::text, 'icara'::text, 'bishop'::text,
+             '00000000-0000-4000-8000-000000000004'::uuid) $$,
+  'CA-15: role_grants_log has the grant with actor_id and calling_id');
+select throws_ok($$ select public.grant_calling('membro@exemplo.org', 'icara', 'bishop') $$,
+  'P0001', 'already_granted', 'granting the same calling again is already_granted');
 -- membro now leads icara: the home unit is locked (CA-26, decision 20).
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}';
 select throws_ok(
@@ -107,27 +110,27 @@ select throws_ok(
   'P0001', 'home_unit_locked', 'CA-26: a unit leader cannot clear the unit');
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}';
 
-select is((select count(*)::int from public.list_access()), 5, 'list_access returns all memberships');
+select is((select count(*)::int from public.list_access()), 5, 'list_access returns all callings and the admin');
 
 select throws_ok(
-  $$ select public.revoke_role(id) from public.memberships
+  $$ select public.revoke_calling(id) from public.member_calls
      where user_id = '00000000-0000-4000-8000-000000000004' $$,
-  'P0001', 'cannot_revoke_self', 'CA-18: cannot revoke own membership');
+  'P0001', 'cannot_revoke_self', 'CA-18: cannot revoke own calling');
 select throws_ok(
-  $$ select public.revoke_role(id) from public.memberships where role = 'admin' $$,
+  $$ select public.revoke_admin('00000000-0000-4000-8000-000000000005') $$,
   'P0001', 'not_authorized', 'stake leader cannot revoke admin');
 select lives_ok(
-  $$ select public.revoke_role(id) from public.memberships
-     where user_id = '00000000-0000-4000-8000-000000000001' and role = 'unit_leader' $$,
-  'stake leader revokes a unit_leader');
+  $$ select public.revoke_calling(id) from public.member_calls
+     where user_id = '00000000-0000-4000-8000-000000000001' and calling_id = 'bishop' $$,
+  'stake leader revokes a bishop calling');
 select is(
   (select count(*)::int from public.role_grants_log
     where action = 'revoked' and user_id = '00000000-0000-4000-8000-000000000001'),
   1, 'revoking writes revoked to role_grants_log');
 
--- stake_leader accepts any home unit (CA-24) and only blocks clearing the unit (CA-26).
-select lives_ok($$ select public.grant_role('membro@exemplo.org', 'estaca', 'stake_leader', 'stake_presidency') $$,
-  'CA-24: stake_leader is granted to a person of any unit');
+-- a stake calling accepts any home unit (CA-24) and only blocks clearing the unit (CA-26).
+select lives_ok($$ select public.grant_calling('membro@exemplo.org', 'estaca', 'stake_first_counselor') $$,
+  'CA-24: a stake calling is granted to a person of any unit');
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}';
 select lives_ok(
   $$ update public.profiles set home_unit_id = 'criciuma2' where id = '00000000-0000-4000-8000-000000000001' $$,
@@ -142,10 +145,9 @@ select throws_ok($$ select public.complete_welcome('Ana Nova', null, 'pt-BR') $$
 
 -- admin (...005): grants admin; last admin cannot delete the account.
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}';
-select lives_ok($$ select public.grant_role('membro@exemplo.org', 'estaca', 'admin', null) $$,
+select lives_ok($$ select public.grant_admin('membro@exemplo.org') $$,
   'admin grants admin');
-select public.revoke_role(id) from public.memberships
-  where user_id = '00000000-0000-4000-8000-000000000001' and role = 'admin';
+select public.revoke_admin('00000000-0000-4000-8000-000000000001');
 select throws_ok($$ select public.delete_my_account() $$, 'P0001', 'last_admin',
   'CA-20: the only admin cannot delete the account');
 
@@ -156,8 +158,9 @@ reset role;
 select is(
   (select (select count(*) from auth.users where id = '00000000-0000-4000-8000-000000000001')
         + (select count(*) from public.profiles where id = '00000000-0000-4000-8000-000000000001')
-        + (select count(*) from public.memberships where user_id = '00000000-0000-4000-8000-000000000001'))::int,
-  0, 'CA-13: auth.users, profiles and memberships of the member are gone');
+        + (select count(*) from public.memberships where user_id = '00000000-0000-4000-8000-000000000001')
+        + (select count(*) from public.member_calls where user_id = '00000000-0000-4000-8000-000000000001'))::int,
+  0, 'CA-13: auth.users, profiles, memberships and callings of the member are gone');
 select ok(
   (select count(*) from public.role_grants_log where user_id = '00000000-0000-4000-8000-000000000001') >= 2,
   'CA-13: role_grants_log survives the deletion');

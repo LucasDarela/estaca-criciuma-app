@@ -8,10 +8,16 @@ import { track } from '@/lib/telemetry';
 import {
   AccountError,
   deleteMyAccount,
+  callingHolderCount,
   exportMyData,
-  grantRole,
+  fetchCallingCatalog,
+  grantAdmin,
+  grantCalling,
   listAccess,
-  revokeRole,
+  revokeAdmin,
+  revokeCalling,
+  saveCalling,
+  setOrgChartConsent,
   updateProfile,
 } from './api';
 
@@ -56,7 +62,7 @@ beforeEach(() => {
 
 describe('exportMyData', () => {
   it('CA-12: writes the RPC JSON to meus-dados-estaca-criciuma.json and opens the share sheet', async () => {
-    const data = { account: { email: 'a@b.co' }, memberships: [] };
+    const data = { account: { email: 'a@b.co' }, memberships: [], calls: [] };
     const rpc = mockRpc({ data });
     await exportMyData();
 
@@ -105,65 +111,60 @@ describe('updateProfile', () => {
 });
 
 describe('listAccess', () => {
-  it('maps rows and drops unknown units and roles', async () => {
+  const row = (overrides: Record<string, unknown>) => ({
+    entry_id: 'e1',
+    kind: 'calling',
+    user_id: 'u1',
+    display_name: 'Ana',
+    email: 'ana@exemplo.org',
+    unit_id: 'icara',
+    calling_id: 'primary_president',
+    calling_name_pt: 'Presidente da Primária',
+    calling_name_en: 'Primary President',
+    calling_name_es: null,
+    ...overrides,
+  });
+
+  it('maps callings and admins, and drops unknown units and kinds', async () => {
     mockRpc({
       data: [
-        {
-          membership_id: 'm1',
-          user_id: 'u1',
-          display_name: 'Ana',
-          email: 'ana@exemplo.org',
-          unit_id: 'icara',
-          role: 'unit_leader',
-          leadership_group: 'bishops',
-        },
-        {
-          membership_id: 'm2',
-          user_id: 'u2',
-          display_name: 'X',
-          email: 'x@y.z',
-          unit_id: 'zzz',
-          role: 'unit_leader',
-          leadership_group: null,
-        },
-        {
-          membership_id: 'm3',
-          user_id: 'u3',
-          display_name: 'Y',
-          email: 'y@y.z',
-          unit_id: 'icara',
-          role: 'boss',
-          leadership_group: null,
-        },
-        {
-          membership_id: 'm4',
-          user_id: 'u4',
-          display_name: 'Z',
-          email: 'z@y.z',
+        row({}),
+        row({ entry_id: 'e2', unit_id: 'zzz' }),
+        row({ entry_id: 'e3', kind: 'boss' }),
+        row({ entry_id: 'e4', calling_id: null, calling_name_pt: null }),
+        row({
+          entry_id: 'e5',
+          kind: 'admin',
           unit_id: 'estaca',
-          role: 'admin',
-          leadership_group: 'weird',
-        },
+          calling_id: null,
+          calling_name_pt: null,
+          calling_name_en: null,
+        }),
       ],
     });
     await expect(listAccess()).resolves.toEqual([
       {
-        membershipId: 'm1',
+        entryId: 'e1',
+        kind: 'calling',
         userId: 'u1',
         displayName: 'Ana',
         email: 'ana@exemplo.org',
         unitId: 'icara',
-        role: 'unit_leader',
-        leadershipGroup: 'bishops',
+        calling: {
+          id: 'primary_president',
+          namePt: 'Presidente da Primária',
+          nameEn: 'Primary President',
+          nameEs: null,
+        },
       },
       {
-        membershipId: 'm4',
-        userId: 'u4',
-        displayName: 'Z',
-        email: 'z@y.z',
+        entryId: 'e5',
+        kind: 'admin',
+        userId: 'u1',
+        displayName: 'Ana',
+        email: 'ana@exemplo.org',
         unitId: 'estaca',
-        role: 'admin',
-        leadershipGroup: null,
+        calling: null,
       },
     ]);
   });
@@ -174,44 +175,189 @@ describe('listAccess', () => {
   });
 });
 
-describe('grantRole and revokeRole', () => {
-  it('grantRole calls the RPC and tracks only the membership id', async () => {
-    const rpc = mockRpc({ data: 'm-new' });
-    await grantRole({
-      email: 'membro@exemplo.org',
+describe('grantCalling and revokeCalling', () => {
+  it('[roles] grantCalling sends the normalized e-mail and tracks only ids', async () => {
+    const rpc = mockRpc({ data: 'mc-new' });
+    await grantCalling({
+      email: '  Membro@Exemplo.org ',
       unitId: 'icara',
-      role: 'unit_leader',
-      leadershipGroup: 'bishops',
+      callingId: 'primary_president',
     });
-    expect(rpc).toHaveBeenCalledWith('grant_role', {
+    expect(rpc).toHaveBeenCalledWith('grant_calling', {
       p_email: 'membro@exemplo.org',
       p_unit_id: 'icara',
-      p_role: 'unit_leader',
-      p_leadership_group: 'bishops',
+      p_calling_id: 'primary_president',
     });
-    expect(track).toHaveBeenCalledWith('role_granted', { membership_id: 'm-new' });
+    expect(track).toHaveBeenCalledWith('calling_granted', {
+      membership_id: 'mc-new',
+      calling_id: 'primary_president',
+    });
   });
 
-  it.each(['no_account', 'already_granted', 'not_authorized'])(
-    'grantRole maps %s',
+  it.each([
+    'no_account',
+    'already_granted',
+    'not_authorized',
+    'no_home_unit',
+    'wrong_unit',
+    'invalid_calling',
+    'invalid_unit_for_calling',
+  ])('[roles] grantCalling maps %s', async (code) => {
+    mockRpc({ error: { message: code } });
+    await expect(
+      grantCalling({ email: 'a@b.co', unitId: 'icara', callingId: 'bishop' }),
+    ).rejects.toMatchObject({ code });
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it('[roles] revokeCalling calls the RPC and tracks the id', async () => {
+    const rpc = mockRpc({});
+    await revokeCalling('mc1');
+    expect(rpc).toHaveBeenCalledWith('revoke_calling', { p_member_call_id: 'mc1' });
+    expect(track).toHaveBeenCalledWith('calling_revoked', { membership_id: 'mc1' });
+  });
+
+  it('[roles] revokeCalling maps cannot_revoke_self', async () => {
+    mockRpc({ error: { message: 'cannot_revoke_self' } });
+    await expect(revokeCalling('mc1')).rejects.toMatchObject({ code: 'cannot_revoke_self' });
+  });
+
+  it('an unknown server error is unknown', async () => {
+    mockRpc({ error: { message: 'boom' } });
+    await expect(revokeCalling('mc1')).rejects.toMatchObject({ code: 'unknown' });
+  });
+});
+
+describe('grantAdmin and revokeAdmin', () => {
+  it('grantAdmin sends the normalized e-mail', async () => {
+    const rpc = mockRpc({});
+    await grantAdmin(' Admin@Exemplo.org');
+    expect(rpc).toHaveBeenCalledWith('grant_admin', { p_email: 'admin@exemplo.org' });
+    expect(track).toHaveBeenCalledWith('role_granted');
+  });
+
+  it('revokeAdmin calls the RPC with the user id', async () => {
+    const rpc = mockRpc({});
+    await revokeAdmin('u9');
+    expect(rpc).toHaveBeenCalledWith('revoke_admin', { p_user_id: 'u9' });
+    expect(track).toHaveBeenCalledWith('role_revoked');
+  });
+});
+
+describe('calling catalog', () => {
+  const catalogRow = {
+    id: 'bishop',
+    name_pt: 'Bispo',
+    name_en: 'Bishop',
+    name_es: 'Obispo',
+    level: 'ward',
+    access: 'unit_leader',
+    notify_group: 'bishoprics',
+    org_chart_section: 'bishopric',
+    sort_order: 20,
+    active: true,
+  };
+
+  it('[roles] fetchCallingCatalog converts the columns and drops unknown rows', async () => {
+    const order = jest.fn();
+    const select = jest.fn();
+    const chain = {
+      select,
+      order,
+      then: (resolve: (value: unknown) => unknown) =>
+        resolve({ data: [catalogRow, { ...catalogRow, id: 'x', level: 'galaxy' }], error: null }),
+    };
+    select.mockReturnValue(chain);
+    order.mockReturnValue(chain);
+    (getSupabase as jest.Mock).mockReturnValue({ from: jest.fn(() => chain) });
+    await expect(fetchCallingCatalog()).resolves.toEqual([
+      {
+        id: 'bishop',
+        namePt: 'Bispo',
+        nameEn: 'Bishop',
+        nameEs: 'Obispo',
+        level: 'ward',
+        access: 'unit_leader',
+        notifyGroup: 'bishoprics',
+        orgChartSection: 'bishopric',
+        sortOrder: 20,
+        active: true,
+      },
+    ]);
+    expect(order).toHaveBeenNthCalledWith(1, 'level');
+    expect(order).toHaveBeenNthCalledWith(2, 'sort_order');
+  });
+
+  it('[roles] saveCalling with id null creates a calling and tracks only its id', async () => {
+    const rpc = mockRpc({ data: 'new-id' });
+    await expect(
+      saveCalling({
+        id: null,
+        namePt: 'Coordenador de Caravanas',
+        nameEn: null,
+        nameEs: null,
+        level: 'stake',
+        access: 'none',
+        notifyGroup: 'temple_family_history_workers',
+        orgChartSection: null,
+        active: true,
+      }),
+    ).resolves.toBe('new-id');
+    expect(rpc).toHaveBeenCalledWith('save_calling', {
+      p_id: null,
+      p_name_pt: 'Coordenador de Caravanas',
+      p_name_en: null,
+      p_name_es: null,
+      p_level: 'stake',
+      p_access: 'none',
+      p_notify_group: 'temple_family_history_workers',
+      p_org_chart_section: null,
+      p_active: true,
+    });
+    expect(track).toHaveBeenCalledWith('calling_catalog_saved', { calling_id: 'new-id' });
+  });
+
+  it.each(['name_taken', 'level_locked', 'in_use', 'invalid_access', 'invalid_section'])(
+    '[roles] saveCalling maps %s',
     async (code) => {
       mockRpc({ error: { message: code } });
       await expect(
-        grantRole({ email: 'a@b.co', unitId: 'icara', role: 'unit_leader', leadershipGroup: null }),
+        saveCalling({
+          id: 'bishop',
+          namePt: 'Bispo',
+          nameEn: null,
+          nameEs: null,
+          level: 'ward',
+          access: 'none',
+          notifyGroup: null,
+          orgChartSection: null,
+          active: true,
+        }),
       ).rejects.toMatchObject({ code });
       expect(track).not.toHaveBeenCalled();
     },
   );
 
-  it('revokeRole calls the RPC and tracks the id', async () => {
+  it('[roles] callingHolderCount returns the number', async () => {
+    const rpc = mockRpc({ data: 3 });
+    await expect(callingHolderCount('bishop')).resolves.toBe(3);
+    expect(rpc).toHaveBeenCalledWith('calling_holder_count', { p_id: 'bishop' });
+  });
+});
+
+describe('setOrgChartConsent', () => {
+  it('[roles] calls the RPC and tracks only the id', async () => {
     const rpc = mockRpc({});
-    await revokeRole('m1');
-    expect(rpc).toHaveBeenCalledWith('revoke_role', { p_membership_id: 'm1' });
-    expect(track).toHaveBeenCalledWith('role_revoked', { membership_id: 'm1' });
+    await setOrgChartConsent('mc1', true);
+    expect(rpc).toHaveBeenCalledWith('set_org_chart_consent', {
+      p_member_call_id: 'mc1',
+      p_accepted: true,
+    });
+    expect(track).toHaveBeenCalledWith('org_chart_consent_changed', { membership_id: 'mc1' });
   });
 
-  it('an unknown server error is unknown', async () => {
-    mockRpc({ error: { message: 'boom' } });
-    await expect(revokeRole('m1')).rejects.toMatchObject({ code: 'unknown' });
+  it('[roles] a network failure is network', async () => {
+    mockRpc({ error: new TypeError('Network request failed') });
+    await expect(setOrgChartConsent('mc1', false)).rejects.toMatchObject({ code: 'network' });
   });
 });

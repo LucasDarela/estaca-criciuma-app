@@ -7,6 +7,7 @@ import { Avatar } from './Avatar';
 import { Icon } from './icons/Icon';
 import type { IconName } from './icons/glyphs';
 import { pressedStyle } from './pressable';
+import { StatusTag, type StatusTone } from './StatusTag';
 import { Switch } from './Switch';
 
 export type ListItemProps = {
@@ -24,10 +25,23 @@ export type ListItemProps = {
     | { kind: 'switch'; value: boolean; onValueChange: (value: boolean) => void; label: string };
   /** Marks the row as the chosen option of a list (screen readers announce it as selected). */
   selected?: boolean;
+  /** A status tag shown before the trailing element (e.g. "Inativo"). */
+  status?: { tone: StatusTone; label: string };
+  /** Overrides the default `title, subtitle` announcement when the row needs another wording. */
+  accessibilityLabel?: string;
   onPress?: () => void;
 };
 
-export function ListItem({ title, subtitle, leading, trailing, selected, onPress }: ListItemProps) {
+export function ListItem({
+  title,
+  subtitle,
+  leading,
+  trailing,
+  selected,
+  status,
+  accessibilityLabel,
+  onPress,
+}: ListItemProps) {
   const content = (
     <>
       {leading?.kind === 'avatar' ? <Avatar name={leading.name} /> : null}
@@ -39,6 +53,7 @@ export function ListItem({ title, subtitle, leading, trailing, selected, onPress
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
+      {status ? <StatusTag tone={status.tone} label={status.label} /> : null}
       {trailing?.kind === 'chevron' ? <Icon name="chevron_right" color={theme.iconMuted} /> : null}
       {trailing?.kind === 'check' ? <Icon name="check" color={theme.primary} /> : null}
       {trailing?.kind === 'loading' ? <ActivityIndicator color={theme.primary} /> : null}
@@ -59,7 +74,12 @@ export function ListItem({ title, subtitle, leading, trailing, selected, onPress
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
+      accessibilityLabel={
+        accessibilityLabel ??
+        [title, subtitle, status?.label]
+          .filter((part) => part !== undefined && part !== '')
+          .join(', ')
+      }
       accessibilityState={{
         ...(selected === undefined ? {} : { selected }),
         busy: trailing?.kind === 'loading',

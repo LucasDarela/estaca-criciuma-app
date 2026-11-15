@@ -9,6 +9,14 @@ describe('track', () => {
     expect(info).toHaveBeenCalledWith('{"event":"role_granted","membership_id":"m1"}');
   });
 
+  it('[roles] logs the calling events with only ids', () => {
+    const info = jest.spyOn(console, 'info').mockImplementation(() => {});
+    track('calling_granted', { membership_id: 'mc1', calling_id: 'bishop' });
+    expect(info).toHaveBeenCalledWith(
+      '{"event":"calling_granted","membership_id":"mc1","calling_id":"bishop"}',
+    );
+  });
+
   it('logs only the event name without props', () => {
     const info = jest.spyOn(console, 'info').mockImplementation(() => {});
     track('data_exported');

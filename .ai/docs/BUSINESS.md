@@ -26,7 +26,7 @@ Agenda, mural e liderança são públicos: um visitante entende o que acontece e
 | ID | Regra | Motivo |
 | -- | ----- | ------ |
 | RN-01 | Eventos, avisos do mural e liderança **publicados** são visíveis sem login. Rascunhos não. | Acolhimento: visitantes entendem o que acontece sem criar conta |
-| RN-02 | Líder de unidade publica eventos, avisos, liderança e push **só da própria unidade**. Liderança da estaca publica para a estaca e todas as unidades. Admin, para todas. | Cada unidade é responsável pelo próprio conteúdo |
+| RN-02 | Líder de unidade publica eventos, avisos, liderança e push **só da própria unidade**. Liderança da estaca publica para a estaca e todas as unidades. Presidências de organizações da estaca (`stake_publisher`) publicam só para a Estaca. Admin, para todas. | Cada unidade é responsável pelo próprio conteúdo |
 | RN-03 | Anotações são **privadas do autor**. Ninguém mais as lê, nem admin. | Anotações têm impressões pessoais e espirituais |
 | RN-04 | Chamados são visíveis só ao bispado/presidência de ramo e secretários da unidade, e à liderança da estaca. Admin técnico **não** vê. | Informação confidencial sobre membros |
 | RN-05 | Um chamado passa pelas etapas, nesta ordem: Proposto → Aprovado → Entrevista → Apoio → Designação. | Segue o processo da Igreja para chamados |
@@ -38,13 +38,15 @@ Agenda, mural e liderança são públicos: um visitante entende o que acontece e
 | RN-11 | Nada de curtidas, contadores de popularidade ou gamificação. | Princípio "Centrado em Cristo" do design |
 | RN-12 | Textos seguem o guia de comunicação da Igreja: nome completo na primeira menção, sem "SUD", "LDS" ou "mórmon"; símbolo oficial só com aprovação do VIO. | Guia de Comunicação da Igreja |
 
-Presidentes de organizações da unidade (Sociedade de Socorro, Quórum de Élderes, Primária, Moças, Rapazes) são `unit_publisher`: publicam eventos e avisos da própria unidade e não veem pautas nem chamados.
+O acesso vem do **chamado** da pessoa (Catálogo de chamados, spec `roles-of-leadership`), e é a soma dos níveis dos chamados dela. Presidentes de organizações da unidade (Sociedade de Socorro, Quórum de Élderes, Primária, Moças, Escola Dominical) são `unit_publisher`: publicam eventos e avisos da própria unidade e não veem pautas nem chamados. Presidências de organizações da estaca e o Diretor de Comunicação da Estaca são `stake_publisher` ("Publicação da estaca"): publicam **só pela Estaca** (nunca por uma unidade) e também não veem pautas nem chamados (RN-02, RN-04).
 
 ## Entidades principais
 
 - **Unit** (unidade): a estaca ou uma das 6 unidades (alas e ramo). Tem cor fixa (`units` em `src/theme/theme.ts`).
 - **Profile** (perfil): uma pessoa com conta (`auth.users` 1–1 `profiles`). Tem N **Memberships**.
-- **Membership**: liga Profile a Unit com um **Role** (`unit_leader`, `unit_publisher`, `stake_leader`, `admin`) e, opcionalmente, um `leadership_group` (`stake_presidency`, `bishops`, `presidents`). Membro comum não tem Membership: é só uma conta autenticada. Uma pessoa pode ter papéis em unidades diferentes.
+- **Calling** (chamado do catálogo, `calling_catalog`): cargo com nível (`stake`, `ward`, `branch`, `ward_branch`), o acesso que dá (`none`, `unit_publisher`, `unit_leader`, `stake_publisher`, `stake_leader`), o grupo de aviso e a seção do organograma. Editável só pelo admin.
+- **MemberCall** (`member_calls`): liga Profile a Unit com um Calling e guarda o consentimento para o organograma (`pending`, `accepted`, `declined`). O acesso da pessoa é a soma dos acessos dos chamados dela. Uma pessoa pode ter vários chamados.
+- **Membership**: só o `admin` (Role `admin`, na Estaca). Membro comum não tem Membership: é só uma conta autenticada.
 - **Event**: pertence a 1 Unit; tem tipo, início/fim, local, notas, links e opcionalmente público de push. Evento do tipo Reunião tem N **MeetingItems** (`agenda` | `decision` | `pending`).
 - **Post** (aviso do mural): pertence a 1 Unit; pode ser fixado; pode ter imagem.
 - **LeadershipPosition**: posição no organograma (unidade, chamado/cargo, nome exibido, ordem). Não precisa estar ligada a um Profile.
@@ -66,8 +68,10 @@ Presidentes de organizações da unidade (Sociedade de Socorro, Quórum de Élde
 | Chamado | Designação de um membro para uma função, e o processo para isso | `calling`, `calling_processes` | Chamado de suporte técnico |
 | Apoio | Etapa em que a congregação apoia o chamado (no domingo) | `sustaining` | — |
 | Designação | Etapa final em que a pessoa é designada | `set_apart` | — |
-| Bispado / Presidência de ramo | Liderança de uma ala / de um ramo | `unit_leader` (role) | Liderança da estaca |
-| Publicador de unidade | Presidente de organização que publica pela própria unidade, sem ver pautas e chamados | `unit_publisher` (role) | Bispado (`unit_leader`) |
+| Bispado / Presidência de ramo | Liderança de uma ala / de um ramo | `unit_leader` (nível de acesso) | Liderança da estaca |
+| Publicador de unidade | Presidente de organização que publica pela própria unidade, sem ver pautas e chamados | `unit_publisher` (nível de acesso) | Bispado (`unit_leader`) |
+| Publicação da estaca | Presidência de organização da estaca que publica só pela Estaca, sem ver pautas e chamados | `stake_publisher` (nível de acesso) | Liderança da estaca (`stake_leader`) |
+| Catálogo de chamados | Lista dos chamados da estaca, das alas e do ramo, com o acesso, o grupo de aviso e a seção do organograma de cada um | `calling_catalog` | Chamado como processo (`calling_processes`) |
 | Liderança | Organograma público de quem serve onde | `leadership_positions` | Role / papel de acesso |
 | Perfil (de acesso) | Visitante, Membro, Líder (no design) | `role` (visitante = sem sessão) | `profiles` (dados da pessoa) |
 | Organizações | Sociedade de Socorro, Quórum de Élderes, Moças, Rapazes, Primária | `organization` (`relief_society`, `elders_quorum`, `young_women`, `young_men`, `primary`) | Unidade |

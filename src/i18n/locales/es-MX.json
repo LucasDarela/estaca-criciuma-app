@@ -155,30 +155,107 @@
       "grant": "Conceder acceso",
       "email": "Correo de la cuenta",
       "unit": "Unidad",
-      "role": "Rol",
-      "group": "Grupo de liderazgo",
       "submit": "Conceder",
-      "granted": "Acceso concedido",
+      "granted": "Llamamiento otorgado",
       "noAccount": "Ninguna cuenta con este correo. Pide a la persona que primero inicie sesión en la app.",
-      "alreadyGranted": "Esta persona ya tiene este acceso.",
-      "revokeTitle": "¿Quitar acceso?",
-      "revokeMessage": "{{name}} dejará de tener \"{{role}}\" en {{unit}}.",
+      "alreadyGranted": "Esta persona ya tiene este llamamiento en esta unidad.",
+      "revokeTitle": "¿Quitar llamamiento?",
+      "revokeMessage": "{{name}} deja de tener el llamamiento \"{{calling}}\" en {{unit}}.",
       "revoke": "Quitar",
       "cannotRevokeSelf": "No puedes quitar tu propio acceso.",
       "noHomeUnit": "Esta persona debe indicar su unidad en Perfil antes de recibir un acceso.",
-      "wrongUnit": "Esta persona asiste a otra unidad. Los roles de unidad solo se pueden dar en su propia unidad."
-    },
-    "roles": {
-      "unit_leader": "Liderazgo de la unidad",
+      "wrongUnit": "Esta persona asiste a otra unidad. Los roles de unidad solo se pueden dar en su propia unidad.",
+      "calling": "Llamamiento",
+      "callingPlaceholder": "Selecciona",
+      "admin": "Administración",
+      "revoked": "Llamamiento quitado",
+      "itemA11y": "{{name}}, {{calling}}, {{unit}}"
+    }
+  },
+  "callings": {
+    "access": {
+      "none": "Ninguno",
       "unit_publisher": "Publicación de la unidad",
-      "stake_leader": "Liderazgo de la estaca",
-      "admin": "Administración"
+      "unit_leader": "Liderazgo de la unidad",
+      "stake_publisher": "Publicación de la estaca",
+      "stake_leader": "Liderazgo de la estaca"
+    },
+    "levels": {
+      "stake": "Estaca",
+      "ward": "Barrio",
+      "branch": "Rama",
+      "ward_branch": "Barrio y rama"
     },
     "groups": {
-      "stake_presidency": "Presidencia de la estaca",
-      "bishops": "Obispos",
-      "presidents": "Presidentes",
+      "stake_presidency": "Presidencia de estaca",
+      "high_council": "Sumo consejo",
+      "bishoprics": "Obispados",
+      "elders_quorum_presidency": "Presidencias del cuórum de élderes",
+      "relief_society_presidency": "Presidencias de la Sociedad de Socorro",
+      "young_women_presidency": "Presidencias de las Mujeres Jóvenes",
+      "primary_presidency": "Presidencias de la Primaria",
+      "sunday_school_presidency": "Presidencias de la Escuela Dominical",
+      "clerks": "Secretarios",
+      "missionaries": "Misioneros",
+      "temple_family_history_workers": "Consultores de la obra del templo e historia familiar",
+      "music": "Música",
+      "young_single_adult_leaders": "Líderes de jóvenes adultos solteros",
       "none": "Ninguno"
+    },
+    "sections": {
+      "stake_presidency": "Presidencia de estaca",
+      "high_council": "Sumo consejo",
+      "stake_clerks": "Secretarios de estaca",
+      "stake_organizations": "Organizaciones de estaca",
+      "bishopric": "Obispado",
+      "unit_clerks": "Secretarios",
+      "unit_organizations": "Organizaciones",
+      "bishopric_branch": "Presidencia de rama",
+      "none": "No aparece"
+    },
+    "mine": {
+      "title": "MIS LLAMAMIENTOS",
+      "showInOrgChart": "Mostrar en el organigrama",
+      "showInOrgChartA11y": "Mostrar {{calling}} en el organigrama"
+    },
+    "consent": {
+      "message": "Recibiste el llamamiento {{calling}} en {{unit}}. ¿Quieres que tu nombre y tu llamamiento aparezcan en el organigrama público de la estaca?",
+      "show": "Mostrar",
+      "notNow": "Ahora no",
+      "shown": "Tu nombre aparece en el organigrama."
+    },
+    "catalog": {
+      "title": "Catálogo de llamamientos",
+      "new": "Nuevo llamamiento",
+      "search": "Buscar llamamiento",
+      "tabStake": "Estaca",
+      "tabUnits": "Barrios y rama",
+      "inactive": "Inactivo",
+      "empty": "No se encontró ningún llamamiento para \"{{term}}\"."
+    },
+    "form": {
+      "namePt": "Nombre (portugués)",
+      "nameEn": "Nombre (inglés)",
+      "nameEs": "Nombre (español)",
+      "level": "Nivel",
+      "access": "Acceso",
+      "group": "Grupo de avisos",
+      "section": "Sección del organigrama",
+      "active": "Activo",
+      "save": "Guardar",
+      "saved": "Llamamiento guardado",
+      "errors": {
+        "nameRequired": "Escribe el nombre.",
+        "nameLength": "Usa entre 2 y 80 caracteres.",
+        "nameTaken": "Ya existe un llamamiento con este nombre en este nivel.",
+        "levelLocked": "No se puede cambiar el nivel de un llamamiento que alguien tiene.",
+        "inUse": "Quita este llamamiento a las {{count}} personas que lo tienen antes de desactivarlo."
+      },
+      "confirmAccess": {
+        "title": "¿Cambiar el acceso?",
+        "message": "{{count}} personas con este llamamiento pasan a tener \"{{access}}\".",
+        "confirm": "Cambiar"
+      }
     }
   }
 }

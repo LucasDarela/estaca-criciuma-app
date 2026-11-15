@@ -12,6 +12,7 @@ import { UnitPickerSheet } from '@/components/UnitPickerSheet';
 import { pressedStyle } from '@/components/pressable';
 import { useToast } from '@/components/toast/ToastProvider';
 import { canManageAccess } from '@/domain/access';
+import { isAdmin } from '@/domain/permissions';
 import type { Locale } from '@/domain/profile';
 import type { UnitId } from '@/domain/units';
 import { signOut, useAuthSession } from '@/lib/authSession';
@@ -23,6 +24,8 @@ import { AccountError, exportMyData, updateProfile } from './api';
 import { DeleteAccountSheet } from './DeleteAccountSheet';
 import { EditNameSheet } from './EditNameSheet';
 import { LanguageSheet } from './LanguageSheet';
+import { MyCallingsSection } from './MyCallingsSection';
+import { OrgChartConsentCard } from './OrgChartConsentCard';
 
 const selectableUnits = unitOrder.filter((id) => id !== 'estaca');
 
@@ -97,6 +100,7 @@ export function ProfileScreen() {
     <SafeAreaView edges={['top']} style={styles.screen}>
       <ScreenHeader title={t('account.profile.title')} />
       <ScrollView contentContainerStyle={styles.content}>
+        <OrgChartConsentCard calls={viewer.calls} />
         <View style={styles.identity}>
           <Avatar name={name} size="large" />
           <View style={styles.identityText}>
@@ -126,11 +130,19 @@ export function ProfileScreen() {
           trailing={{ kind: 'chevron' }}
           onPress={() => setOpen('language')}
         />
+        <MyCallingsSection calls={viewer.calls} />
         {canManageAccess(viewer.memberships) ? (
           <ListItem
             title={t('account.profile.access')}
             trailing={{ kind: 'chevron' }}
             onPress={() => router.push('/profile/access')}
+          />
+        ) : null}
+        {isAdmin(viewer.memberships) ? (
+          <ListItem
+            title={t('callings.catalog.title')}
+            trailing={{ kind: 'chevron' }}
+            onPress={() => router.push('/profile/callings-catalog')}
           />
         ) : null}
         <ListItem

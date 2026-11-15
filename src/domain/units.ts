@@ -17,3 +17,11 @@ export const unitIds: readonly UnitId[] = [
 export function isUnitId(value: string): value is UnitId {
   return (unitIds as readonly string[]).includes(value);
 }
+
+export type UnitKind = 'stake' | 'ward' | 'branch';
+
+/** Same values as `units.kind` in the database. */
+export function unitKind(id: UnitId): UnitKind {
+  if (id === STAKE_UNIT_ID) return 'stake';
+  return id === 'ramoGaivota' ? 'branch' : 'ward';
+}

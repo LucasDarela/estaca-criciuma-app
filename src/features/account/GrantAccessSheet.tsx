@@ -1,25 +1,35 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { FilterChip } from '@/components/FilterChip';
+import { ListItem } from '@/components/ListItem';
 import { Sheet } from '@/components/Sheet';
 import { TextField } from '@/components/TextField';
 import { useToast } from '@/components/toast/ToastProvider';
-import { grantableRoles, groupsFor } from '@/domain/access';
+import { callingName } from '@/domain/callings';
 import { EMAIL_MAX_LENGTH, validateEmail } from '@/domain/email';
-import type { LeadershipGroup, Role } from '@/domain/permissions';
-import type { UnitId } from '@/domain/units';
+import { isAdmin } from '@/domain/permissions';
+import { STAKE_UNIT_ID, type UnitId } from '@/domain/units';
+import { useLocale } from '@/i18n/useLocale';
 import { space, theme, type, unitOrder, units } from '@/theme/theme';
 
 import { useViewer } from '../viewer/ViewerProvider';
-import { AccountError, accessQueryKey, grantRole } from './api';
+import {
+  AccountError,
+  accessQueryKey,
+  callingCatalogQueryKey,
+  fetchCallingCatalog,
+  grantAdmin,
+  grantCalling,
+} from './api';
+import { CallingPickerSheet } from './CallingPickerSheet';
 
 export type GrantAccessSheetProps = { visible: boolean; onClose: () => void };
 
-/** RF-16: e-mail, unit, role and leadership group; the database revalidates everything. */
+/** RF-13: e-mail, unit and calling; the database revalidates everything. */
 export function GrantAccessSheet({ visible, onClose }: GrantAccessSheetProps) {
   const { t } = useTranslation();
   return (
@@ -32,6 +42,7 @@ export function GrantAccessSheet({ visible, onClose }: GrantAccessSheetProps) {
 
 function GrantAccessForm({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
+  const locale = useLocale();
   const { memberships } = useViewer();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -39,23 +50,33 @@ function GrantAccessForm({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | undefined>();
   const [unit, setUnit] = useState<UnitId | null>(null);
-  const [role, setRole] = useState<Role | null>(null);
-  const [group, setGroup] = useState<LeadershipGroup | null>(null);
+  // A calling id, or 'admin' for "Administração" (only offered to the admin).
+  const [choice, setChoice] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
   const [loading, setLoading] = useState(false);
   const inFlight = useRef(false);
 
-  const roles = unit ? grantableRoles(memberships, unit) : [];
-  const groups = unit ? groupsFor(unit) : [];
+  const catalog = useQuery({ queryKey: callingCatalogQueryKey, queryFn: fetchCallingCatalog });
+  const admin = isAdmin(memberships);
+
+  const chosenLabel =
+    choice === 'admin'
+      ? t('account.access.admin')
+      : choice
+        ? (() => {
+            const found = (catalog.data ?? []).find((c) => c.id === choice);
+            return found ? callingName(found, locale) : null;
+          })()
+        : null;
 
   function chooseUnit(next: UnitId) {
     setUnit(next);
-    // Drop the role and group that stop being valid for the new unit.
-    if (role && !grantableRoles(memberships, next).includes(role)) setRole(null);
-    if (group && !groupsFor(next).includes(group)) setGroup(null);
+    // The chosen calling stops being valid when the unit changes.
+    setChoice(null);
   }
 
   async function submit() {
-    if (inFlight.current || !unit || !role) return;
+    if (inFlight.current || !unit || !choice) return;
     const problem = validateEmail(email);
     if (problem) {
       setEmailError(
@@ -66,7 +87,8 @@ function GrantAccessForm({ onClose }: { onClose: () => void }) {
     inFlight.current = true;
     setLoading(true);
     try {
-      await grantRole({ email, unitId: unit, role, leadershipGroup: group });
+      if (choice === 'admin') await grantAdmin(email);
+      else await grantCalling({ email, unitId: unit, callingId: choice });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: accessQueryKey }),
         queryClient.invalidateQueries({ queryKey: ['viewer'] }),
@@ -111,7 +133,11 @@ function GrantAccessForm({ onClose }: { onClose: () => void }) {
         />
 
         <Text style={styles.label}>{t('account.access.unit')}</Text>
-        <View style={styles.chips}>
+        <View
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t('account.access.unit')}
+          style={styles.chips}
+        >
           {unitOrder.map((id) => (
             <FilterChip
               key={id}
@@ -123,37 +149,36 @@ function GrantAccessForm({ onClose }: { onClose: () => void }) {
           ))}
         </View>
 
-        <Text style={styles.label}>{t('account.access.role')}</Text>
-        <View style={styles.chips}>
-          {roles.map((value) => (
-            <FilterChip
-              key={value}
-              label={t(`account.roles.${value}`)}
-              selected={role === value}
-              onPress={() => setRole(value)}
-            />
-          ))}
-        </View>
-
-        <Text style={styles.label}>{t('account.access.group')}</Text>
-        <View style={styles.chips}>
-          {groups.map((value) => (
-            <FilterChip
-              key={value ?? 'none'}
-              label={t(`account.groups.${value ?? 'none'}`)}
-              selected={group === value}
-              onPress={() => setGroup(value)}
-            />
-          ))}
-        </View>
+        {unit ? (
+          <ListItem
+            title={t('account.access.calling')}
+            subtitle={chosenLabel ?? t('account.access.callingPlaceholder')}
+            trailing={{ kind: 'chevron' }}
+            onPress={() => setPicking(true)}
+          />
+        ) : null}
 
         <Button
           label={t('account.access.submit')}
           loading={loading}
-          disabled={email.trim() === '' || unit === null || role === null}
+          disabled={email.trim() === '' || unit === null || choice === null}
           onPress={() => void submit()}
         />
       </View>
+
+      {unit ? (
+        <CallingPickerSheet
+          visible={picking}
+          unitId={unit}
+          catalog={catalog.data ?? []}
+          includeAdmin={admin && unit === STAKE_UNIT_ID}
+          onSelect={(id) => {
+            setChoice(id);
+            setPicking(false);
+          }}
+          onClose={() => setPicking(false)}
+        />
+      ) : null}
     </ScrollView>
   );
 }

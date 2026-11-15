@@ -1,6 +1,6 @@
 import { unitOrder } from '@/theme/theme';
 
-import { isUnitId, STAKE_UNIT_ID, unitIds } from './units';
+import { isUnitId, STAKE_UNIT_ID, unitIds, unitKind } from './units';
 
 describe('units', () => {
   it('unitIds matches unitOrder from the theme', () => {
@@ -16,5 +16,11 @@ describe('units', () => {
     expect(isUnitId('ramoGaivota')).toBe(true);
     expect(isUnitId('unknown')).toBe(false);
     expect(isUnitId('')).toBe(false);
+  });
+
+  it('unitKind maps each unit to stake, ward or branch', () => {
+    expect(unitKind('estaca')).toBe('stake');
+    expect(unitKind('ramoGaivota')).toBe('branch');
+    expect(unitIds.filter((id) => unitKind(id) === 'ward')).toHaveLength(5);
   });
 });

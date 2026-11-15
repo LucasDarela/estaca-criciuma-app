@@ -8,11 +8,17 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import type { Membership } from '@/domain/permissions';
 
-import { AccountError, grantRole } from './api';
+import { AccountError, fetchCallingCatalog, grantAdmin, grantCalling } from './api';
+import { testCatalog } from './callingFixtures';
 import { GrantAccessSheet } from './GrantAccessSheet';
 
 let mockMemberships: Membership[] = [];
-jest.mock('./api', () => ({ ...jest.requireActual('./api'), grantRole: jest.fn() }));
+jest.mock('./api', () => ({
+  ...jest.requireActual('./api'),
+  grantCalling: jest.fn(),
+  grantAdmin: jest.fn(),
+  fetchCallingCatalog: jest.fn(),
+}));
 jest.mock('../viewer/ViewerProvider', () => ({
   useViewer: () => ({ memberships: mockMemberships }),
 }));
@@ -40,21 +46,27 @@ const submit = () => screen.getByRole('button', { name: 'Conceder' });
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockMemberships = [{ unitId: 'estaca', role: 'stake_leader', leadershipGroup: null }];
+  mockMemberships = [{ unitId: 'estaca', role: 'stake_leader' }];
   jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
-  (grantRole as jest.Mock).mockResolvedValue(undefined);
+  (grantCalling as jest.Mock).mockResolvedValue(undefined);
+  (grantAdmin as jest.Mock).mockResolvedValue(undefined);
+  (fetchCallingCatalog as jest.Mock).mockResolvedValue(testCatalog);
 });
 afterEach(() => jest.restoreAllMocks());
 
+async function pickCalling(unit: string, calling: RegExp | string) {
+  await fireEvent.press(chip(unit));
+  await fireEvent.press(screen.getByRole('button', { name: /^Chamado/ }));
+  await fireEvent.press(await screen.findByRole('button', { name: calling }));
+}
+
 async function fillIcara(email = 'membro@exemplo.org') {
   await fireEvent.changeText(screen.getByLabelText('E-mail da conta'), email);
-  await fireEvent.press(chip('Içara'));
-  await fireEvent.press(chip('Liderança da unidade'));
-  await fireEvent.press(chip('Bispos'));
+  await pickCalling('Içara', /^Presidente da Primária/);
 }
 
 describe('GrantAccessSheet', () => {
-  it('CA-15: grants Liderança da unidade in Içara with group Bispos and shows the toast', async () => {
+  it('[roles] CA-09: grants Presidente da Primária in Içara and shows the toast', async () => {
     await setup();
     expect(submit()).toBeDisabled();
     await fillIcara();
@@ -62,19 +74,18 @@ describe('GrantAccessSheet', () => {
     await fireEvent.press(submit());
 
     await waitFor(() =>
-      expect(grantRole).toHaveBeenCalledWith({
+      expect(grantCalling).toHaveBeenCalledWith({
         email: 'membro@exemplo.org',
         unitId: 'icara',
-        role: 'unit_leader',
-        leadershipGroup: 'bishops',
+        callingId: 'primary_president',
       }),
     );
-    expect(await screen.findByText('Acesso concedido')).toBeTruthy();
+    expect(await screen.findByText('Chamado concedido')).toBeTruthy();
     expect(onClose).toHaveBeenCalled();
   });
 
   it('CA-16: no_account shows the message on the e-mail field', async () => {
-    (grantRole as jest.Mock).mockRejectedValue(new AccountError('no_account'));
+    (grantCalling as jest.Mock).mockRejectedValue(new AccountError('no_account'));
     await setup();
     await fillIcara('ninguem@exemplo.org');
     await fireEvent.press(submit());
@@ -86,16 +97,16 @@ describe('GrantAccessSheet', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('already_granted shows the message on the e-mail field', async () => {
-    (grantRole as jest.Mock).mockRejectedValue(new AccountError('already_granted'));
+  it('[roles] already_granted shows the message on the e-mail field', async () => {
+    (grantCalling as jest.Mock).mockRejectedValue(new AccountError('already_granted'));
     await setup();
     await fillIcara();
     await fireEvent.press(submit());
-    expect(await screen.findByText('Esta pessoa já tem este acesso.')).toBeTruthy();
+    expect(await screen.findByText('Esta pessoa já tem este chamado nesta unidade.')).toBeTruthy();
   });
 
   it('CA-25: no_home_unit shows the message on the e-mail field', async () => {
-    (grantRole as jest.Mock).mockRejectedValue(new AccountError('no_home_unit'));
+    (grantCalling as jest.Mock).mockRejectedValue(new AccountError('no_home_unit'));
     await setup();
     await fillIcara();
     await fireEvent.press(submit());
@@ -108,7 +119,7 @@ describe('GrantAccessSheet', () => {
   });
 
   it('CA-24: wrong_unit shows the message on the e-mail field', async () => {
-    (grantRole as jest.Mock).mockRejectedValue(new AccountError('wrong_unit'));
+    (grantCalling as jest.Mock).mockRejectedValue(new AccountError('wrong_unit'));
     await setup();
     await fillIcara();
     await fireEvent.press(submit());
@@ -125,29 +136,33 @@ describe('GrantAccessSheet', () => {
     await fillIcara('abc@');
     await fireEvent.press(submit());
     expect(screen.getByText('Informe um e-mail válido.')).toBeTruthy();
-    expect(grantRole).not.toHaveBeenCalled();
+    expect(grantCalling).not.toHaveBeenCalled();
   });
 
-  it('CA-17: a stake leader has no Administração chip on the stake', async () => {
+  it('[roles] CA-11: a stake leader has no Administração in the stake list', async () => {
     await setup();
     await fireEvent.press(chip('Estaca'));
-    expect(chip('Liderança da estaca')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: /^Chamado/ }));
+    expect(await screen.findByRole('button', { name: /^Sumo Conselheiro/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Administração' })).toBeNull();
   });
 
-  it('CA-17: an admin has the Administração chip on the stake', async () => {
-    mockMemberships = [{ unitId: 'estaca', role: 'admin', leadershipGroup: null }];
+  it('[roles] CA-11: an admin gets Administração first, and choosing it calls grantAdmin', async () => {
+    mockMemberships = [{ unitId: 'estaca', role: 'admin' }];
     await setup();
-    await fireEvent.press(chip('Estaca'));
-    expect(chip('Administração')).toBeTruthy();
+    await fireEvent.changeText(screen.getByLabelText('E-mail da conta'), 'novo.admin@exemplo.org');
+    await pickCalling('Estaca', 'Administração');
+    await fireEvent.press(submit());
+    await waitFor(() => expect(grantAdmin).toHaveBeenCalledWith('novo.admin@exemplo.org'));
+    expect(grantCalling).not.toHaveBeenCalled();
   });
 
-  it('changing the unit clears the role and group that stopped being valid', async () => {
+  it('changing the unit clears the chosen calling', async () => {
     await setup();
     await fillIcara();
+    expect(submit()).toBeEnabled();
     await fireEvent.press(chip('Estaca'));
-    expect(submit()).toBeDisabled(); // role was cleared
-    expect(screen.getByRole('button', { name: 'Presidência da estaca' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Bispos' })).toBeNull();
+    expect(submit()).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Chamado, Selecione' })).toBeTruthy();
   });
 });

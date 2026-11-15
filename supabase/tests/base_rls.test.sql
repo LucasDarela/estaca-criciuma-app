@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(59);
+select plan(67);
 
 -- Seed users (see supabase/seed.sql):
 --   ...001 membro, ...002 publicador (icara), ...003 bispo (criciuma1), ...004 estaca, ...005 admin
@@ -18,6 +18,15 @@ select ok(
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.role_grants_log'::regclass),
   'RNF-01: RLS enabled on role_grants_log');
+select ok(
+  (select relrowsecurity from pg_class where oid = 'public.member_calls'::regclass),
+  'RNF-01: RLS enabled on member_calls');
+select ok(
+  (select relrowsecurity from pg_class where oid = 'public.calling_catalog'::regclass),
+  'RNF-01: RLS enabled on calling_catalog');
+select ok(
+  (select relrowsecurity from pg_class where oid = 'public.calling_catalog_log'::regclass),
+  'RNF-01: RLS enabled on calling_catalog_log');
 
 -- RNF-05: permission functions are security definer, stable, with a fixed search_path.
 select is(
@@ -84,7 +93,8 @@ set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000002","
 select is(public.can_publish('icara'), true, 'CA-05: publisher can publish to own unit');
 select is(public.can_publish('criciuma1'), false, 'CA-05: publisher cannot publish to another unit');
 select is(public.can_lead('icara'), false, 'CA-06: publisher cannot lead own unit');
-select is((select count(*)::int from public.memberships), 1, 'CA-04: publisher sees only own membership');
+select is((select count(*)::int from public.memberships), 0, 'CA-04: publisher has no admin membership row');
+select is((select count(*)::int from public.member_calls), 1, 'CA-04: publisher sees only own calling');
 
 -- bispo (...003)
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000003","role":"authenticated"}';
@@ -92,7 +102,8 @@ select throws_ok(
   $$ insert into public.memberships (user_id, unit_id, role)
      values ('00000000-0000-4000-8000-000000000003', 'icara', 'unit_leader') $$,
   '42501', null, 'CA-04: unit leader cannot insert into memberships');
-select is((select count(*)::int from public.memberships), 1, 'CA-04: unit leader sees only own membership');
+select is((select count(*)::int from public.memberships), 0, 'CA-04: unit leader has no admin membership row');
+select is((select count(*)::int from public.member_calls), 1, 'CA-04: unit leader sees only own calling');
 select is(public.can_publish('criciuma1'), true, 'CA-05: unit leader can publish to own unit');
 select is(public.can_publish('icara'), false, 'CA-05: unit leader cannot publish to another unit');
 select is(public.can_lead('criciuma1'), true, 'CA-06: unit leader can lead own unit');
@@ -101,7 +112,8 @@ select is((select count(*)::int from public.role_grants_log), 0, 'CA-07: unit le
 
 -- estaca (...004)
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}';
-select is((select count(*)::int from public.memberships), 4, 'CA-04: stake leader sees all 4 memberships');
+select is((select count(*)::int from public.memberships), 1, 'CA-04: stake leader sees all memberships (only the admin)');
+select is((select count(*)::int from public.member_calls), 3, 'CA-04: stake leader sees all 3 callings');
 select is((select count(*)::int from public.role_grants_log), 4, 'CA-07: stake leader sees 4 role_grants_log rows');
 select throws_ok(
   $$ insert into public.role_grants_log (action, user_id, unit_id, role)
@@ -118,7 +130,8 @@ select is(public.is_admin(), false, 'RF-08: stake leader is not admin');
 
 -- admin (...005)
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}';
-select is((select count(*)::int from public.memberships), 4, 'CA-04: admin sees all 4 memberships');
+select is((select count(*)::int from public.memberships), 1, 'CA-04: admin sees all memberships');
+select is((select count(*)::int from public.member_calls), 3, 'CA-04: admin sees all 3 callings');
 select is((select count(*)::int from public.role_grants_log), 4, 'CA-07: admin sees 4 role_grants_log rows');
 select is(public.can_publish('icara'), true, 'CA-05: admin can publish to any unit');
 select is(public.can_lead('icara'), false, 'CA-06: admin cannot lead (RN-04)');
@@ -158,6 +171,9 @@ select is(
 select is(
   (select count(*)::int from public.profiles where id = '00000000-0000-4000-8000-000000000002'),
   0, '7.4: profile removed with the user');
+select is(
+  (select count(*)::int from public.member_calls where user_id = '00000000-0000-4000-8000-000000000002'),
+  0, '7.4: callings removed with the user');
 select is(
   (select count(*)::int from public.role_grants_log where user_id = '00000000-0000-4000-8000-000000000002'),
   1, '7.4: role_grants_log row survives the deletion');
