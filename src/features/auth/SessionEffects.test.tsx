@@ -32,6 +32,38 @@ describe('SessionEffects', () => {
     expect(signOut).toHaveBeenCalledTimes(1);
   });
 
+  it('CA-09 regression: welcome to /agenda with a stale unconsented viewer does not sign out', async () => {
+    mockPathname = '/welcome';
+    mockViewer = { userId: 'u1', loaded: true, profile: { locale: 'pt-BR', consentedAt: null } };
+    const view = await render(<SessionEffects />);
+    expect(signOut).not.toHaveBeenCalled();
+
+    // Começar: the app navigates before the refreshed profile reaches the viewer.
+    mockPathname = '/agenda';
+    await view.rerender(<SessionEffects />);
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it('a restored session whose first load is on /agenda without consent signs out once', async () => {
+    mockViewer = { userId: 'u1', loaded: false, profile: null };
+    const view = await render(<SessionEffects />);
+    mockViewer = { userId: 'u1', loaded: true, profile: { locale: 'pt-BR', consentedAt: null } };
+    await view.rerender(<SessionEffects />);
+    await view.rerender(<SessionEffects />);
+    expect(signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('checks again for a new sign in after a sign out', async () => {
+    mockViewer = { userId: 'u1', loaded: true, profile: { locale: 'pt-BR', consentedAt: null } };
+    const view = await render(<SessionEffects />);
+    expect(signOut).toHaveBeenCalledTimes(1);
+    (useAuthSession as jest.Mock).mockReturnValue({ status: 'signedOut', expired: false });
+    await view.rerender(<SessionEffects />);
+    (useAuthSession as jest.Mock).mockReturnValue(signedIn);
+    await view.rerender(<SessionEffects />);
+    expect(signOut).toHaveBeenCalledTimes(2);
+  });
+
   it('signs out when the account has no profile at all', async () => {
     mockViewer = { userId: 'u1', loaded: true, profile: null };
     await render(<SessionEffects />);

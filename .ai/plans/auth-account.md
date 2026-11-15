@@ -621,6 +621,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 - `complete_welcome` rejeita `estaca` como unidade frequentada (`invalid_unit`), coerente com a constraint `home_unit_not_stake`.
 - `npm audit --omit=dev`: relata `deepmerge` (>=4.2.0, prototype poisoning) via cadeia `jest`/`jest-config` já existente, sem relação com os 5 pacotes novos; o "fix" proposto rebaixaria o Jest para 29 (breaking). Não tratado aqui.
 - Template de e-mail e config local verificados: o código de 6 dígitos chega ao Inbucket/Mailpit local com assunto `Seu código de acesso` e sem link.
+- **Achado do QA (T-13), corrigido:** depois de `Começar`, o usuário caía na Agenda deslogado. O `await invalidateQueries(['viewer'])` resolve antes de o TanStack entregar o dado novo ao observer do `ViewerProvider`, e o `router.replace('/agenda')` renderiza primeiro; o `SessionEffects` via `/agenda` com o perfil antigo (`consentedAt` nulo) e chamava `signOut()`. Correção: a guarda de consentimento roda uma vez por id de usuário logado, na primeira vez em que o viewer daquele usuário está carregado (ref com o id já checado, zerada ao deslogar). Navegação posterior nunca a dispara. Cobre só o caso para o qual existe (app fechado no meio do `/welcome`, RF-10). Testes de regressão em `SessionEffects.test.tsx`.
 - Nenhum ADR novo (as decisões seguem os ADRs 0002 e 0004 e as decisões 14 a 18 da spec).
 
 ### CA sem teste automatizado
