@@ -7,7 +7,8 @@
     "cancel": "Cancelar",
     "comingSoon": "Esta sección llegará pronto.",
     "profile": "Abrir perfil",
-    "genericError": "Algo salió mal. Inténtalo de nuevo."
+    "genericError": "Algo salió mal. Inténtalo de nuevo.",
+    "retry": "Intentar de nuevo"
   },
   "tabs": {
     "agenda": "Agenda",
