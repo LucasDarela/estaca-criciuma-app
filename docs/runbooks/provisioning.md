@@ -55,7 +55,10 @@ Em `estaca-criciuma`:
    - Senha: a chave de API `estaca-criciuma` do Resend (começa com `re_`)
    - Remetente: `nao-responda@estacacriciuma.com.br`
    - Nome: `Estaca Criciúma`
-3. Authentication › Sign In / Providers: Google e Apple **desligados** (entram na spec `auth-account`).
+3. Authentication › Sign In / Providers: Google e Apple **desligados** (fora da `auth-account`, decisão 14).
+4. Authentication › Emails: nos templates `Magic Link` e `Confirm signup`, use o mesmo assunto, `Seu código de acesso`, e o mesmo corpo (cole o conteúdo de `supabase/templates/magic_link.html`). O GoTrue usa o `Confirm signup` no primeiro código de um e-mail novo.
+5. Authentication › Sign In / Providers › Email: OTP de 6 dígitos, validade de 600 s e intervalo mínimo de 60 s entre envios.
+6. Authentication › Rate Limits: 30 e-mails por hora e 10 verificações a cada 5 min (por IP).
 
 ## f) Token do Supabase e Environments do GitHub
 
