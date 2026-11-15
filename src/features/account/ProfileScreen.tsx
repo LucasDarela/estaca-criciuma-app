@@ -6,6 +6,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/Avatar';
+import { LanguageSheet } from '@/components/LanguageSheet';
 import { ListItem } from '@/components/ListItem';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { UnitPickerSheet } from '@/components/UnitPickerSheet';
@@ -23,11 +24,12 @@ import { useViewer } from '../viewer/ViewerProvider';
 import { AccountError, exportMyData, updateProfile } from './api';
 import { DeleteAccountSheet } from './DeleteAccountSheet';
 import { EditNameSheet } from './EditNameSheet';
-import { LanguageSheet } from './LanguageSheet';
 import { MyCallingsSection } from './MyCallingsSection';
 import { OrgChartConsentCard } from './OrgChartConsentCard';
 
 const selectableUnits = unitOrder.filter((id) => id !== 'estaca');
+
+const localeOptions: readonly Locale[] = ['pt-BR', 'en-US', 'es-MX'];
 
 type Open = 'name' | 'unit' | 'language' | 'delete' | null;
 
@@ -192,6 +194,11 @@ export function ProfileScreen() {
       />
       <LanguageSheet
         visible={open === 'language'}
+        title={t('account.profile.language')}
+        options={localeOptions.map((value) => ({
+          value,
+          label: t(`account.languages.${value}`),
+        }))}
         value={locale}
         onSelect={(next) => void chooseLocale(next)}
         onClose={() => setOpen(null)}
