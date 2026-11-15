@@ -320,7 +320,7 @@ Nenhuma.
 
 ## 4. Tarefas
 
-- [ ] **T-01 — Catálogo no banco (RF-01 a RF-07)**
+- [x] **T-01 — Catálogo no banco (RF-01 a RF-07)**
   - Arquivos: `criar supabase/migrations/<ts>_calling_catalog.sql` (`supabase migration new calling_catalog`) · `criar supabase/tests/callings.test.sql`
   - O que fazer:
     - Criar a tabela, a RLS, o log, a `save_calling` (sem a checagem de quem tem o chamado) e a `calling_holder_count`, conforme 2.1.
