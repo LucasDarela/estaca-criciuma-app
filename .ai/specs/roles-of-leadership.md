@@ -201,9 +201,9 @@ src/i18n/locales/*.json                           # callings.*, account.access.*
 | -- | ----- | ---- | ------ | ----- |
 | CA-01 | RF-01, RF-04, RF-05, RF-23 | o banco migrado | conto o catálogo | todos os chamados do apêndice A, ativos, com `name_pt`, `name_en` e `name_es` preenchidos e `access`, `notify_group` e `org_chart_section` iguais aos do apêndice |
 | CA-02 | RF-02, RF-07 | `admin` | salvo um chamado `Estaca` com acesso `Publicação da unidade` | `invalid_access`; nada muda |
-| CA-03 | RF-06 | visitante | leio o catálogo | só os ativos; escrever é negado |
+| CA-03 | RF-06, RF-08 | visitante; membro | leio o catálogo; leio `member_calls` | só os ativos e escrever é negado; o membro só vê as próprias linhas de `member_calls` |
 | CA-04 | RF-06 | `stake_leader` | chamo `save_calling` | negado |
-| CA-05 | RF-09 | pessoa só com `relief_society_president` em `icara` | `can_publish('icara')`, `can_lead('icara')`, `can_publish('criciuma1')` | `true`, `false`, `false` |
+| CA-05 | RF-08, RF-09 | pessoa só com `relief_society_president` em `icara` | `can_publish('icara')`, `can_lead('icara')`, `can_publish('criciuma1')` | `true`, `false`, `false` |
 | CA-06 | RF-09 | pessoa com `stake_relief_society_president` | `can_publish('estaca')`, `can_publish('icara')`, `can_lead('estaca')` | `true`, `false`, `false` |
 | CA-07 | RF-09 | pessoa com `high_councilor` e `sunday_school_teacher` | carrego o viewer | `leader`, com a aba Chamados |
 | CA-08 | RF-10 | pessoa de `criciuma1` | concedo `bishop` em `criciuma2`; `bishop` em `criciuma1`; `branch_president` em `criciuma1`; `high_councilor` em `estaca` | `wrong_unit`; ok; `invalid_unit_for_calling`; ok |
