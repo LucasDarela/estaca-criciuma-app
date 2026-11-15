@@ -132,7 +132,8 @@
       "signOut": "Sign out",
       "delete": "Delete account",
       "updated": "Profile updated",
-      "save": "Save"
+      "save": "Save",
+      "unitLocked": "To change your unit, ask the stake leadership to remove your access first."
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -163,7 +164,9 @@
       "revokeTitle": "Remove access?",
       "revokeMessage": "{{name}} will no longer have \"{{role}}\" in {{unit}}.",
       "revoke": "Remove",
-      "cannotRevokeSelf": "You cannot remove your own access."
+      "cannotRevokeSelf": "You cannot remove your own access.",
+      "noHomeUnit": "This person needs to set their unit in Profile before receiving access.",
+      "wrongUnit": "This person attends another unit. Unit roles can only be given in their own unit."
     },
     "roles": {
       "unit_leader": "Unit leadership",

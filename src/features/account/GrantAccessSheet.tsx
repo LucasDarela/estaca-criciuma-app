@@ -77,6 +77,8 @@ function GrantAccessForm({ onClose }: { onClose: () => void }) {
       const code = thrown instanceof AccountError ? thrown.code : 'unknown';
       if (code === 'no_account') setEmailError(t('account.access.noAccount'));
       else if (code === 'already_granted') setEmailError(t('account.access.alreadyGranted'));
+      else if (code === 'no_home_unit') setEmailError(t('account.access.noHomeUnit'));
+      else if (code === 'wrong_unit') setEmailError(t('account.access.wrongUnit'));
       else
         toast.show({
           message: t(code === 'network' ? 'auth.errors.network' : 'common.genericError'),

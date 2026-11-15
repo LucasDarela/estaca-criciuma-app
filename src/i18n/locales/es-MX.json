@@ -132,7 +132,8 @@
       "signOut": "Salir",
       "delete": "Eliminar cuenta",
       "updated": "Perfil actualizado",
-      "save": "Guardar"
+      "save": "Guardar",
+      "unitLocked": "Para cambiar de unidad, pide al liderazgo de la estaca que primero quite tus accesos."
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -163,7 +164,9 @@
       "revokeTitle": "¿Quitar acceso?",
       "revokeMessage": "{{name}} dejará de tener \"{{role}}\" en {{unit}}.",
       "revoke": "Quitar",
-      "cannotRevokeSelf": "No puedes quitar tu propio acceso."
+      "cannotRevokeSelf": "No puedes quitar tu propio acceso.",
+      "noHomeUnit": "Esta persona debe indicar su unidad en Perfil antes de recibir un acceso.",
+      "wrongUnit": "Esta persona asiste a otra unidad. Los roles de unidad solo se pueden dar en su propia unidad."
     },
     "roles": {
       "unit_leader": "Liderazgo de la unidad",

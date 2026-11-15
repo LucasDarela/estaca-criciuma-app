@@ -38,6 +38,7 @@ export function ProfileScreen() {
   const [open, setOpen] = useState<Open>(null);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [unitError, setUnitError] = useState<string | undefined>();
   const privacy = privacyUrl();
 
   const userId = viewer.userId;
@@ -56,8 +57,13 @@ export function ProfileScreen() {
       await queryClient.invalidateQueries({ queryKey: ['viewer'] });
       if (toastMessage) toast.show({ message: t('account.profile.updated'), tone: 'success' });
       setOpen(null);
-    } catch {
-      toast.show({ message: t('common.genericError') });
+    } catch (thrown) {
+      // Decision 20: with access, the unit is locked; the sheet stays open and keeps the unit.
+      if (thrown instanceof AccountError && thrown.code === 'home_unit_locked') {
+        setUnitError(t('account.profile.unitLocked'));
+      } else {
+        toast.show({ message: t('common.genericError') });
+      }
     } finally {
       setSaving(false);
     }
@@ -109,7 +115,10 @@ export function ProfileScreen() {
           title={t('account.profile.unit')}
           subtitle={unit ? units[unit].label : t('account.profile.unitNone')}
           trailing={{ kind: 'chevron' }}
-          onPress={() => setOpen('unit')}
+          onPress={() => {
+            setUnitError(undefined);
+            setOpen('unit');
+          }}
         />
         <ListItem
           title={t('account.profile.language')}
@@ -165,6 +174,7 @@ export function ProfileScreen() {
         noneLabel={t('account.profile.unitNone')}
         value={unit}
         units={selectableUnits}
+        error={unitError}
         onSelect={(next: UnitId | null) => void save({ homeUnitId: next })}
         onClose={() => setOpen(null)}
       />

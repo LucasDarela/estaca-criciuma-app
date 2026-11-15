@@ -125,6 +125,22 @@ describe('ProfileScreen', () => {
     await waitFor(() => expect(updateProfile).toHaveBeenCalledWith('u1', { homeUnitId: 'icara' }));
   });
 
+  it('CA-26: a locked unit shows the message in the sheet and keeps the unit', async () => {
+    const { AccountError } = jest.requireActual('./api');
+    (updateProfile as jest.Mock).mockRejectedValue(new AccountError('home_unit_locked'));
+    await setup();
+    await fireEvent.press(screen.getByRole('button', { name: /^Unidade/ }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Içara' }));
+    expect(
+      await screen.findByText(
+        'Para mudar de unidade, peça à liderança da estaca para remover seus acessos primeiro.',
+      ),
+    ).toBeTruthy();
+    // The sheet stays open and the screen still shows the saved unit (none).
+    expect(screen.getByRole('button', { name: 'Unidade, Não informada' })).toBeTruthy();
+    expect(screen.queryByText('Perfil atualizado')).toBeNull();
+  });
+
   it('exports the data and shows the offline toast on a network failure', async () => {
     const { AccountError } = jest.requireActual('./api');
     (exportMyData as jest.Mock).mockRejectedValue(new AccountError('network'));

@@ -13,6 +13,9 @@ export type AccountErrorCode =
   | 'no_account'
   | 'already_granted'
   | 'cannot_revoke_self'
+  | 'no_home_unit'
+  | 'wrong_unit'
+  | 'home_unit_locked'
   | 'not_authorized'
   | 'network'
   | 'unknown';
@@ -30,6 +33,9 @@ const knownCodes: readonly AccountErrorCode[] = [
   'already_granted',
   'cannot_revoke_self',
   'not_authorized',
+  'no_home_unit',
+  'wrong_unit',
+  'home_unit_locked',
 ];
 
 /** RPCs return a short code in `message`; a failed fetch is `network`; anything else is `unknown`. */

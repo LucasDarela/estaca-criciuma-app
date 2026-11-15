@@ -1,9 +1,20 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(37);
+select plan(48);
 
 -- Seed users (see supabase/seed.sql):
 --   ...001 membro, ...002 publicador (icara), ...003 bispo (criciuma1), ...004 estaca, ...005 admin
+
+-- Extra user without a home unit (...006), for the RF-16a tests.
+insert into auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change
+) values (
+  '00000000-0000-4000-8000-000000000006', '00000000-0000-0000-0000-000000000000', 'authenticated',
+  'authenticated', 'sem.unidade@exemplo.org', '', now(), '{}', '{}', now(), now(), '', '', '', '');
+insert into public.profiles (id, display_name, home_unit_id, consented_at)
+values ('00000000-0000-4000-8000-000000000006', 'Fulana Sem Unidade', null, now());
 
 -- anon cannot execute any of the 6 RPCs.
 set local role anon;
@@ -64,6 +75,14 @@ select throws_ok($$ select public.grant_role('membro@exemplo.org', 'icara', 'uni
   'P0001', 'invalid_group', 'stake_presidency outside the stake is invalid_group');
 select throws_ok($$ select public.grant_role('membro@exemplo.org', 'estaca', 'unit_leader', null) $$,
   'P0001', 'invalid_unit_for_role', 'unit_leader on the stake is invalid_unit_for_role');
+select throws_ok($$ select public.grant_role('sem.unidade@exemplo.org', 'icara', 'unit_leader', 'bishops') $$,
+  'P0001', 'no_home_unit', 'CA-25: a person without a home unit cannot receive a unit role');
+select throws_ok($$ select public.grant_role('sem.unidade@exemplo.org', 'estaca', 'stake_leader', 'stake_presidency') $$,
+  'P0001', 'no_home_unit', 'CA-25: a person without a home unit cannot receive stake_leader');
+select throws_ok($$ select public.grant_role('membro@exemplo.org', 'criciuma2', 'unit_leader', 'bishops') $$,
+  'P0001', 'wrong_unit', 'CA-24: unit_leader in another unit than the home unit is wrong_unit');
+select throws_ok($$ select public.grant_role('membro@exemplo.org', 'criciuma2', 'unit_publisher', null) $$,
+  'P0001', 'wrong_unit', 'CA-24: unit_publisher in another unit than the home unit is wrong_unit');
 select lives_ok($$ select public.grant_role(' Membro@Exemplo.org ', 'icara', 'unit_leader', 'bishops') $$,
   'CA-15: stake leader grants unit_leader/icara/bishops');
 select results_eq(
@@ -78,6 +97,16 @@ select results_eq(
   'CA-15: role_grants_log has the grant with actor_id');
 select throws_ok($$ select public.grant_role('membro@exemplo.org', 'icara', 'unit_leader', 'bishops') $$,
   'P0001', 'already_granted', 'granting the same role again is already_granted');
+-- membro now leads icara: the home unit is locked (CA-26, decision 20).
+set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}';
+select throws_ok(
+  $$ update public.profiles set home_unit_id = 'criciuma2' where id = '00000000-0000-4000-8000-000000000001' $$,
+  'P0001', 'home_unit_locked', 'CA-26: a unit leader cannot move to another unit');
+select throws_ok(
+  $$ update public.profiles set home_unit_id = null where id = '00000000-0000-4000-8000-000000000001' $$,
+  'P0001', 'home_unit_locked', 'CA-26: a unit leader cannot clear the unit');
+set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000004","role":"authenticated"}';
+
 select is((select count(*)::int from public.list_access()), 5, 'list_access returns all memberships');
 
 select throws_ok(
@@ -95,6 +124,21 @@ select is(
   (select count(*)::int from public.role_grants_log
     where action = 'revoked' and user_id = '00000000-0000-4000-8000-000000000001'),
   1, 'revoking writes revoked to role_grants_log');
+
+-- stake_leader accepts any home unit (CA-24) and only blocks clearing the unit (CA-26).
+select lives_ok($$ select public.grant_role('membro@exemplo.org', 'estaca', 'stake_leader', 'stake_presidency') $$,
+  'CA-24: stake_leader is granted to a person of any unit');
+set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}';
+select lives_ok(
+  $$ update public.profiles set home_unit_id = 'criciuma2' where id = '00000000-0000-4000-8000-000000000001' $$,
+  'CA-26: with only stake_leader the unit can change to another unit');
+select is((select home_unit_id from public.profiles where id = '00000000-0000-4000-8000-000000000001'),
+  'criciuma2', 'CA-26: the new unit was saved');
+select throws_ok(
+  $$ update public.profiles set home_unit_id = null where id = '00000000-0000-4000-8000-000000000001' $$,
+  'P0001', 'home_unit_locked', 'CA-26: with stake_leader the unit cannot be cleared');
+select throws_ok($$ select public.complete_welcome('Ana Nova', null, 'pt-BR') $$,
+  'P0001', 'home_unit_locked', 'CA-26: complete_welcome cannot clear the unit either');
 
 -- admin (...005): grants admin; last admin cannot delete the account.
 set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}';

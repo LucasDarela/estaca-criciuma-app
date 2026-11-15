@@ -14,6 +14,8 @@ export type UnitPickerSheetProps = {
   /** null = no unit chosen. */
   value: UnitId | null;
   units: readonly UnitId[];
+  /** Message shown under the title (e.g. the unit is locked). */
+  error?: string;
   onSelect: (unitId: UnitId | null) => void;
   onClose: () => void;
 };
@@ -25,6 +27,7 @@ export function UnitPickerSheet({
   noneLabel,
   value,
   units,
+  error,
   onSelect,
   onClose,
 }: UnitPickerSheetProps) {
@@ -34,6 +37,11 @@ export function UnitPickerSheet({
         <Text accessibilityRole="header" style={styles.title}>
           {title}
         </Text>
+        {error ? (
+          <Text accessibilityRole="alert" style={styles.error}>
+            {error}
+          </Text>
+        ) : null}
         <ListItem
           title={noneLabel}
           selected={value === null}
@@ -58,4 +66,5 @@ export function UnitPickerSheet({
 const styles = StyleSheet.create({
   content: { gap: space.xs },
   title: { ...type.headline, color: theme.heading, paddingBottom: space.sm },
+  error: { ...type.fieldError, color: theme.danger, paddingBottom: space.sm },
 });

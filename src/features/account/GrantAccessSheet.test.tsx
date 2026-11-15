@@ -94,6 +94,32 @@ describe('GrantAccessSheet', () => {
     expect(await screen.findByText('Esta pessoa já tem este acesso.')).toBeTruthy();
   });
 
+  it('CA-25: no_home_unit shows the message on the e-mail field', async () => {
+    (grantRole as jest.Mock).mockRejectedValue(new AccountError('no_home_unit'));
+    await setup();
+    await fillIcara();
+    await fireEvent.press(submit());
+    expect(
+      await screen.findByText(
+        'Esta pessoa precisa informar a unidade no Perfil antes de receber um acesso.',
+      ),
+    ).toBeTruthy();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('CA-24: wrong_unit shows the message on the e-mail field', async () => {
+    (grantRole as jest.Mock).mockRejectedValue(new AccountError('wrong_unit'));
+    await setup();
+    await fillIcara();
+    await fireEvent.press(submit());
+    expect(
+      await screen.findByText(
+        'Esta pessoa frequenta outra unidade. Papéis de unidade só podem ser dados na unidade dela.',
+      ),
+    ).toBeTruthy();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('an invalid e-mail is rejected before calling the API', async () => {
     await setup();
     await fillIcara('abc@');
