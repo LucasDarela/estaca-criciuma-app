@@ -16,6 +16,7 @@ import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 
 import { ToastProvider } from '@/components/toast/ToastProvider';
+import { SessionEffects } from '@/features/auth/SessionEffects';
 import { ViewerHeaderAvatar } from '@/features/navigation/ViewerHeaderAvatar';
 import { ViewerProvider } from '@/features/viewer/ViewerProvider';
 import { useAppStateFocus } from '@/lib/appFocus';
@@ -64,6 +65,7 @@ function AuthenticatedApp() {
   return (
     <ViewerProvider session={auth.status === 'signedIn' ? { userId: auth.userId } : null}>
       <ToastProvider>
+        <SessionEffects />
         <ViewerHeaderAvatar>
           <StatusBar style="auto" />
           <Stack screenOptions={{ headerShown: false }} />
