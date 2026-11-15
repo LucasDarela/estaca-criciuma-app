@@ -182,12 +182,44 @@ export type Database = {
     Functions: {
       can_lead: { Args: { p_unit: string }; Returns: boolean };
       can_publish: { Args: { p_unit: string }; Returns: boolean };
+      complete_welcome: {
+        Args: {
+          p_display_name: string;
+          p_home_unit_id: string;
+          p_locale: string;
+        };
+        Returns: undefined;
+      };
+      delete_my_account: { Args: never; Returns: undefined };
+      export_my_data: { Args: never; Returns: Json };
+      grant_role: {
+        Args: {
+          p_email: string;
+          p_leadership_group: string;
+          p_role: string;
+          p_unit_id: string;
+        };
+        Returns: string;
+      };
       has_role: {
         Args: { p_roles: string[]; p_unit: string };
         Returns: boolean;
       };
       is_admin: { Args: never; Returns: boolean };
       is_stake_leader: { Args: never; Returns: boolean };
+      list_access: {
+        Args: never;
+        Returns: {
+          display_name: string;
+          email: string;
+          leadership_group: string;
+          membership_id: string;
+          role: string;
+          unit_id: string;
+          user_id: string;
+        }[];
+      };
+      revoke_role: { Args: { p_membership_id: string }; Returns: undefined };
     };
     Enums: {
       [_ in never]: never;

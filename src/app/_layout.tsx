@@ -16,8 +16,11 @@ import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 
 import { ToastProvider } from '@/components/toast/ToastProvider';
+import { SessionEffects } from '@/features/auth/SessionEffects';
 import { ViewerHeaderAvatar } from '@/features/navigation/ViewerHeaderAvatar';
 import { ViewerProvider } from '@/features/viewer/ViewerProvider';
+import { useAppStateFocus } from '@/lib/appFocus';
+import { AuthSessionProvider, useAuthSession } from '@/lib/authSession';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -35,23 +38,39 @@ export default function RootLayout() {
   });
   const ready = fontsLoaded || fontError !== null;
 
-  useEffect(() => {
-    if (ready) void SplashScreen.hideAsync();
-  }, [ready]);
+  useAppStateFocus();
 
   if (!ready) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* auth-account replaces null with the Supabase session. */}
-      <ViewerProvider session={null}>
-        <ToastProvider>
-          <ViewerHeaderAvatar>
-            <StatusBar style="auto" />
-            <Stack screenOptions={{ headerShown: false }} />
-          </ViewerHeaderAvatar>
-        </ToastProvider>
-      </ViewerProvider>
+      <AuthSessionProvider>
+        <AuthenticatedApp />
+      </AuthSessionProvider>
     </QueryClientProvider>
+  );
+}
+
+function AuthenticatedApp() {
+  const auth = useAuthSession();
+  const sessionKnown = auth.status !== 'loading';
+
+  // Keep the splash up until fonts and the stored session are known (no flash of the visitor UI).
+  useEffect(() => {
+    if (sessionKnown) void SplashScreen.hideAsync();
+  }, [sessionKnown]);
+
+  if (!sessionKnown) return null;
+
+  return (
+    <ViewerProvider session={auth.status === 'signedIn' ? { userId: auth.userId } : null}>
+      <ToastProvider>
+        <SessionEffects />
+        <ViewerHeaderAvatar>
+          <StatusBar style="auto" />
+          <Stack screenOptions={{ headerShown: false }} />
+        </ViewerHeaderAvatar>
+      </ToastProvider>
+    </ViewerProvider>
   );
 }

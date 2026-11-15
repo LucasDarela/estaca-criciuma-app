@@ -28,7 +28,7 @@ Quem tem conta cria, lê, edita e exclui as próprias anotações nos modos Lemb
 | Aba `notes` | Tela provisória (só Membro e Líder) | Substituir |
 | `expo-notifications` | `push-notifications` | Usar para notificação local |
 | `reminderLog` | `push-notifications` (leitura) | Escrever ao agendar e apagar ao excluir/concluir |
-| `export_my_data`, `delete_my_account` | `auth-account` | Já incluem `notes` |
+| `export_my_data`, `delete_my_account` | `auth-account` | `export_my_data` exporta perfil e papéis: alterar para incluir `notes` (decisão 16 de `auth-account`). `delete_my_account` já apaga `notes` pelo `on delete cascade` |
 
 ## 4. Tecnologias e versões
 

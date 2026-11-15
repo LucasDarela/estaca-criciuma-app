@@ -1,1 +1,1 @@
-export { ProfilePlaceholder as default } from '@/features/placeholder/screens';
+export { ProfileScreen as default } from '@/features/account/ProfileScreen';

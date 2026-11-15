@@ -4,8 +4,10 @@ import {
   AccessibilityInfo,
   Animated,
   Dimensions,
+  KeyboardAvoidingView,
   Modal,
   PanResponder,
+  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -85,7 +87,11 @@ export function Sheet({ visible, onClose, children, accessibilityLabel }: SheetP
 
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
-      <View style={styles.root}>
+      {/* Lifts the sheet above the keyboard on iOS (sheets with text fields). */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.root}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('common.close')}
@@ -104,7 +110,7 @@ export function Sheet({ visible, onClose, children, accessibilityLabel }: SheetP
           </View>
           {children}
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

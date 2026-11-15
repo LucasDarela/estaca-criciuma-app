@@ -6,7 +6,9 @@
     "close": "Fechar",
     "cancel": "Cancelar",
     "comingSoon": "Esta área chega em breve.",
-    "profile": "Abrir perfil"
+    "profile": "Abrir perfil",
+    "genericError": "Algo deu errado. Tente de novo.",
+    "retry": "Tentar de novo"
   },
   "tabs": {
     "agenda": "Agenda",
@@ -71,6 +73,112 @@
         "success": "Aprovado",
         "warning": "Pendente"
       }
+    }
+  },
+  "auth": {
+    "signature": {
+      "name": "Estaca Criciúma",
+      "tagline": "SANTA CATARINA · BRASIL"
+    },
+    "signIn": {
+      "title": "Entrar",
+      "intro": "Entre para fazer anotações, receber avisos da sua ala e, se você serve na liderança, publicar na agenda.",
+      "email": "E-mail",
+      "submit": "Receber código"
+    },
+    "errors": {
+      "emailRequired": "Informe seu e-mail.",
+      "emailInvalid": "Informe um e-mail válido.",
+      "invalidCode": "Código inválido ou expirado. Confira ou peça um novo.",
+      "rateLimited": "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
+      "network": "Sem conexão. Verifique a internet e tente de novo."
+    },
+    "code": {
+      "title": "Digite o código",
+      "sentTo": "Enviamos um código de 6 dígitos para {{email}}.",
+      "label": "Código",
+      "a11yLabel": "Código de 6 dígitos",
+      "submit": "Entrar",
+      "resend": "Reenviar código",
+      "resendIn": "Reenviar em {{seconds}} s",
+      "otherEmail": "Usar outro e-mail"
+    },
+    "welcome": {
+      "title": "Boas-vindas",
+      "name": "Como podemos chamar você?",
+      "unit": "Unidade que você frequenta",
+      "unitNone": "Prefiro não informar",
+      "consent": "Autorizo a Estaca Criciúma a tratar meu nome, meu e-mail e, se eu informar, a unidade que frequento — dado que revela minha crença religiosa — para me identificar no app, me enviar avisos e guardar minhas anotações. Posso exportar ou excluir meus dados a qualquer momento em Perfil.",
+      "privacy": "Política de privacidade",
+      "submit": "Começar",
+      "errors": {
+        "nameRequired": "Informe como podemos chamar você.",
+        "nameLength": "Use entre 2 e 60 caracteres.",
+        "consent": "Para usar sua conta, é preciso concordar com o tratamento dos dados."
+      }
+    },
+    "sessionExpired": "Sua sessão terminou. Entre de novo."
+  },
+  "account": {
+    "profile": {
+      "title": "Perfil",
+      "name": "Nome",
+      "unit": "Unidade",
+      "unitNone": "Não informada",
+      "language": "Idioma",
+      "access": "Acessos",
+      "export": "Exportar meus dados",
+      "privacy": "Política de privacidade",
+      "signOut": "Sair",
+      "delete": "Excluir conta",
+      "updated": "Perfil atualizado",
+      "save": "Salvar",
+      "unitLocked": "Para mudar de unidade, peça à liderança da estaca para remover seus acessos primeiro."
+    },
+    "languages": {
+      "pt-BR": "Português (Brasil)",
+      "en-US": "English (US)",
+      "es-MX": "Español (México)"
+    },
+    "delete": {
+      "title": "Excluir conta",
+      "message": "Isso apaga sua conta, suas anotações e suas preferências. Não dá para desfazer. Digite EXCLUIR para confirmar.",
+      "confirmWord": "EXCLUIR",
+      "inputLabel": "Confirmação",
+      "submit": "Excluir conta",
+      "done": "Conta excluída.",
+      "lastAdmin": "Transfira a administração para outra pessoa antes de excluir sua conta."
+    },
+    "access": {
+      "title": "Acessos",
+      "restricted": "Acesso restrito",
+      "grant": "Conceder acesso",
+      "email": "E-mail da conta",
+      "unit": "Unidade",
+      "role": "Papel",
+      "group": "Grupo de liderança",
+      "submit": "Conceder",
+      "granted": "Acesso concedido",
+      "noAccount": "Nenhuma conta com este e-mail. Peça para a pessoa entrar no app primeiro.",
+      "alreadyGranted": "Esta pessoa já tem este acesso.",
+      "revokeTitle": "Remover acesso?",
+      "revokeMessage": "{{name}} deixa de ter \"{{role}}\" em {{unit}}.",
+      "revoke": "Remover",
+      "cannotRevokeSelf": "Você não pode remover o próprio acesso.",
+      "noHomeUnit": "Esta pessoa precisa informar a unidade no Perfil antes de receber um acesso.",
+      "wrongUnit": "Esta pessoa frequenta outra unidade. Papéis de unidade só podem ser dados na unidade dela."
+    },
+    "roles": {
+      "unit_leader": "Liderança da unidade",
+      "unit_publisher": "Publicação da unidade",
+      "stake_leader": "Liderança da estaca",
+      "admin": "Administração"
+    },
+    "groups": {
+      "stake_presidency": "Presidência da estaca",
+      "bishops": "Bispos",
+      "presidents": "Presidentes",
+      "none": "Nenhum"
     }
   }
 }

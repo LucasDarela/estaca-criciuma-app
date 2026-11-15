@@ -21,6 +21,8 @@ import { fetchViewerData, viewerQueryKey, type ViewerData } from './api';
 export type Viewer = {
   kind: ViewerKind;
   userId: string | null;
+  /** False while the signed-in person's profile and roles are still loading for the first time. */
+  loaded: boolean;
   profile: Profile | null;
   memberships: readonly Membership[];
   canPublish: (unitId: UnitId) => boolean;
@@ -47,6 +49,8 @@ export function ViewerProvider({
     queryKey: viewerQueryKey(userId ?? ''),
     queryFn: () => fetchViewerData(userId as string),
     enabled: userId !== null,
+    // 7.6: a revoked role reaches the app on the next load (return to the app or every 5 min).
+    refetchInterval: 5 * 60_000,
   });
   // Without a session, or on a failure with no cache, `data` is empty and nothing is granted.
   const data = userId === null ? emptyData : (query.data ?? emptyData);
@@ -56,6 +60,7 @@ export function ViewerProvider({
     return {
       kind: viewerKind(userId === null ? null : { userId }, memberships),
       userId,
+      loaded: userId === null || query.isSuccess,
       profile,
       memberships,
       canPublish: (unitId) => canPublish(memberships, unitId),
@@ -65,7 +70,7 @@ export function ViewerProvider({
       isAdmin: isAdmin(memberships),
       isStakeLeader: isStakeLeader(memberships),
     };
-  }, [userId, data]);
+  }, [userId, data, query.isSuccess]);
 
   return <ViewerContext.Provider value={viewer}>{children}</ViewerContext.Provider>;
 }

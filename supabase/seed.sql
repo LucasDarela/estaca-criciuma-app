@@ -22,11 +22,11 @@ from auth.users u
 where u.email like '%@exemplo.org';
 
 insert into public.profiles (id, display_name, home_unit_id, consented_at) values
-  ('00000000-0000-4000-8000-000000000001', 'Ana Exemplo', 'criciuma2', now()),
+  ('00000000-0000-4000-8000-000000000001', 'Ana Exemplo', null, now()),
   ('00000000-0000-4000-8000-000000000002', 'Bruno Exemplo', 'icara', now()),
   ('00000000-0000-4000-8000-000000000003', 'Carlos Exemplo', 'criciuma1', now()),
   ('00000000-0000-4000-8000-000000000004', 'Daniela Exemplo', 'criciuma3', now()),
-  ('00000000-0000-4000-8000-000000000005', 'Eduardo Exemplo', null, now());
+  ('00000000-0000-4000-8000-000000000005', 'Eduardo Exemplo', 'criciuma1', now());
 
 insert into public.memberships (user_id, unit_id, role, leadership_group, granted_by) values
   ('00000000-0000-4000-8000-000000000002', 'icara', 'unit_publisher', null, null),

@@ -70,7 +70,7 @@ Qualquer pessoa navega pela liderança da estaca e das unidades e vê nomes, cha
 
 | ID | Requisito |
 | -- | --------- |
-| RF-01 | `leadership_positions`: `id`, `unit_id`, `group` (estaca: `stake_presidency`, `high_council`, `stake_clerks`, `stake_organizations`; unidade: `bishopric`, `unit_clerks`, `unit_organizations`), `title` (2–80, ex.: `Presidente da Estaca`, `1º Conselheiro`), `person_name` (2–80), `organization null` (as 6 de `push-notifications` RF-09, para grupos de organizações), `sort_order`, `consent_declared_by`, `consent_declared_at`, `updated_at`. Leitura pública. |
+| RF-01 | `leadership_positions`: `id`, `unit_id`, `group` (estaca: `stake_presidency`, `high_council`, `stake_clerks`, `stake_organizations`; unidade: `bishopric`, `unit_clerks`, `unit_organizations`), `title` (2–80, ex.: `Presidente da Estaca`, `1º Conselheiro`), `person_name` (2–80), `organization null` (as 6 de `push-notifications` RF-09, para grupos de organizações), `sort_order`, `consent_declared_by`, `consent_declared_at`, `updated_at`. Leitura pública. Ajuste de `roles-of-leadership` (2026-11-15): `title` passa a ser `calling_id text null` → `calling_catalog` ou, com `Outro chamado`, `title` livre (2–80); um dos dois é obrigatório. |
 | RF-02 | `leadership_contacts`: `position_id pk` → posição `on delete cascade`, `phone_e164`. Leitura só `authenticated`. |
 | RF-03 | `designations`: `id`, `position_id` → posição `on delete cascade`, `description` (1–120), `target_type null` (`unit` \| `organization` \| `position`), `target_id text null`, `sort_order`. Leitura pública. |
 | RF-04 | Rótulos de grupo: `Presidência da estaca`, `Sumo conselho`, `Secretários da estaca`, `Organizações da estaca`, `Bispado` (ala) / `Presidência do ramo` (ramo), `Secretários`, `Organizações`. |
@@ -79,7 +79,7 @@ Qualquer pessoa navega pela liderança da estaca e das unidades e vê nomes, cha
 
 | ID | Requisito |
 | -- | --------- |
-| RF-05 | Aba: título `Liderança`, busca `Buscar nome ou chamado`, overline `PRESIDÊNCIA DA ESTACA` com o presidente (avatar `large`, nome, chamado) e os demais da presidência em grade de 2; lista com `badge` `Secretários e Sumo Conselho` (contagem) e `groups` `Organizações da Estaca` (contagem); overline `UNIDADES` com as 6 unidades (ponto, nome, `{rótulo do grupo principal} · {n}`). |
+| RF-05 | Aba: título `Liderança`, busca `Buscar nome ou chamado`, overline `PRESIDÊNCIA DA ESTACA` com o presidente (avatar `large`, nome, chamado) e os demais da presidência em grade de 2; lista com `badge` `Secretários e Sumo Conselho` (contagem) e `groups` `Organizações da Estaca` (contagem); overline `UNIDADES` com as 6 unidades (ponto, nome, `{rótulo do grupo principal} · {n}`). Ajuste de `roles-of-leadership`: as pessoas vêm de duas fontes, `leadership_positions` (cadastro manual) e `org_chart_members()` (quem tem chamado com seção e aceitou), na seção `org_chart_section` e na ordem `sort_order` do catálogo; as automáticas não abrem o formulário de edição (são geridas em Acessos). |
 | RF-06 | Busca: a partir de 2 caracteres, ignorando maiúsculas e acentos, por nome e chamado em toda a estaca; resultados como `ListItem` (`Avatar`, nome, `{chamado} · {unidade}`); vazio `Ninguém encontrado para "{termo}".` |
 | RF-07 | Página da unidade (`/leadership/unit/[id]`): título com o nome da unidade, grupos em ordem (principal, secretários, organizações), cada pessoa como `ListItem`; seção `Acompanhada por` com as pessoas que têm designação com alvo nesta unidade (`{nome} ({chamado})`). |
 | RF-08 | Página de grupo da estaca (`/leadership/stake/[group]`): título do grupo e as pessoas em `sort_order`. `Secretários e Sumo Conselho` mostra os dois grupos em sequência. |
@@ -91,7 +91,7 @@ Qualquer pessoa navega pela liderança da estaca e das unidades e vê nomes, cha
 | ID | Requisito |
 | -- | --------- |
 | RF-11 | Nas páginas de unidade e de grupo, botão `Editar` no cabeçalho ativa o modo de edição: cada grupo ganha `Adicionar pessoa`; cada pessoa ganha setas `Mover para cima`/`Mover para baixo` e abre o formulário ao toque. `Concluir` sai do modo. |
-| RF-12 | Formulário `Pessoa`: `Nome` (2–80), `Chamado` (2–80, placeholder `Ex.: 1º Conselheiro`), `Grupo` (só os do nível), `Organização` (só no grupo de organizações), `Telefone` (opcional; máscara `(00) 00000-0000`; 10 ou 11 dígitos), caixa obrigatória `A pessoa autorizou a publicação do nome, do chamado e do telefone.` Mensagens: `Informe o nome.`, `Informe o chamado.`, `Use entre 2 e 80 caracteres.`, `Informe um telefone com DDD.`, `Confirme que a pessoa autorizou a publicação.` |
+| RF-12 | Formulário `Pessoa`: `Nome` (2–80), `Chamado` (2–80, placeholder `Ex.: 1º Conselheiro`), `Grupo` (só os do nível), `Organização` (só no grupo de organizações), `Telefone` (opcional; máscara `(00) 00000-0000`; 10 ou 11 dígitos), caixa obrigatória `A pessoa autorizou a publicação do nome, do chamado e do telefone.` Mensagens: `Informe o nome.`, `Informe o chamado.`, `Use entre 2 e 80 caracteres.`, `Informe um telefone com DDD.`, `Confirme que a pessoa autorizou a publicação.` Ajuste de `roles-of-leadership`: `Chamado` vira uma lista do catálogo (ativos, do nível da unidade, com busca) mais a opção `Outro chamado`, que abre o texto livre; o `Grupo` vem da `org_chart_section` do chamado escolhido e só é perguntado em `Outro chamado`. |
 | RF-13 | `Designações` no formulário: lista com `Adicionar designação` → `Descrição` (1–120, placeholder `Ex.: Responsável pela Ala Içara`) e `Vínculo` (`Nenhum`, `Unidade`, `Organização`, `Pessoa` → lista correspondente da estaca). Mensagens: `Descreva a designação.`, `Use até 120 caracteres.` Cada designação tem `Remover`. |
 | RF-14 | Salvar: toast `Pessoa salva`; grava `consent_declared_by = auth.uid()` e `consent_declared_at = now()` a cada salvamento. Excluir: `ConfirmSheet` `Remover da liderança?` / `{nome} deixa de aparecer no organograma.` / `Remover` / `Cancelar`; toast `Pessoa removida.` |
 | RF-15 | Designações que apontam para uma pessoa removida são apagadas junto (alvo inexistente). |
@@ -190,6 +190,7 @@ Nenhuma decisão em aberto.
 | A1 | Grupos do organograma | Lista fixa de RF-01/RF-04 | padrão do projeto |
 | A2 | Quem edita | `can_lead` (bispado/secretários da unidade; liderança da estaca para tudo) | padrão do projeto |
 | A3 | Reordenar | Setas para cima/baixo (sem arrastar) | padrão do projeto |
+| 28 | Catálogo de chamados | Cargo vem do catálogo (`roles-of-leadership`); pessoas com conta entram pelo chamado, com o próprio aceite; cadastro manual continua para quem não tem conta (2026-11-15) | usuário |
 
 ## 15. Próximos passos (fora desta entrega)
 

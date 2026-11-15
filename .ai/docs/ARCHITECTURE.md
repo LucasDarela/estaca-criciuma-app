@@ -2,7 +2,7 @@
 
 Estado atual: app Expo criado com a base (rotas, fontes, i18n, TanStack Query, tokens, lint e testes); nenhuma feature implementada. Versões exatas: `package.json` / `package-lock.json` — confirme lá.
 
-Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): armazenamento seguro de sessão (spec de login), `@shopify/react-native-skia` (anotações), `expo-notifications` (push/lembretes), `@sentry/react-native`, persistência offline do TanStack Query.
+Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): `@shopify/react-native-skia` (anotações), `expo-notifications` (push/lembretes), `@sentry/react-native`, persistência offline do TanStack Query.
 
 ## Stack
 
@@ -12,8 +12,10 @@ Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec d
 | Framework | React Native + Expo (managed, dev client), expo-router | Expo SDK 58 · RN 0.88 · React 19.3 · expo-router 58 | 0002 |
 | Estado de servidor | TanStack Query (cache persistido para offline) | 5.x | 0002 |
 | Banco de dados | PostgreSQL do Supabase Cloud | gerenciada pelo Supabase | 0002 |
+| Sessão | `src/lib/authSession.tsx` (`AuthSessionProvider`, `useAuthSession`, `signOut`); storage cifrado em `src/lib/secureSessionStorage.ts` |
+| RPC com auditoria | `supabase/migrations/*_account_rpcs.sql` (+ `supabase/tests/account.test.sql`) |
 | Acesso a dados | `@supabase/supabase-js` direto (PostgREST) + RLS; RPC para lógica que precisa ser atômica | idem | 0002 |
-| Autenticação | Supabase Auth (GoTrue): OTP por e-mail, Google, Apple | idem | 0002 |
+| Autenticação | Supabase Auth (GoTrue): OTP por e-mail | idem | 0002 |
 | Push | `expo-notifications` + Expo Push Service, disparado por Edge Function | idem | 0002 |
 | Desenho | `@shopify/react-native-skia` | idem | 0002 |
 | i18n | `i18next` + `react-i18next` + `expo-localization` (pt-BR, en-US, es-MX) | i18next 27 · react-i18next 18 | 0002 |
@@ -40,8 +42,10 @@ src/
     index.tsx             Redireciona para /agenda
     (tabs)/               Abas: agenda, board, leadership, notes, callings, profile, sign-in (telas provisórias até cada feature chegar)
     dev/components.tsx    Catálogo de componentes, só em __DEV__
-    _layout.tsx           Providers: Query, i18n, fontes, splash (Auth e Sentry entram com suas specs)
-  features/<feature>/     Uma pasta por área: calendar, board, leadership, notes, callings, notifications, auth
+    _layout.tsx           Providers: Query, sessão (Auth), i18n, fontes, splash (Sentry entra com sua spec)
+  features/<feature>/     Uma pasta por área: calendar, board, leadership, notes, callings, notifications
+    auth/                 Entrar, código, Boas-vindas e SessionEffects (consentimento, idioma, sessão expirada)
+    account/              Perfil, Acessos e os sheets (nome, idioma, exclusão, conceder acesso)
     navigation/           Layout das abas por perfil (TabsLayout), avatar do cabeçalho e redirecionamento da raiz
     placeholder/          Telas "em breve" das abas sem feature
     dev/                  Catálogo de componentes (/dev/components)
@@ -88,6 +92,8 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 | Teste unitário (função pura) | `src/i18n/resolveLanguage.test.ts` |
 | Texto traduzido | `src/i18n/locales/*.json` (paridade verificada por `src/i18n/locales.test.ts`) |
 | Componente do design system | `src/components/Button.tsx` (+ `Button.test.tsx`) |
+| Sessão | `src/lib/authSession.tsx` (`AuthSessionProvider`, `useAuthSession`, `signOut`); storage cifrado em `src/lib/secureSessionStorage.ts` |
+| RPC com auditoria | `supabase/migrations/*_account_rpcs.sql` (+ `supabase/tests/account.test.sql`) |
 | Acesso a dados | `src/features/viewer/api.ts` (cliente de `src/lib/supabase.ts`, tipos de `src/lib/database.types.ts`) |
 | Migration com RLS | `supabase/migrations/*_base_units_profiles_roles.sql` |
 | Teste de RLS | `supabase/tests/base_rls.test.sql` (pgTAP; `make test-db`) |
@@ -97,9 +103,9 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 
 | Serviço | Para quê | Onde está o cliente | Variáveis de ambiente |
 | ------- | -------- | ------------------- | --------------------- |
-| Supabase Cloud (API, Auth, Storage) | Dados, login, imagens do mural | `src/lib/supabase.ts` | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` |
+| Supabase Cloud (API, Auth, Storage) | Dados, login, imagens do mural | `src/lib/supabase.ts` | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
 | Expo Push Service | Entrega de push (APNs/FCM) | `supabase/functions/send-push` | `EXPO_ACCESS_TOKEN` (secret da function) |
-| Google / Apple Sign-In | Login social | Supabase Auth + `expo-auth-session` / `expo-apple-authentication` | Configurados no GoTrue (servidor) |
+| Google / Apple Sign-In (futuro, fora de `auth-account`) | Login social | Supabase Auth + `expo-auth-session` / `expo-apple-authentication` | Configurados no GoTrue (servidor) |
 | Sentry | Crashes e erros do app | `src/lib/sentry.ts` | `EXPO_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` (só build) |
 | EAS (Expo) | Builds e envio às lojas | `eas.json` | `EXPO_TOKEN` (CI de release) |
 

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { UnitId } from '@/domain/units';
 import { radius, size, space, stroke, theme, type, units } from '@/theme/theme';
@@ -18,12 +18,16 @@ export type ListItemProps = {
     | { kind: 'unitDot'; unitId: UnitId };
   trailing?:
     | { kind: 'chevron' }
+    | { kind: 'check' }
+    | { kind: 'loading' }
     | { kind: 'count'; text: string }
     | { kind: 'switch'; value: boolean; onValueChange: (value: boolean) => void; label: string };
+  /** Marks the row as the chosen option of a list (screen readers announce it as selected). */
+  selected?: boolean;
   onPress?: () => void;
 };
 
-export function ListItem({ title, subtitle, leading, trailing, onPress }: ListItemProps) {
+export function ListItem({ title, subtitle, leading, trailing, selected, onPress }: ListItemProps) {
   const content = (
     <>
       {leading?.kind === 'avatar' ? <Avatar name={leading.name} /> : null}
@@ -36,6 +40,8 @@ export function ListItem({ title, subtitle, leading, trailing, onPress }: ListIt
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
       {trailing?.kind === 'chevron' ? <Icon name="chevron_right" color={theme.iconMuted} /> : null}
+      {trailing?.kind === 'check' ? <Icon name="check" color={theme.primary} /> : null}
+      {trailing?.kind === 'loading' ? <ActivityIndicator color={theme.primary} /> : null}
       {trailing?.kind === 'count' ? <Text style={styles.count}>{trailing.text}</Text> : null}
       {trailing?.kind === 'switch' ? (
         <Switch
@@ -54,6 +60,10 @@ export function ListItem({ title, subtitle, leading, trailing, onPress }: ListIt
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
+      accessibilityState={{
+        ...(selected === undefined ? {} : { selected }),
+        busy: trailing?.kind === 'loading',
+      }}
       onPress={onPress}
       style={(state) => [styles.row, pressedStyle(state)]}
     >

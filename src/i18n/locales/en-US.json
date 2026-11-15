@@ -6,7 +6,9 @@
     "close": "Close",
     "cancel": "Cancel",
     "comingSoon": "This area is coming soon.",
-    "profile": "Open profile"
+    "profile": "Open profile",
+    "genericError": "Something went wrong. Try again.",
+    "retry": "Try again"
   },
   "tabs": {
     "agenda": "Calendar",
@@ -71,6 +73,112 @@
         "success": "Approved",
         "warning": "Pending"
       }
+    }
+  },
+  "auth": {
+    "signature": {
+      "name": "Estaca Criciúma",
+      "tagline": "SANTA CATARINA · BRASIL"
+    },
+    "signIn": {
+      "title": "Sign in",
+      "intro": "Sign in to take notes, get notices from your ward and, if you serve in leadership, publish to the agenda.",
+      "email": "Email",
+      "submit": "Get code"
+    },
+    "errors": {
+      "emailRequired": "Enter your email.",
+      "emailInvalid": "Enter a valid email.",
+      "invalidCode": "Invalid or expired code. Check it or request a new one.",
+      "rateLimited": "Too many attempts. Wait a few minutes and try again.",
+      "network": "No connection. Check your internet and try again."
+    },
+    "code": {
+      "title": "Enter the code",
+      "sentTo": "We sent a 6-digit code to {{email}}.",
+      "label": "Code",
+      "a11yLabel": "6-digit code",
+      "submit": "Sign in",
+      "resend": "Resend code",
+      "resendIn": "Resend in {{seconds}} s",
+      "otherEmail": "Use another email"
+    },
+    "welcome": {
+      "title": "Welcome",
+      "name": "What should we call you?",
+      "unit": "Unit you attend",
+      "unitNone": "I prefer not to say",
+      "consent": "I authorize Estaca Criciúma to process my name, my email and, if I provide it, the unit I attend — data that reveals my religious belief — to identify me in the app, send me notices and keep my notes. I can export or delete my data at any time in Profile.",
+      "privacy": "Privacy policy",
+      "submit": "Get started",
+      "errors": {
+        "nameRequired": "Tell us what we should call you.",
+        "nameLength": "Use between 2 and 60 characters.",
+        "consent": "To use your account, you need to agree to the processing of your data."
+      }
+    },
+    "sessionExpired": "Your session ended. Sign in again."
+  },
+  "account": {
+    "profile": {
+      "title": "Profile",
+      "name": "Name",
+      "unit": "Unit",
+      "unitNone": "Not provided",
+      "language": "Language",
+      "access": "Access",
+      "export": "Export my data",
+      "privacy": "Privacy policy",
+      "signOut": "Sign out",
+      "delete": "Delete account",
+      "updated": "Profile updated",
+      "save": "Save",
+      "unitLocked": "To change your unit, ask the stake leadership to remove your access first."
+    },
+    "languages": {
+      "pt-BR": "Português (Brasil)",
+      "en-US": "English (US)",
+      "es-MX": "Español (México)"
+    },
+    "delete": {
+      "title": "Delete account",
+      "message": "This deletes your account, your notes and your preferences. It cannot be undone. Type DELETE to confirm.",
+      "confirmWord": "DELETE",
+      "inputLabel": "Confirmation",
+      "submit": "Delete account",
+      "done": "Account deleted.",
+      "lastAdmin": "Transfer administration to another person before deleting your account."
+    },
+    "access": {
+      "title": "Access",
+      "restricted": "Restricted access",
+      "grant": "Grant access",
+      "email": "Account email",
+      "unit": "Unit",
+      "role": "Role",
+      "group": "Leadership group",
+      "submit": "Grant",
+      "granted": "Access granted",
+      "noAccount": "No account with this email. Ask the person to sign in to the app first.",
+      "alreadyGranted": "This person already has this access.",
+      "revokeTitle": "Remove access?",
+      "revokeMessage": "{{name}} will no longer have \"{{role}}\" in {{unit}}.",
+      "revoke": "Remove",
+      "cannotRevokeSelf": "You cannot remove your own access.",
+      "noHomeUnit": "This person needs to set their unit in Profile before receiving access.",
+      "wrongUnit": "This person attends another unit. Unit roles can only be given in their own unit."
+    },
+    "roles": {
+      "unit_leader": "Unit leadership",
+      "unit_publisher": "Unit publishing",
+      "stake_leader": "Stake leadership",
+      "admin": "Administration"
+    },
+    "groups": {
+      "stake_presidency": "Stake presidency",
+      "bishops": "Bishops",
+      "presidents": "Presidents",
+      "none": "None"
     }
   }
 }

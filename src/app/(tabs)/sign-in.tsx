@@ -1,1 +1,1 @@
-export { SignInPlaceholder as default } from '@/features/placeholder/screens';
+export { SignInScreen as default } from '@/features/auth/SignInScreen';

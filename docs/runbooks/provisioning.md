@@ -55,7 +55,10 @@ Em `estaca-criciuma`:
    - Senha: a chave de API `estaca-criciuma` do Resend (começa com `re_`)
    - Remetente: `nao-responda@estacacriciuma.com.br`
    - Nome: `Estaca Criciúma`
-3. Authentication › Sign In / Providers: Google e Apple **desligados** (entram na spec `auth-account`).
+3. Authentication › Sign In / Providers: Google e Apple **desligados** (fora da `auth-account`, decisão 14).
+4. Authentication › Emails: nos templates `Magic Link` e `Confirm signup`, use o mesmo assunto, `Seu código de acesso`, e o mesmo corpo (cole o conteúdo de `supabase/templates/magic_link.html`). O GoTrue usa o `Confirm signup` no primeiro código de um e-mail novo.
+5. Authentication › Sign In / Providers › Email: OTP de 6 dígitos, validade de 600 s e intervalo mínimo de 60 s entre envios.
+6. Authentication › Rate Limits: 30 e-mails por hora e 10 verificações a cada 5 min (por IP).
 
 ## f) Token do Supabase e Environments do GitHub
 
@@ -95,9 +98,9 @@ O `supabase/seed.sql` tem só contas fictícias e roda **apenas no Supabase loca
 
 ## j) Primeiro admin (painel do Supabase)
 
-1. A pessoa pede o código de login pelo app (ou por `POST /auth/v1/otp`) e entra uma vez, para existir `auth.users` e `profiles`.
+1. A pessoa pede o código de login pelo app (ou por `POST /auth/v1/otp`) e entra uma vez e conclui `Boas-vindas` **informando a unidade que frequenta** (o banco só concede papel a quem informou a unidade, RF-16a), para existir `auth.users` e `profiles` com unidade.
 2. No SQL Editor do projeto, cole `supabase/snippets/grant_admin.sql`, troque o e-mail no topo (`select 'pessoa@exemplo.org'`) e rode.
-3. Leia a coluna `result`: `granted`, `already admin`, `error: no user with this email` ou `error: user has no profile yet`. Nos erros, nada é gravado.
+3. Leia a coluna `result`: `granted`, `already admin`, `error: no user with this email` ou `error: user has no profile yet` ou `error: user has no home unit`. Nos erros, nada é gravado.
 
 ## k) Backup manual e teste de restauração (GitHub e terminal)
 

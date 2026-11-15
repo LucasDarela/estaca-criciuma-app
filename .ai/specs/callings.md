@@ -85,7 +85,7 @@ A liderança (`can_lead`) cria chamados da unidade, avança e volta etapas com d
 
 | ID | Requisito |
 | -- | --------- |
-| RF-09 | `Novo chamado` (`Sheet`): `Chamado` (2–80, placeholder `Ex.: Presidente da Primária`), `Pessoa indicada` (2–80, placeholder `Nome e sobrenome`), unidade = a selecionada na lista (não editável no sheet). Mensagens: `Informe o chamado.`, `Informe o nome da pessoa.`, `Use entre 2 e 80 caracteres.` Salvar cria em `Proposto` com evento `created`; toast `Chamado criado`. |
+| RF-09 | `Novo chamado` (`Sheet`): `Chamado` (2–80, placeholder `Ex.: Presidente da Primária`), `Pessoa indicada` (2–80, placeholder `Nome e sobrenome`), unidade = a selecionada na lista (não editável no sheet). Mensagens: `Informe o chamado.`, `Informe o nome da pessoa.`, `Use entre 2 e 80 caracteres.` Salvar cria em `Proposto` com evento `created`; toast `Chamado criado`. Ajuste de `roles-of-leadership` (2026-11-15): `Chamado` vira uma lista do catálogo (ativos, compatíveis com a unidade, com busca `Buscar chamado`) mais `Outro chamado`, que abre o texto livre (2–80); grava `calling_id text null` → `calling_catalog` ou `title`. |
 | RF-10 | Detalhe `/callings/[id]`: cargo (serif 22), pessoa, unidade, `StatusTag`, barra de progresso, linha do tempo (`{etapa} · {d} {mês abreviado} {aaaa} · {nome de quem fez}`; `Excluído` se a conta do autor foi apagada), e ações: `Avançar para {próxima etapa}` (`primary`), `Voltar etapa` (`outline`), `Cancelar chamado` (`ghost` `danger`), `Excluir` (no cabeçalho). Concluído: só `Voltar etapa` e `Excluir`. Cancelado: só `Excluir`. |
 | RF-11 | `Cancelar chamado` → `ConfirmSheet` `Cancelar este chamado?` / `O chamado sai da lista em andamento e é apagado em 30 dias.` / `Cancelar chamado` (`danger`) / `Voltar`. Toast `Chamado cancelado`. |
 | RF-12 | `Excluir` → `ConfirmSheet` `Excluir chamado?` / `O chamado e o histórico serão apagados. Não dá para desfazer.` / `Excluir` (`danger`) / `Cancelar`. Toast `Chamado excluído.` |
@@ -185,6 +185,7 @@ Nenhuma decisão em aberto.
 | A1 | Campos | Só cargo e pessoa (dado mínimo) | padrão do projeto |
 | A2 | Unidade padrão do `stake_leader` | A frequentada, se liderável; senão Estaca | padrão do projeto |
 | A3 | Texto do rodapé | Genérico para ala, ramo e estaca | padrão do projeto |
+| 25 | Cargo do chamado | Do catálogo (`roles-of-leadership`) + `Outro chamado` em texto livre (2026-11-15) | usuário |
 
 ## 15. Próximos passos (fora desta entrega)
 
