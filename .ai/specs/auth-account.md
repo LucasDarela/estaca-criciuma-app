@@ -1,6 +1,6 @@
 # Conta: login, consentimento, perfil e acessos
 
-> **Status:** Em implementação
+> **Status:** Concluída
 > **Área:** abas `sign-in` e `profile`, rotas `/sign-in/*`, `/welcome`, `/profile/*`, `src/features/auth/`, `src/features/account/`, `src/lib/supabase.ts`, `supabase/migrations/`
 > **Última atualização:** 2026-11-14
 
