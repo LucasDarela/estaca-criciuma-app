@@ -336,7 +336,7 @@ Nenhuma.
   - Cobre: CA-01, CA-02, CA-03, CA-04
   - Verificar: `supabase db reset && make test-db`
 
-- [ ] **T-02 — Chamados das pessoas e permissões (RF-08 a RF-11, RF-23, RF-24)**
+- [x] **T-02 — Chamados das pessoas e permissões (RF-08 a RF-11, RF-23, RF-24)**
   - Arquivos: `criar supabase/migrations/<ts>_member_calls.sql` (schema, funções de permissão, mapeamento, conversão, trigger e `save_calling` com a checagem de quem tem o chamado) · `alterar supabase/seed.sql` · `alterar supabase/tests/callings.test.sql` · `alterar supabase/tests/base_rls.test.sql` · `alterar supabase/tests/account.test.sql`
   - O que fazer:
     - Implementar 2.2 até o trigger. As RPCs de concessão ficam para a T-03; até lá, `grant_role` e `revoke_role` podem continuar existindo.
@@ -356,7 +356,7 @@ Nenhuma.
   - Cobre: CA-03, CA-05, CA-06, CA-21, CA-22 (banco)
   - Verificar: `supabase db reset && make test-db`
 
-- [ ] **T-03 — RPCs de concessão, consentimento, organograma e exportação (RF-12 a RF-19, RNF-06)**
+- [x] **T-03 — RPCs de concessão, consentimento, organograma e exportação (RF-12 a RF-19, RNF-06)**
   - Arquivos: `alterar supabase/migrations/<ts>_member_calls.sql` (o mesmo arquivo da T-02, ainda não aplicado em nenhum ambiente remoto) · `alterar supabase/tests/callings.test.sql` · `alterar supabase/tests/account.test.sql` · `alterar src/lib/database.types.ts` (`make db-types`)
   - O que fazer:
     - Criar `grant_calling`, `revoke_calling`, `grant_admin`, `revoke_admin`, o novo `list_access`, `set_org_chart_consent`, `org_chart_members` e o `export_my_data` com `calls`. Remover `grant_role` e `revoke_role`.
