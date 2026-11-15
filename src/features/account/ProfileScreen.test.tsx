@@ -4,16 +4,19 @@ import { AccessibilityInfo } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import i18n from '@/i18n';
+import type { MemberCall } from '@/domain/callings';
 import type { Membership } from '@/domain/permissions';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import { signOut } from '@/lib/authSession';
 
 import { exportMyData, updateProfile } from './api';
+import { bishop } from './callingFixtures';
 import { ProfileScreen } from './ProfileScreen';
 
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 let mockMemberships: Membership[] = [];
+let mockCalls: MemberCall[] = [];
 jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace, push: mockPush }) }));
 jest.mock('./api', () => ({
   ...jest.requireActual('./api'),
@@ -28,6 +31,7 @@ jest.mock('../viewer/ViewerProvider', () => ({
   useViewer: () => ({
     userId: 'u1',
     memberships: mockMemberships,
+    calls: mockCalls,
     profile: { displayName: 'Ana Souza', homeUnitId: null, locale: 'pt-BR' },
   }),
 }));
@@ -52,6 +56,7 @@ async function setup() {
 beforeEach(async () => {
   jest.clearAllMocks();
   mockMemberships = [];
+  mockCalls = [];
   jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   (updateProfile as jest.Mock).mockResolvedValue(undefined);
   (exportMyData as jest.Mock).mockResolvedValue(undefined);
@@ -139,6 +144,48 @@ describe('ProfileScreen', () => {
     // The sheet stays open and the screen still shows the saved unit (none).
     expect(screen.getByRole('button', { name: 'Unidade, Não informada' })).toBeTruthy();
     expect(screen.queryByText('Perfil atualizado')).toBeNull();
+  });
+
+  it('[roles] CA-20: Catálogo de chamados does not appear for a stake leader', async () => {
+    mockMemberships = [{ unitId: 'estaca', role: 'stake_leader' }];
+    await setup();
+    expect(screen.queryByRole('button', { name: 'Catálogo de chamados' })).toBeNull();
+  });
+
+  it('[roles] Catálogo de chamados appears for an admin and opens the catalog', async () => {
+    mockMemberships = [{ unitId: 'estaca', role: 'admin' }];
+    await setup();
+    await fireEvent.press(screen.getByRole('button', { name: 'Catálogo de chamados' }));
+    expect(mockPush).toHaveBeenCalledWith('/profile/callings-catalog');
+  });
+
+  it('[roles] a profile without callings shows neither the section nor the consent card', async () => {
+    await setup();
+    expect(screen.queryByText('MEUS CHAMADOS')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Mostrar' })).toBeNull();
+  });
+
+  it('[roles] CA-13: a pending calling shows the consent card and the section', async () => {
+    mockCalls = [{ id: 'mc1', unitId: 'criciuma1', calling: bishop, orgChartConsent: 'pending' }];
+    await setup();
+    expect(screen.getByRole('button', { name: 'Mostrar' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Agora não' })).toBeTruthy();
+    expect(screen.getByText('MEUS CHAMADOS')).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Mostrar Bispo no organograma' })).toBeTruthy();
+  });
+
+  it('[roles] CA-22: a person with a calling sees the locked-unit message when changing the unit', async () => {
+    const { AccountError } = jest.requireActual('./api');
+    mockCalls = [{ id: 'mc1', unitId: 'criciuma1', calling: bishop, orgChartConsent: 'accepted' }];
+    (updateProfile as jest.Mock).mockRejectedValue(new AccountError('home_unit_locked'));
+    await setup();
+    await fireEvent.press(screen.getByRole('button', { name: /^Unidade/ }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Içara' }));
+    expect(
+      await screen.findByText(
+        'Para mudar de unidade, peça à liderança da estaca para remover seus acessos primeiro.',
+      ),
+    ).toBeTruthy();
   });
 
   it('exports the data and shows the offline toast on a network failure', async () => {

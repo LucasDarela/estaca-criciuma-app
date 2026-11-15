@@ -434,7 +434,7 @@ Nenhuma.
   - Cobre: CA-09, CA-10, CA-11, CA-12 (app), RNF-07
   - Verificar: `make test`
 
-- [ ] **T-08 — Meus chamados e consentimento (RF-16, RF-17)**
+- [x] **T-08 — Meus chamados e consentimento (RF-16, RF-17)**
   - Arquivos: `criar src/features/account/MyCallingsSection.tsx` (+ teste) · `criar src/features/account/OrgChartConsentCard.tsx` (+ teste) · `alterar src/features/account/ProfileScreen.tsx` (+ teste)
   - O que fazer:
     - O cartão fica no topo do Perfil; a seção fica depois de `Idioma`.
@@ -451,7 +451,7 @@ Nenhuma.
   - Cobre: CA-13, CA-14, CA-16, CA-22, CA-24 (app), RNF-08
   - Verificar: `make test`
 
-- [ ] **T-09 — Catálogo de chamados para o admin (RF-20 a RF-22)**
+- [x] **T-09 — Catálogo de chamados para o admin (RF-20 a RF-22)**
   - Arquivos: `criar src/features/account/CallingsCatalogScreen.tsx` (+ teste) · `criar src/features/account/CallingFormScreen.tsx` (+ teste) · `criar src/app/profile/callings-catalog/index.tsx` · `criar src/app/profile/callings-catalog/[id].tsx` · `alterar src/features/account/ProfileScreen.tsx` (item `Catálogo de chamados`, só para `admin`)
   - O que fazer:
     - Seguir o contrato 2.5. Os chips de acesso e de seção vêm de `accessesForLevel` e `sectionsForLevel`. Trocar o nível limpa as escolhas que deixam de valer.
@@ -469,7 +469,7 @@ Nenhuma.
   - Cobre: CA-17, CA-18, CA-19, CA-20 (app), RNF-09
   - Verificar: `make check`
 
-- [ ] **T-10 — Documentação**
+- [x] **T-10 — Documentação**
   - Arquivos: `alterar .ai/docs/SECURITY.md` · `alterar .ai/docs/BUSINESS.md` · `alterar .ai/docs/ARCHITECTURE.md` · `alterar supabase/snippets/grant_admin.sql` (só o comentário, se citar `leadership_group`)
   - O que fazer:
     - `SECURITY.md`:
@@ -538,8 +538,47 @@ Nenhuma.
 
 ### Arquivos criados e alterados
 
+Banco:
+- criados: `supabase/migrations/20261115222647_calling_catalog.sql`, `supabase/migrations/20261115222648_member_calls.sql`, `supabase/tests/callings.test.sql`.
+- alterados: `supabase/seed.sql`, `supabase/tests/account.test.sql`, `supabase/tests/base_rls.test.sql`, `src/lib/database.types.ts` (`make db-types`).
+
+Domínio e viewer:
+- criados: `src/domain/callings.ts` (+ teste), `src/i18n/useLocale.ts`.
+- alterados: `src/domain/permissions.ts`, `access.ts`, `units.ts` (+ testes), `src/features/viewer/api.ts`, `ViewerProvider.tsx` (+ testes), `src/lib/telemetry.ts` (+ teste).
+
+Conta:
+- criados: `CallingPickerSheet`, `MyCallingsSection`, `OrgChartConsentCard`, `CallingsCatalogScreen`, `CallingFormScreen` (todos com teste), `callingFixtures.ts` (catálogo pequeno para os testes), `src/app/profile/callings-catalog/index.tsx` e `[id].tsx`.
+- alterados: `api.ts`, `AccessScreen`, `GrantAccessSheet`, `ProfileScreen` (+ testes), `src/i18n/locales/*.json` (chaves `callings.*`; `account.roles`, `account.groups`, `account.access.role` e `.group` removidas).
+- `src/components/ListItem.tsx`: props opcionais `accessibilityLabel` e `status` (ver desvios).
+
+Docs: `.ai/docs/SECURITY.md`, `BUSINESS.md`, `ARCHITECTURE.md`. `supabase/snippets/grant_admin.sql` não citava `leadership_group`; ficou como estava.
+
 ### Desvios do plano
+
+1. **T-02 e T-03 num commit só.** Com `memberships_admin_only`, o `grant_role` antigo deixa de funcionar na T-02, então as RPCs novas e a migração dos testes da `auth-account` entraram junto.
+2. **`calling_holder_count` ficou na migration B**, não na A: ela precisa de `member_calls`, que só existe na B.
+3. **`database.types.ts` e T-04 a T-07 num commit só.** Os tipos regenerados quebram o `tsc` em `features/account/api.ts` e no viewer até as telas passarem para chamados; o `make check` precisava ficar verde em cada commit.
+4. **`legacy_role_to_calling`:** além das 6 combinações do plano, `unit_leader` com qualquer grupo diferente de `bishops` (o antigo `presidents`, que a spec não mapeia) também vira `unit_clerk`, para não perder o acesso. A conversão só apaga de `memberships` as linhas que converteu; se sobrar uma, a constraint `memberships_admin_only` falha a migração em vez de perder acesso em silêncio.
+5. **`has_role(unit, {'admin'})`** só vale para `unit = 'estaca'` (o plano não cita a unidade). Preserva o comportamento anterior: o admin só existe na Estaca.
+6. **`ListItem` (design system) ganhou duas props opcionais:** `accessibilityLabel` (RNF-07: `{nome}, {chamado}, {unidade}`) e `status` (o `StatusTag` `Inativo` do RF-20). Mudança aditiva; nada que já existia mudou.
+7. **`useLocale`** (`src/i18n/useLocale.ts`) e **`callingFromRow`** (em `domain/callings.ts`, usado pelo viewer e pelo account, que não podem se importar entre si).
+8. **Códigos extras de `save_calling`:** `invalid_name`, `invalid_level`, `invalid_notify_group` e `not_found`, além dos da spec; o app só mostra a mensagem genérica para eles.
+9. **`matchesCalling`** devolve `true` para termo com menos de 2 caracteres (a busca só filtra a partir de 2, RF-20); vale também para o picker de Acessos.
+10. **Revogar mostra o toast `Chamado removido`** também para `Administração` (a spec define o toast para chamados; reaproveitei).
+11. `anon` não tem `select` em `member_calls` (a spec diz que quem lê é cada pessoa, `stake_leader` e `admin`); o teste espera `42501`.
 
 ### Decisões durante a implementação
 
+- Privilégios de escrita (`insert/update/delete/truncate`) revogados de `anon` e `authenticated` em `calling_catalog`, `calling_catalog_log` e `member_calls`, além da falta de política: assim um `update` direto falha com `42501` em vez de afetar 0 linhas em silêncio.
+- `my_accesses()` (helper privado) concentra a soma dos níveis; `execute` revogado da API. `is_stake_publisher()` é pública como as demais.
+- O switch de "Meus chamados" mostra o texto `Mostrar no organograma` no subtítulo da linha (o `ListItem` só aceita o rótulo de acessibilidade no switch), e o rótulo de acessibilidade é `Mostrar {chamado} no organograma` (RNF-08).
+- O cartão de consentimento esconde na hora o chamado respondido (estado local) e depois o viewer recarrega; com mais de um pendente, mostra o próximo.
+- Migração de dados verificada à mão, além do teste da função de mapeamento: banco em `20261115173955` com o seed antigo (mais uma linha `unit_leader`/`presidents`) e `supabase migration up`; as linhas viraram `bishop`, `stake_first_counselor`, `unit_clerk` e `unit_activities_committee_chair`, o `admin` ficou, `leadership_group` sumiu e `role_grants_log` recebeu as concessões.
+- Os nomes en-US e es-MX do seed foram escritos de memória do General Handbook e do Manual General, sem acesso à fonte. **Revisar na T-11**, em especial (todos os 128 estão preenchidos): `unit_mission_leader` (Mission Leader / Líder misional), `unit_missionary` (Unit Missionary / Misionero de la unidad), `stake_seminary_institute_supervisor`, `stake_activities_coordinator` (Stake Sports and Activities Coordinator), os de Templo e História da Família (`*_temple_fh_*`; em es-MX usei "obra del templo e historia familiar"), `stake_assistant_communication_director`, `stake_justserve_coordinator`, `aaronic_priesthood_adviser`, `nursery_leader` (Líder de la guardería), `primary_music_leader`, `unit_building_representative` e `stake_building_representative` (Representante de edificios), `stake_technology_specialist` e `unit_technology_specialist`, e as formas feminina e masculina do es-MX (ex.: "Directora de música de la Primaria").
+- Grupos e seções (`callings.groups.*` e `callings.sections.*`) em en-US e es-MX também são tradução minha; o pt-BR segue a spec ao pé da letra.
+
 ### CA sem teste automatizado
+
+- **CA-25** (VoiceOver/TalkBack): manual, na T-11. Os rótulos de acessibilidade (RNF-07 a RNF-09) têm teste de componente (`AccessScreen`, `MyCallingsSection`, `CallingFormScreen`), mas o anúncio real é do roteiro.
+- **T-11 (roteiro de QA em iOS e Android, passos 1 a 10, e revisão dos nomes en-US/es-MX com o usuário): pendente.** É da sessão principal.
+- Os demais CA (01 a 24) têm teste automatizado: pgTAP (`callings.test.sql`, `account.test.sql`, `base_rls.test.sql`) e Jest, com prefixo `[roles]` onde o ID se repete com a `auth-account`.

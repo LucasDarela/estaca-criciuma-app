@@ -97,6 +97,7 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 | Acesso a dados | `src/features/viewer/api.ts` (cliente de `src/lib/supabase.ts`, tipos de `src/lib/database.types.ts`) |
 | Migration com RLS | `supabase/migrations/*_base_units_profiles_roles.sql` |
 | Teste de RLS | `supabase/tests/base_rls.test.sql` (pgTAP; `make test-db`) |
+| Acesso derivado de chamado | O banco soma o `access` dos chamados ativos da pessoa (`member_calls` → `calling_catalog`) em `my_accesses()`, e `has_role`, `can_publish` e `can_lead` derivam dele (`supabase/migrations/*_member_calls.sql`). O app só espelha a regra em `src/domain/callings.ts` (`membershipsFromCalls`) e `src/domain/permissions.ts`. Nova regra de acesso = novo valor de `calling_catalog.access`, nunca papel escrito à mão. |
 | Teste e2e | A definir: `.maestro/agenda-publica.yaml` |
 
 ## Integrações externas
