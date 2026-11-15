@@ -1,6 +1,6 @@
 # Conta: login, consentimento, perfil e acessos
 
-> **Status:** Pronta para planejamento
+> **Status:** Planejada
 > **Área:** abas `sign-in` e `profile`, rotas `/sign-in/*`, `/welcome`, `/profile/*`, `src/features/auth/`, `src/features/account/`, `src/lib/supabase.ts`, `supabase/migrations/`
 > **Última atualização:** 2026-11-14
 
@@ -39,16 +39,16 @@ Uma pessoa entra com código por e-mail, aceita o consentimento no primeiro aces
 | Supabase Auth (GoTrue) | do stack | via CLI (local) e painel (produção) | OTP por e-mail |
 | `expo-secure-store` | do SDK 58 | adicionar | Chave de cifra da sessão |
 | `@react-native-async-storage/async-storage` | do SDK 58 | adicionar | Sessão cifrada |
-| `aes-js` + `react-native-get-random-values` | mais recentes | adicionar | Cifra AES-256 da sessão (padrão "LargeSecureStore" da documentação do Supabase) |
+| `expo-crypto` | do SDK 58 | adicionar | Cifra AES-256-GCM da sessão e chave aleatória (decisão 18; substitui `aes-js` + `react-native-get-random-values`) |
 | `expo-sharing` + `expo-file-system` | do SDK 58 | adicionar | Exportar dados |
 
 ## 5. Restrições e requisitos não funcionais
 
 | ID | Requisito |
 | -- | --------- |
-| RNF-01 | A sessão (JWT e refresh token) nunca é gravada em texto puro: fica no AsyncStorage cifrada com AES-256, chave aleatória guardada no `expo-secure-store`. |
+| RNF-01 | A sessão (JWT e refresh token) nunca é gravada em texto puro: fica no AsyncStorage cifrada com AES-256-GCM, chave aleatória guardada no `expo-secure-store`. |
 | RNF-02 | A resposta ao pedir código é idêntica com e-mail cadastrado ou não (não revela contas). |
-| RNF-03 | Rate limit do GoTrue: no máximo 1 envio de código por e-mail a cada 60 s e 5 por hora; 5 tentativas de código erradas bloqueiam por 15 min. |
+| RNF-03 | Rate limits do GoTrue (decisão 17): no máximo 1 envio de código por e-mail a cada 60 s; 30 e-mails por hora no projeto todo; 10 verificações de código por IP a cada 5 min; código válido por 10 min. |
 | RNF-04 | Logs e Sentry nunca recebem e-mail, código, token ou nome. Eventos: `user_signed_in` (método), `account_deleted`, `data_exported`, `role_granted`, `role_revoked` (só ids). |
 | RNF-05 | `grant_role` e `revoke_role` são RPCs `security definer` que revalidam no banco quem pode conceder o quê (RF-15) e gravam `role_grants_log` na mesma transação. |
 | RNF-06 | Exclusão de conta remove `auth.users` e, em cascata, `profiles`, `memberships`, anotações e tokens de push; publicações (eventos, avisos) ficam com autor `null`. |
@@ -120,7 +120,7 @@ Uma pessoa entra com código por e-mail, aceita o consentimento no primeiro aces
 | ID | Requisito |
 | -- | --------- |
 | RF-20 | A variável do app `EXPO_PUBLIC_SUPABASE_ANON_KEY` passa a se chamar `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (o Supabase chama a antiga anon key de publishable key, `sb_publishable_...`). `src/lib/supabase.ts`, testes, `.env.example` e docs usam o nome novo. A mensagem de erro de configuração cita o nome novo. |
-| RF-21 | E-mail do código: assunto `Seu código de acesso`; corpo HTML simples em pt-BR: `Use este código para entrar no app da Estaca Criciúma:`, o código `{{ .Token }}` em destaque (fonte grande, espaçada), `O código vale por 10 minutos. Se você não pediu, ignore este e-mail.`; sem link de login. Local: `supabase/templates/magic_link.html` referenciado no `config.toml`, que também fixa OTP de 6 dígitos, validade de 600 s e os rate limits de RNF-03. Produção: o mesmo assunto, corpo, OTP e rate limits aplicados no painel (Authentication › Emails e › Rate Limits), em passos novos do item (e) de `docs/runbooks/provisioning.md`. |
+| RF-21 | E-mail do código: assunto `Seu código de acesso`; corpo HTML simples em pt-BR: `Use este código para entrar no app da Estaca Criciúma:`, o código `{{ .Token }}` em destaque (fonte grande, espaçada), `O código vale por 10 minutos. Se você não pediu, ignore este e-mail.`; sem link de login. O mesmo assunto e corpo valem para os templates `Magic Link` e `Confirm signup` (o GoTrue usa o segundo no primeiro código de um e-mail novo). Local: `supabase/templates/magic_link.html` referenciado no `config.toml` pelos dois templates, que também fixa OTP de 6 dígitos, validade de 600 s e os rate limits de RNF-03. Produção: o mesmo assunto, corpo, OTP e rate limits aplicados no painel (Authentication › Emails e › Rate Limits), em passos novos do item (e) de `docs/runbooks/provisioning.md`. |
 
 ### 7.5 Texto de consentimento (pt-BR, literal)
 
@@ -183,7 +183,7 @@ src/i18n/locales/*.json                       # chaves auth.*, account.*
 | CA-03 | RF-02, RF-03 | a aba Entrar | toco em `Receber código` vazio e depois com `abc@` | vejo `Informe seu e-mail.` e depois `Informe um e-mail válido.` |
 | CA-04 | RF-04, RNF-02 | um e-mail válido, cadastrado ou não | toco em `Receber código` | abre `Digite o código` com o e-mail na frase e `Reenviar em 60 s` |
 | CA-05 | RF-05 | a tela de código | digito um código errado | vejo `Código inválido ou expirado. Confira ou peça um novo.` |
-| CA-06 | RF-05, RNF-03 | 5 códigos errados | tento o 6º | vejo `Muitas tentativas. Aguarde alguns minutos e tente de novo.` |
+| CA-06 | RF-05, RNF-03 | o limite de verificações por IP atingido (10 em 5 min; servidor responde 429) | tento outro código | vejo `Muitas tentativas. Aguarde alguns minutos e tente de novo.` |
 | CA-07 | RF-02, decisão 14 | iOS e Android | abro a aba Entrar | não há botão de Google nem de Apple; só o campo `E-mail` e `Receber código` |
 | CA-08 | RF-20 | o repositório | busco `SUPABASE_ANON_KEY` em `src/`, `.env.example` e docs | nenhuma ocorrência; o cliente lê `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
 | CA-09 | RF-07, RF-08, RF-09, RF-10 | primeiro login | toco em `Começar` sem marcar o consentimento | vejo a mensagem de RF-09; marcando, o perfil é salvo com `consented_at` e vou para a Agenda |
@@ -240,11 +240,13 @@ Nenhuma decisão em aberto.
 | A1 | Métodos de login | Código por e-mail (Google e Apple saíram pela decisão 14) | padrão do projeto, ajustado |
 | A2 | Código | 6 dígitos, 10 min, reenvio após 60 s | padrão do projeto |
 | A3 | Idioma do e-mail de código | pt-BR (GoTrue não tem template por idioma); texto em RF-21 | padrão do projeto |
-| A4 | Armazenamento da sessão | AES-256 no AsyncStorage + chave no SecureStore | padrão do projeto |
+| A4 | Armazenamento da sessão | AES-256-GCM no AsyncStorage + chave no SecureStore | padrão do projeto, ajustado pela decisão 18 |
 | A5 | Exclusão de conta | Imediata, digitando `EXCLUIR` | padrão do projeto (DESIGN.md) |
 | A6 | Formato da exportação | JSON pelo compartilhamento do sistema | padrão do projeto |
 | 14 | Google e Apple | Fora desta entrega; só código por e-mail (2026-11-14) | usuário |
 | 16 | Exportação com dados de specs futuras | `export_my_data` sai com perfil e papéis; `notes` e `push-notifications` estendem a função. A exclusão já cobre as tabelas futuras pelo `on delete cascade` (2026-11-14) | usuário |
+| 17 | Rate limits possíveis no GoTrue | RNF-03 usa o que o Supabase Auth oferece: 60 s por e-mail, 30 e-mails/h no projeto, 10 verificações por IP a cada 5 min. Sem bloqueio próprio por e-mail (2026-11-14) | usuário (`/create-plan`) |
+| 18 | Biblioteca de cifra da sessão | `expo-crypto` (AES-256-GCM nativo, do SDK, funciona no Expo Go) no lugar de `aes-js` + `react-native-get-random-values` (2026-11-14) | usuário (`/create-plan`) |
 | 15 | Template do e-mail e nome da chave | Template pt-BR com código em destaque e `PUBLISHABLE_KEY`, pendências levadas de `supabase-cloud` (assessment G-04, plano QA da T-09) (2026-11-14) | usuário |
 
 ## 15. Próximos passos (fora desta entrega)
