@@ -6,7 +6,8 @@
     "close": "Cerrar",
     "cancel": "Cancelar",
     "comingSoon": "Esta sección llegará pronto.",
-    "profile": "Abrir perfil"
+    "profile": "Abrir perfil",
+    "genericError": "Algo salió mal. Inténtalo de nuevo."
   },
   "tabs": {
     "agenda": "Agenda",
@@ -71,6 +72,109 @@
         "success": "Aprobado",
         "warning": "Pendiente"
       }
+    }
+  },
+  "auth": {
+    "signature": {
+      "name": "Estaca Criciúma",
+      "tagline": "SANTA CATARINA · BRASIL"
+    },
+    "signIn": {
+      "title": "Iniciar sesión",
+      "intro": "Inicia sesión para tomar notas, recibir avisos de tu barrio y, si sirves en el liderazgo, publicar en la agenda.",
+      "email": "Correo electrónico",
+      "submit": "Recibir código"
+    },
+    "errors": {
+      "emailRequired": "Ingresa tu correo electrónico.",
+      "emailInvalid": "Ingresa un correo electrónico válido.",
+      "invalidCode": "Código inválido o vencido. Revísalo o pide uno nuevo.",
+      "rateLimited": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+      "network": "Sin conexión. Revisa tu internet e inténtalo de nuevo."
+    },
+    "code": {
+      "title": "Ingresa el código",
+      "sentTo": "Enviamos un código de 6 dígitos a {{email}}.",
+      "label": "Código",
+      "a11yLabel": "Código de 6 dígitos",
+      "submit": "Entrar",
+      "resend": "Reenviar código",
+      "resendIn": "Reenviar en {{seconds}} s",
+      "otherEmail": "Usar otro correo"
+    },
+    "welcome": {
+      "title": "Bienvenido",
+      "name": "¿Cómo podemos llamarte?",
+      "unit": "Unidad a la que asistes",
+      "unitNone": "Prefiero no informar",
+      "consent": "Autorizo a la Estaca Criciúma a tratar mi nombre, mi correo electrónico y, si lo informo, la unidad a la que asisto — dato que revela mi creencia religiosa — para identificarme en la app, enviarme avisos y guardar mis notas. Puedo exportar o eliminar mis datos en cualquier momento en Perfil.",
+      "privacy": "Política de privacidad",
+      "submit": "Comenzar",
+      "errors": {
+        "nameRequired": "Indica cómo podemos llamarte.",
+        "nameLength": "Usa entre 2 y 60 caracteres.",
+        "consent": "Para usar tu cuenta, es necesario aceptar el tratamiento de los datos."
+      }
+    },
+    "sessionExpired": "Tu sesión terminó. Inicia sesión de nuevo."
+  },
+  "account": {
+    "profile": {
+      "title": "Perfil",
+      "name": "Nombre",
+      "unit": "Unidad",
+      "unitNone": "No informada",
+      "language": "Idioma",
+      "access": "Accesos",
+      "export": "Exportar mis datos",
+      "privacy": "Política de privacidad",
+      "signOut": "Salir",
+      "delete": "Eliminar cuenta",
+      "updated": "Perfil actualizado",
+      "save": "Guardar"
+    },
+    "languages": {
+      "pt-BR": "Português (Brasil)",
+      "en-US": "English (US)",
+      "es-MX": "Español (México)"
+    },
+    "delete": {
+      "title": "Eliminar cuenta",
+      "message": "Esto elimina tu cuenta, tus notas y tus preferencias. No se puede deshacer. Escribe ELIMINAR para confirmar.",
+      "confirmWord": "ELIMINAR",
+      "inputLabel": "Confirmación",
+      "submit": "Eliminar cuenta",
+      "done": "Cuenta eliminada.",
+      "lastAdmin": "Transfiere la administración a otra persona antes de eliminar tu cuenta."
+    },
+    "access": {
+      "title": "Accesos",
+      "restricted": "Acceso restringido",
+      "grant": "Conceder acceso",
+      "email": "Correo de la cuenta",
+      "unit": "Unidad",
+      "role": "Rol",
+      "group": "Grupo de liderazgo",
+      "submit": "Conceder",
+      "granted": "Acceso concedido",
+      "noAccount": "Ninguna cuenta con este correo. Pide a la persona que primero inicie sesión en la app.",
+      "alreadyGranted": "Esta persona ya tiene este acceso.",
+      "revokeTitle": "¿Quitar acceso?",
+      "revokeMessage": "{{name}} dejará de tener \"{{role}}\" en {{unit}}.",
+      "revoke": "Quitar",
+      "cannotRevokeSelf": "No puedes quitar tu propio acceso."
+    },
+    "roles": {
+      "unit_leader": "Liderazgo de la unidad",
+      "unit_publisher": "Publicación de la unidad",
+      "stake_leader": "Liderazgo de la estaca",
+      "admin": "Administración"
+    },
+    "groups": {
+      "stake_presidency": "Presidencia de la estaca",
+      "bishops": "Obispos",
+      "presidents": "Presidentes",
+      "none": "Ninguno"
     }
   }
 }

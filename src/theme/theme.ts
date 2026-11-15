@@ -162,6 +162,9 @@ export const size = {
   unitDot: 8, // derived
   eventCardBar: 4, // derived
   iconSearch: 20, // derived
+  codeBoxWidth: 48, // derived · one OTP digit box
+  codeBoxHeight: 56, // derived
+  checkbox: 24, // derived · consent checkbox
 } as const;
 
 /** Border and ring widths. */
@@ -227,6 +230,13 @@ export const type = {
   listTitle: { fontFamily: fontFamily.sansSemiBold, fontSize: 15, lineHeight: 20 }, // derived
   cardTitle: { fontFamily: fontFamily.sansSemiBold, fontSize: 16, lineHeight: 22 }, // derived
   avatarLarge: { fontFamily: fontFamily.serifSemiBold, fontSize: 24, lineHeight: 30 }, // derived
+  signatureName: { fontFamily: fontFamily.serifSemiBold, fontSize: 26, lineHeight: 32 }, // derived
+  signatureTagline: {
+    fontFamily: fontFamily.sansSemiBold,
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 2.4,
+  }, // derived
 } as const;
 
 /** System font scale cap for TabBar labels (`maxFontSizeMultiplier`). */
