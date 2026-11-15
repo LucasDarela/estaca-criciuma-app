@@ -102,7 +102,7 @@ Uma pessoa entra com código por e-mail, aceita o consentimento no primeiro aces
 | ID | Requisito |
 | -- | --------- |
 | RF-11 | `/profile` (aba Perfil do Membro; via avatar para todos): `ScreenHeader` `Perfil`; `Avatar large` + nome + e-mail; itens: `Nome`, `Unidade` (valor atual ou `Não informada`), `Idioma` (`Português (Brasil)`, `English (US)`, `Español (México)`), `Acessos` (só `stake_leader`/`admin`), `Exportar meus dados`, `Política de privacidade`, `Sair`, `Excluir conta` (texto `danger`). |
-| RF-12 | Editar `Nome` e `Unidade` usa as mesmas regras e mensagens de RF-08/RF-09; salvar mostra o toast `Perfil atualizado`. Mudar `Idioma` troca a interface na hora e grava `profiles.locale`. |
+| RF-12 | Editar `Nome` e `Unidade` usa as mesmas regras e mensagens de RF-08/RF-09; salvar mostra o toast `Perfil atualizado`. Quem tem algum acesso (RF-16a) não pode mudar a unidade para `Não informada`, e quem tem papel de unidade não pode mudar para outra unidade; nesses casos, `Para mudar de unidade, peça à liderança da estaca para remover seus acessos primeiro.` (decisão 20; o banco também bloqueia). Mudar `Idioma` troca a interface na hora e grava `profiles.locale`. |
 | RF-13 | `Exportar meus dados`: RPC `export_my_data()` retorna JSON com perfil e papéis (as specs `notes` e `push-notifications` acrescentam anotações e preferências de push à mesma função, decisão 16); o app salva `meus-dados-estaca-criciuma.json` e abre o compartilhamento do sistema. Botão em `loading` durante a geração. |
 | RF-14 | `Excluir conta`: `Sheet` com título `Excluir conta`, texto `Isso apaga sua conta, suas anotações e suas preferências. Não dá para desfazer. Digite EXCLUIR para confirmar.`, campo de texto e botão `Excluir conta` (`danger`), habilitado só com o texto exatamente `EXCLUIR`. Confirmado: RPC `delete_my_account()` (RNF-06), encerra a sessão, vai para `/agenda` e mostra o toast `Conta excluída.` `Sair` encerra a sessão e vai para `/agenda`. |
 
@@ -113,6 +113,7 @@ Uma pessoa entra com código por e-mail, aceita o consentimento no primeiro aces
 | RF-15 | `/profile/access` (só `stake_leader`/`admin`; outros veem `Acesso restrito`): lista agrupada por unidade (ordem `unitOrder`) com nome, e-mail, papel e grupo. Rótulos de papel: `Liderança da unidade` (`unit_leader`), `Publicação da unidade` (`unit_publisher`), `Liderança da estaca` (`stake_leader`), `Administração` (`admin`). Rótulos de grupo: `Presidência da estaca`, `Bispos`, `Presidentes`, `Nenhum`. |
 | RF-16 | `Conceder acesso`: campos `E-mail da conta`, `Unidade` (Estaca + 6), `Papel` (só os válidos para a unidade, RF-03 de `app-foundation`; `Administração` só aparece para `admin`), `Grupo de liderança` (`Presidência da estaca` só com Estaca). Botão `Conceder`. Sucesso: toast `Acesso concedido`. E-mail sem conta → `Nenhuma conta com este e-mail. Peça para a pessoa entrar no app primeiro.`; papel já existente → `Esta pessoa já tem este acesso.` |
 | RF-17 | Revogar: no item, `Remover acesso` → `ConfirmSheet` `Remover acesso?` / `{nome} deixa de ter "{papel}" em {unidade}.` / `Remover` (`danger`) / `Cancelar`. Ninguém revoga o próprio acesso: `Você não pode remover o próprio acesso.` |
+| RF-16a | Unidade de quem recebe o acesso (decisão 19): todo papel, inclusive `Liderança da estaca` e `Administração`, exige que a pessoa tenha informado a unidade que frequenta; `Liderança da unidade` e `Publicação da unidade` só podem ser concedidos na unidade dela. `Liderança da estaca` vale para quem frequenta qualquer unidade. Sem unidade → `Esta pessoa precisa informar a unidade no Perfil antes de receber um acesso.`; papel de unidade em outra unidade → `Esta pessoa frequenta outra unidade. Papéis de unidade só podem ser dados na unidade dela.` O banco valida (`grant_role`). |
 | RF-18 | `stake_leader` concede e revoga `unit_leader`, `unit_publisher` e `stake_leader`; só `admin` concede ou revoga `admin`. Toda concessão e revogação grava `role_grants_log` (RNF-05). |
 
 ### 7.4.1 Configuração
@@ -200,6 +201,9 @@ src/i18n/locales/*.json                       # chaves auth.*, account.*
 | CA-20 | 7.6 | último `admin` | tento excluir a conta | vejo `Transfira a administração para outra pessoa antes de excluir sua conta.` |
 | CA-21 | RNF-04 | o fluxo completo | busco e-mail, código e token nos logs e no Sentry | nenhuma ocorrência |
 | CA-23 | RF-21 | o Supabase local e a produção | peço um código | o e-mail chega em pt-BR, assunto `Seu código de acesso`, com os 6 dígitos em destaque e sem link de login; na produção, SPF, DKIM e DMARC `pass` |
+| CA-24 | RF-16a | conta `estaca`; pessoa que frequenta `Criciúma 1` | concedo `Liderança da unidade` em `Criciúma 2`; depois em `Criciúma 1`; depois `Liderança da estaca` | a primeira é negada com a mensagem de unidade; as outras duas são concedidas |
+| CA-25 | RF-16a | conta `estaca`; pessoa com unidade `Não informada` | concedo qualquer papel, inclusive `Liderança da estaca` | negado com `Esta pessoa precisa informar a unidade no Perfil antes de receber um acesso.`; o `grant_admin.sql` também recusa |
+| CA-26 | RF-12 | pessoa com `Liderança da unidade` em `Criciúma 1` | mudo minha unidade para `Criciúma 2` ou `Não informada` no Perfil | vejo `Para mudar de unidade, peça à liderança da estaca para remover seus acessos primeiro.` e a unidade não muda |
 | CA-22 | RNF-07 a RNF-10 | as telas com VoiceOver/TalkBack | navego | campos, erros e a caixa de consentimento são anunciados; o código é sugerido pelo teclado do sistema |
 
 ## 12. Roteiro de QA
@@ -215,7 +219,7 @@ src/i18n/locales/*.json                       # chaves auth.*, account.*
 | 7 | Entre como `estaca@exemplo.org` › Perfil › Acessos › conceda `Liderança da unidade` em `Ala Içara` à conta do passo 3 | Toast; a conta do passo 3, ao reabrir, mostra a aba Chamados |
 | 8 | Remova esse acesso | A conta volta à barra de Membro |
 | 9 | Na conta do passo 3, `Excluir conta` com `EXCLUIR` | Volta à Agenda como visitante, toast `Conta excluída.` |
-| 10 | No app apontando para a produção, entrar com o e-mail do admin técnico e concluir `Boas-vindas`; depois rodar `supabase/snippets/grant_admin.sql` no SQL Editor com esse e-mail | O e-mail do código chega em pt-BR (CA-23); o snippet retorna `granted` (fecha o CA-12 de `supabase-cloud`); a aba Acessos aparece no Perfil |
+| 10 | No app apontando para a produção, entrar com o e-mail do admin técnico e concluir `Boas-vindas` informando a unidade (RF-16a); depois rodar `supabase/snippets/grant_admin.sql` no SQL Editor com esse e-mail | O e-mail do código chega em pt-BR (CA-23); o snippet retorna `granted` (fecha o CA-12 de `supabase-cloud`); a aba Acessos aparece no Perfil |
 
 ## 13. Definition of Done
 
@@ -246,10 +250,15 @@ Nenhuma decisão em aberto.
 | 14 | Google e Apple | Fora desta entrega; só código por e-mail (2026-11-14) | usuário |
 | 16 | Exportação com dados de specs futuras | `export_my_data` sai com perfil e papéis; `notes` e `push-notifications` estendem a função. A exclusão já cobre as tabelas futuras pelo `on delete cascade` (2026-11-14) | usuário |
 | 17 | Rate limits possíveis no GoTrue | RNF-03 usa o que o Supabase Auth oferece: 60 s por e-mail, 30 e-mails/h no projeto, 10 verificações por IP a cada 5 min. Sem bloqueio próprio por e-mail (2026-11-14) | usuário (`/create-plan`) |
+| 19 | Unidade de quem recebe papel | Todo papel exige unidade informada; papéis de unidade só na unidade da pessoa; `stake_leader` vale para qualquer unidade (2026-11-15, QA) | usuário |
+| 20 | Troca de unidade com acesso | Bloqueada enquanto o acesso existir; a liderança remove o acesso antes (2026-11-15, QA) | usuário |
+| 21 | Lista completa de grupos de liderança | Fora desta entrega: spec própria, que também alimenta organograma e avisos; aqui ficam os 3 grupos atuais (2026-11-15, QA) | usuário |
 | 18 | Biblioteca de cifra da sessão | `expo-crypto` (AES-256-GCM nativo, do SDK, funciona no Expo Go) no lugar de `aes-js` + `react-native-get-random-values` (2026-11-14) | usuário (`/create-plan`) |
 | 15 | Template do e-mail e nome da chave | Template pt-BR com código em destaque e `PUBLISHABLE_KEY`, pendências levadas de `supabase-cloud` (assessment G-04, plano QA da T-09) (2026-11-14) | usuário |
 
 ## 15. Próximos passos (fora desta entrega)
+
+- Spec de grupos de liderança (decisão 21): lista completa de grupos, usada por Acessos, organograma e avisos.
 
 - `push-notifications` adiciona a seção `Avisos` (preferências e grupos acompanhados) no Perfil.
 - Troca do e-mail da conta.

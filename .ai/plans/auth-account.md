@@ -533,6 +533,32 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-08 (docs) e DoD
   - Verificar: `make check`
 
+- [ ] **T-14 — Unidade de quem recebe acesso (RF-16a, RF-12; decisões 19 e 20; achado do QA)**
+  - Arquivos: `criar supabase/migrations/<ts>_role_home_unit.sql` · `alterar supabase/tests/account.test.sql` · `alterar supabase/seed.sql` · `alterar supabase/snippets/grant_admin.sql` · `alterar src/lib/database.types.ts` · `alterar src/features/account/api.ts` · `alterar src/features/account/GrantAccessSheet.tsx` (+ teste) · `alterar src/features/account/ProfileScreen.tsx` (+ teste) · `alterar src/i18n/locales/*.json` · `alterar docs/runbooks/provisioning.md` (item j)
+  - O que fazer:
+    - Migration nova (não edite a `account_rpcs` já aplicada):
+      - `create or replace function grant_role` com dois passos novos depois do 5: `profiles.home_unit_id is null` → `'no_home_unit'`; `p_role in ('unit_leader','unit_publisher') and p_unit_id <> home_unit_id` → `'wrong_unit'`.
+      - Função de trigger `profiles_guard_home_unit` (`before update of home_unit_id on profiles`, `security definer`, `set search_path = public`). Quando `new.home_unit_id is distinct from old.home_unit_id`, faz `raise exception 'home_unit_locked' using errcode = 'P0001'` em dois casos:
+        - `new.home_unit_id is null` e existe alguma membership da pessoa;
+        - existe membership da pessoa com `role in ('unit_leader','unit_publisher')`.
+      - O trigger vale também para o `on conflict do update` do `complete_welcome`.
+    - `seed.sql`: dar `home_unit_id` coerente aos usuários fictícios com papel (bispo → `criciuma1`, publicador → `icara`, estaca e admin → uma ala qualquer). O membro fica sem unidade.
+    - `grant_admin.sql`: novo resultado `'error: user has no home unit'`, antes do insert.
+    - Runbook, item (j): o admin informa a unidade em `Boas-vindas` antes de rodar o snippet.
+    - App:
+      - `AccountErrorCode` ganha `'no_home_unit' | 'wrong_unit' | 'home_unit_locked'`, com as mensagens literais de RF-16a e RF-12 (`account.access.noHomeUnit`, `account.access.wrongUnit`, `account.profile.unitLocked`) nos 3 locales;
+      - no `GrantAccessSheet`, os dois erros aparecem no campo de e-mail;
+      - no `ProfileScreen`, `home_unit_locked` ao salvar a unidade mostra a mensagem no sheet e mantém a unidade.
+    - Testes pgTAP:
+      - "CA-24": a conta estaca concede `unit_leader` em `criciuma2` a quem frequenta `criciuma1` → `wrong_unit`; em `criciuma1` → ok; `stake_leader` → ok;
+      - "CA-25": quem não tem unidade recebendo `stake_leader` → `no_home_unit`; `admin`, concedido pela conta admin → `no_home_unit`;
+      - "CA-26": quem tem `unit_leader` atualizando o próprio `home_unit_id` para outra unidade → `home_unit_locked`; para null → `home_unit_locked`; quem tem só `stake_leader` muda de uma ala para outra → ok, e para null → `home_unit_locked`.
+    - Ajuste os testes antigos (CA-15 e outros) que concedem papel a um usuário sem unidade ou em outra unidade.
+    - Testes de componente: "CA-24"/"CA-25" com a mensagem no sheet; "CA-26" com a mensagem no Perfil.
+  - Referência: `supabase/migrations/20261115030703_account_rpcs.sql` (grant_role), `supabase/tests/account.test.sql`
+  - Cobre: CA-24, CA-25, CA-26
+  - Verificar: `supabase db reset && make test-db && make db-types && make check`
+
 - [ ] **T-13 — Roteiro de QA em aparelho (sessão principal, com o usuário)**
   - Arquivos: nenhum; o resultado vai para o Registro de implementação
   - O que fazer:
@@ -572,6 +598,9 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 | CA-19 | T-05 | banco | `supabase/tests/account.test.sql` |
 | CA-20 | T-05, T-10 | banco + componente | `account.test.sql`, `DeleteAccountSheet.test.tsx` |
 | CA-21 | T-04, T-08, T-13 | componente (spy) + manual (logs do Supabase) | `OtpScreen.test.tsx` |
+| CA-24 | T-14 | banco + componente | `account.test.sql`, `GrantAccessSheet.test.tsx` |
+| CA-25 | T-14 | banco + componente | `account.test.sql`, `GrantAccessSheet.test.tsx` |
+| CA-26 | T-14 | banco + componente | `account.test.sql`, `ProfileScreen.test.tsx` |
 | CA-22 | T-13 | manual (VoiceOver/TalkBack) | roteiro de QA |
 | CA-23 | T-06, T-13 | manual (Inbucket e produção) | roteiro de QA |
 
