@@ -1,6 +1,6 @@
 # Design system: componentes, ícones e navegação por abas
 
-> **Status:** Em implementação
+> **Status:** Aguardando assessment
 > **Área:** `src/components/`, `src/components/icons/`, `src/app/(tabs)/`, `src/app/dev/`
 > **Última atualização:** 2026-11-13
 

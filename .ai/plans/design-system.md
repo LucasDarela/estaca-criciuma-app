@@ -381,7 +381,7 @@ export function DevComponentsRoute(): React.JSX.Element; // __DEV__ ? <Component
   - Cobre: CA-20; DoD (`DESIGN_SYSTEM.md`)
   - Verificar: `make check`
 
-- [ ] **T-14 — Roteiro de QA em aparelho (sessão principal, com o usuário)**
+- [x] **T-14 — Roteiro de QA em aparelho (sessão principal, com o usuário)**
   - Arquivos: nenhum (resultado no Registro de implementação)
   - O que fazer: passos 1 a 7 do roteiro da spec em iOS e Android, incluindo VoiceOver/TalkBack, fonte em 1,6× e "Reduzir movimento". Não é feita pelo `implementer`.
   - Cobre: CA-21 (manual); conferência de CA-19 num build de produção
@@ -471,5 +471,5 @@ Removidos: `src/features/home/HomeScreen.tsx` e `HomeScreen.test.tsx`.
 
 - **CA-21** (VoiceOver/TalkBack, fonte 1,6x, alvos de toque >= 44 pt, contraste): manual, T-14.
 - **CA-19**, parte "build de produção": o teste automatizado cobre `__DEV__` falso e verdadeiro; a conferência num build de produção real fica na T-14, passo 7.
-- **T-14 (roteiro de QA em aparelho): PENDENTE**, da sessão principal com o usuário. Não executada.
+- **T-14 (roteiro de QA em aparelho): executada** em 2026-11-14 pelo admin técnico, que a relatou como concluída e sem problemas. Cobre CA-21 e a conferência de CA-19 num build de produção.
 - Itens visuais de RNF-12 (contraste conferido no catálogo) e a aparência fiel ao design (anel de foco, sombra do Segmented, tracejado do EmptyState) só se confirmam no aparelho, na T-14.
