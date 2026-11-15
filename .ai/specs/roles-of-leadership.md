@@ -1,6 +1,6 @@
 # Chamados da liderança: catálogo, acesso por chamado e organograma automático
 
-> **Status:** Pronta para planejamento
+> **Status:** Planejada
 > **Área:** `supabase/migrations/`, `src/domain/permissions.ts`, `src/domain/callings.ts`, `src/features/account/` (Acessos, Meus chamados, Catálogo de chamados), rotas `/profile/access`, `/profile/callings-catalog/*`
 > **Última atualização:** 2026-11-15
 
