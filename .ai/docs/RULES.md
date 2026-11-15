@@ -49,7 +49,7 @@ Ver `ARCHITECTURE.md`. Em resumo: rotas em `src/app`, uma pasta por feature em `
 | Importar fonte pela raiz do pacote (`@expo-google-fonts/noto-sans`) | Empacota os ~36 arquivos de fonte (~15 MB) | Import por peso: `@expo-google-fonts/noto-sans/400Regular` |
 | Import entre features | Acoplamento circular | Subir o código comum para `domain`/`lib`/`components` |
 | Datas com `new Date()` direto em regra de negócio | Testes dependem do relógio real | Receber `now` como parâmetro |
-| Guardar dado pessoal em `AsyncStorage` sem necessidade | LGPD: dado sensível fora do controle | Cache do TanStack só do que a tela precisa; sessão no `expo-secure-store` |
+| Guardar dado pessoal em `AsyncStorage` sem necessidade | LGPD: dado sensível fora do controle | Cache do TanStack só do que a tela precisa; a sessão do Supabase só pelo `secureSessionStorage` (`src/lib/secureSessionStorage.ts`: cifrada, chave no `expo-secure-store`) |
 | "SUD", "LDS", "mórmon" em textos | Guia de comunicação da Igreja | Ver `DESIGN_SYSTEM.md` › Voz |
 
 ## Datas e fuso

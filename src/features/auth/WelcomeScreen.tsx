@@ -54,16 +54,14 @@ export function WelcomeScreen() {
     await signOut();
     router.replace('/agenda');
   }
-  const leaveRef = useRef(leave);
-  leaveRef.current = leave;
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      void leaveRef.current();
+      void signOut().then(() => router.replace('/agenda'));
       return true;
     });
     return () => subscription.remove();
-  }, []);
+  }, [router]);
 
   async function submit() {
     if (inFlight.current) return;

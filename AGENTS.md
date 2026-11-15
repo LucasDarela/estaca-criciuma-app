@@ -9,7 +9,7 @@ App mobile (iOS e Android) da **Estaca Criciúma** de A Igreja de Jesus Cristo d
 ## Stack
 
 - TypeScript 6.0 (strict) · **Expo SDK 58** (React Native 0.88, React 19.3) · **expo-router** (rotas em `src/app`)
-- **Supabase Cloud (plano Free, região us-east-1)**: Postgres com RLS, Auth (OTP por e-mail + Google + Apple), Edge Functions; cliente `@supabase/supabase-js`
+- **Supabase Cloud (plano Free, região us-east-1)**: Postgres com RLS, Auth (OTP por e-mail), Edge Functions; cliente `@supabase/supabase-js`
 - TanStack Query (cache offline) · `@shopify/react-native-skia` (desenho) · `expo-notifications` (push e lembretes locais)
 - i18n: `i18next` + `react-i18next` + `expo-localization` — **pt-BR (padrão), en-US, es-MX**
 - Qualidade: ESLint (`eslint-config-expo`) + Prettier + `tsc` · Jest (`jest-expo`) + React Native Testing Library · Maestro (E2E)

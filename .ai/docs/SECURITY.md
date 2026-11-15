@@ -23,8 +23,9 @@ Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir 
 
 ## Autenticação e autorização
 
-- **Autenticação:** Supabase Auth (Supabase Cloud). OTP de 6 dígitos por e-mail, Google e "Entrar com a Apple" (obrigatório na App Store quando há login social). Sem senha.
-- **Sessão:** JWT do Supabase com refresh token guardado no `expo-secure-store` (Keychain/Keystore), nunca em `AsyncStorage`.
+- **Autenticação:** Supabase Auth (Supabase Cloud). Só OTP de 6 dígitos por e-mail, sem senha. Google e "Entrar com a Apple" ficam para uma spec futura (decisão 14 de `auth-account`); a Apple passa a ser obrigatória na App Store quando houver login social.
+- **Rate limits do login (RNF-03):** 1 envio de código por e-mail a cada 60 s, 30 e-mails por hora no projeto, 10 verificações por IP a cada 5 min, código válido por 10 min. Local no `supabase/config.toml`; na produção, aplicados no painel (`docs/runbooks/provisioning.md`, item e).
+- **Sessão:** JWT e refresh token ficam no `AsyncStorage` **cifrados com AES-256-GCM** (`expo-crypto`); a chave aleatória fica no `expo-secure-store` (Keychain/Keystore). Adaptador: `src/lib/secureSessionStorage.ts` (decisão 18). Se não decifrar, o item é apagado e a pessoa entra de novo. Nunca em texto puro.
 - **Visitante:** sem sessão; usa a anon key e só lê o que é público (RN-01).
 - **Modelo de permissão:** "membro" é qualquer conta autenticada e **não** tem linha em `memberships`. Papéis elevados ficam em `memberships(user_id, unit_id, role, leadership_group)`:
 
@@ -44,6 +45,7 @@ Direitos do titular (RN-10): **exportar** os próprios dados (JSON) e **excluir 
   - `calling_processes`, `meeting_items`: usam `can_lead(unit_id)` (só `unit_leader` da unidade e `stake_leader`, RN-04). `admin` **não** tem política.
   - `push_tokens`, `notification_preferences`: só o dono; leitura em massa só pela Edge Function com service role.
 - **Admin** gerencia unidades e papéis; promover alguém a `unit_leader`/`stake_leader` só por `stake_leader` ou `admin`, via RPC auditada.
+- **RPCs auditadas de `auth-account`** (`security definer`, `search_path = public`, `execute` só para `authenticated`; a primeira instrução exige `auth.uid()`; erros são códigos curtos em `message`): `complete_welcome` (perfil e consentimento com o relógio do servidor), `export_my_data`, `delete_my_account` (bloqueia o último `admin`), `list_access`, `grant_role` e `revoke_role` (revalidam quem pode conceder o quê e gravam `role_grants_log` na mesma transação; `role_grants_log` só guarda ids). Testes em `supabase/tests/account.test.sql`.
 - Envio de push: só pela Edge Function `send-push`, que revalida no servidor se quem publicou tem papel na unidade e se o público escolhido é permitido (RN-02, RN-08).
 
 ## Segredos

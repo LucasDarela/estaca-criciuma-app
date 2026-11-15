@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
@@ -22,6 +22,16 @@ export type GrantAccessSheetProps = { visible: boolean; onClose: () => void };
 /** RF-16: e-mail, unit, role and leadership group; the database revalidates everything. */
 export function GrantAccessSheet({ visible, onClose }: GrantAccessSheetProps) {
   const { t } = useTranslation();
+  return (
+    <Sheet visible={visible} onClose={onClose} accessibilityLabel={t('account.access.grant')}>
+      {/* Mounted only while open, so every opening starts with an empty form. */}
+      {visible ? <GrantAccessForm onClose={onClose} /> : null}
+    </Sheet>
+  );
+}
+
+function GrantAccessForm({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const { memberships } = useViewer();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -33,15 +43,6 @@ export function GrantAccessSheet({ visible, onClose }: GrantAccessSheetProps) {
   const [group, setGroup] = useState<LeadershipGroup | null>(null);
   const [loading, setLoading] = useState(false);
   const inFlight = useRef(false);
-
-  useEffect(() => {
-    if (!visible) return;
-    setEmail('');
-    setEmailError(undefined);
-    setUnit(null);
-    setRole(null);
-    setGroup(null);
-  }, [visible]);
 
   const roles = unit ? grantableRoles(memberships, unit) : [];
   const groups = unit ? groupsFor(unit) : [];
@@ -87,73 +88,71 @@ export function GrantAccessSheet({ visible, onClose }: GrantAccessSheetProps) {
   }
 
   return (
-    <Sheet visible={visible} onClose={onClose} accessibilityLabel={t('account.access.grant')}>
-      <ScrollView style={{ maxHeight: height * 0.7 }} keyboardShouldPersistTaps="handled">
-        <View style={styles.content}>
-          <Text accessibilityRole="header" style={styles.title}>
-            {t('account.access.grant')}
-          </Text>
-          <TextField
-            label={t('account.access.email')}
-            value={email}
-            onChangeText={(value) => {
-              setEmail(value);
-              setEmailError(undefined);
-            }}
-            error={emailError}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            textContentType="emailAddress"
-            maxLength={EMAIL_MAX_LENGTH}
-          />
+    <ScrollView style={{ maxHeight: height * 0.7 }} keyboardShouldPersistTaps="handled">
+      <View style={styles.content}>
+        <Text accessibilityRole="header" style={styles.title}>
+          {t('account.access.grant')}
+        </Text>
+        <TextField
+          label={t('account.access.email')}
+          value={email}
+          onChangeText={(value) => {
+            setEmail(value);
+            setEmailError(undefined);
+          }}
+          error={emailError}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
+          maxLength={EMAIL_MAX_LENGTH}
+        />
 
-          <Text style={styles.label}>{t('account.access.unit')}</Text>
-          <View style={styles.chips}>
-            {unitOrder.map((id) => (
-              <FilterChip
-                key={id}
-                label={units[id].label}
-                dotColor={units[id].dot}
-                selected={unit === id}
-                onPress={() => chooseUnit(id)}
-              />
-            ))}
-          </View>
-
-          <Text style={styles.label}>{t('account.access.role')}</Text>
-          <View style={styles.chips}>
-            {roles.map((value) => (
-              <FilterChip
-                key={value}
-                label={t(`account.roles.${value}`)}
-                selected={role === value}
-                onPress={() => setRole(value)}
-              />
-            ))}
-          </View>
-
-          <Text style={styles.label}>{t('account.access.group')}</Text>
-          <View style={styles.chips}>
-            {groups.map((value) => (
-              <FilterChip
-                key={value ?? 'none'}
-                label={t(`account.groups.${value ?? 'none'}`)}
-                selected={group === value}
-                onPress={() => setGroup(value)}
-              />
-            ))}
-          </View>
-
-          <Button
-            label={t('account.access.submit')}
-            loading={loading}
-            disabled={email.trim() === '' || unit === null || role === null}
-            onPress={() => void submit()}
-          />
+        <Text style={styles.label}>{t('account.access.unit')}</Text>
+        <View style={styles.chips}>
+          {unitOrder.map((id) => (
+            <FilterChip
+              key={id}
+              label={units[id].label}
+              dotColor={units[id].dot}
+              selected={unit === id}
+              onPress={() => chooseUnit(id)}
+            />
+          ))}
         </View>
-      </ScrollView>
-    </Sheet>
+
+        <Text style={styles.label}>{t('account.access.role')}</Text>
+        <View style={styles.chips}>
+          {roles.map((value) => (
+            <FilterChip
+              key={value}
+              label={t(`account.roles.${value}`)}
+              selected={role === value}
+              onPress={() => setRole(value)}
+            />
+          ))}
+        </View>
+
+        <Text style={styles.label}>{t('account.access.group')}</Text>
+        <View style={styles.chips}>
+          {groups.map((value) => (
+            <FilterChip
+              key={value ?? 'none'}
+              label={t(`account.groups.${value ?? 'none'}`)}
+              selected={group === value}
+              onPress={() => setGroup(value)}
+            />
+          ))}
+        </View>
+
+        <Button
+          label={t('account.access.submit')}
+          loading={loading}
+          disabled={email.trim() === '' || unit === null || role === null}
+          onPress={() => void submit()}
+        />
+      </View>
+    </ScrollView>
   );
 }
 

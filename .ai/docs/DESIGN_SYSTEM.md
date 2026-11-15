@@ -70,6 +70,8 @@ Valores em `src/theme/theme.ts`. "Derivado" = criado para UI digital; validar co
 | `border` / `borderStrong` / `divider` | `#E3E5E5` / Neutro 10 / `#EEF0F0` | Borda de card / botão secundário e chip / separador de lista |
 | `toastBg` / `toastAccent` | Neutro 50 / Azul 10 | Toast in-app |
 
+Tokens de `size` e `type` adicionados por `auth-account` (todos derivados): `size.codeBoxWidth` 48 e `size.codeBoxHeight` 56 (caixa de um dígito do código), `size.checkbox` 24 (caixa de consentimento), `type.signatureName` (serifa 26/32) e `type.signatureTagline` (sans 12/16, espaçamento 2.4) da assinatura tipográfica da tela Entrar.
+
 ### Cores das unidades (`units`)
 
 | Unidade | `dot` | `tint` | `text` |
@@ -122,7 +124,7 @@ Medidas vêm de `size`, `radius`, `space`, `stroke` e `motion`. Valores que o de
 | `Badge` | `src/components/Badge.tsx` | contagem | Mín. 20×20, pill, `danger` + branco, 11.5/700 |
 | `Segmented` | `src/components/Segmented.tsx` | 2–3 opções, com ou sem ícone | Trilho `surfaceDisabled` padding 3 raio 12; opção ativa branca, raio 9, sombra leve, 600 |
 | `EventCard` | `src/components/EventCard.tsx` | — | Borda `border`, raio 16, padding 14. Barra lateral 4 px `units[id].dot`; horário 13/600 `primary`; título 16/600; local 13 `textMuted` com ícone `location_on`; `UnitTag`. Toque abre detalhe (mapa, "Adicionar à agenda", "Compartilhar") |
-| `ListItem` | `src/components/ListItem.tsx` | com avatar, ícone ou ponto de unidade; com chevron, contagem ou `Switch` | Padding vertical 10–12, separador `divider`; título 15/600, subtítulo 13 `textMuted`; chevron `iconMuted` |
+| `ListItem` | `src/components/ListItem.tsx` | com avatar, ícone ou ponto de unidade; com chevron, `check`, carregando, contagem ou `Switch`; `selected` marca a opção escolhida de uma lista | Padding vertical 10–12, separador `divider`; título 15/600, subtítulo 13 `textMuted`; chevron `iconMuted` |
 | `Avatar` | `src/components/Avatar.tsx` | `small` 36 (cabeçalho, mesmas cores do `default`), `default` 44 (`primarySubtle` + iniciais `primary`), `large` 64 (`primary` + iniciais em serifa branca) | Iniciais, sem foto no v1.0 |
 | `Switch` | `src/components/Switch.tsx` | on (`primary`), off (`borderStrong`) | 51×31 (compacto 46×28), polegar branco |
 | `Toast` | `src/components/toast/ToastProvider.tsx` (`ToastProvider`, `useToast`) | sucesso com ação | Fundo `toastBg`, raio 14, ícone e ação em `toastAccent`. Ex.: "Anotação salva · Desfazer" |
@@ -132,7 +134,8 @@ Medidas vêm de `size`, `radius`, `space`, `stroke` e `motion`. Valores que o de
 | `EmptyState` | `src/components/EmptyState.tsx` | ícone e ação opcionais | Borda tracejada `borderStrong`, raio 14 |
 | `OfflineBanner` | `src/components/OfflineBanner.tsx` | — | Faixa `warningSubtle` com `common.offline`, `accessibilityRole="alert"` |
 | `Skeleton` | `src/components/Skeleton.tsx` | largura, altura e raio | Bloco `surfaceDisabled` |
-| `Sheet` / `ConfirmSheet` | `src/components/Sheet.tsx`, `src/components/ConfirmSheet.tsx` | `Sheet` livre; `ConfirmSheet` com `primary` ou `danger` | Modal com alça, raio 24 no topo, fundo `scrim`; fecha ao tocar no fundo ou arrastar para baixo. Entra em 250 ms; com "Reduzir movimento", fade de 150 ms |
+| `UnitPickerSheet` | `src/components/UnitPickerSheet.tsx` | escolha única de unidade, com opção "nenhuma" no topo | `Sheet` com `ListItem` (ponto de cor da unidade, `check` na escolhida). Não importa `features/` nem `lib/` |
+| `Sheet` / `ConfirmSheet` | `src/components/Sheet.tsx`, `src/components/ConfirmSheet.tsx` | `Sheet` livre; `ConfirmSheet` com `primary` ou `danger` | Modal com alça, sobe acima do teclado no iOS, raio 24 no topo, fundo `scrim`; fecha ao tocar no fundo ou arrastar para baixo. Entra em 250 ms; com "Reduzir movimento", fade de 150 ms |
 
 ### TabBar por perfil
 

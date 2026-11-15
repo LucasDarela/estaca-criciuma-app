@@ -1,5 +1,3 @@
-import '@/i18n';
-
 import { act, render } from '@testing-library/react-native';
 
 import i18n from '@/i18n';

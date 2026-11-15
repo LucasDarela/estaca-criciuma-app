@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -17,23 +17,24 @@ export type EditNameSheetProps = {
 };
 
 /** RF-12: same rules and messages as the welcome screen (RF-08, RF-09). */
-export function EditNameSheet({
-  visible,
+export function EditNameSheet({ visible, onClose, ...form }: EditNameSheetProps) {
+  const { t } = useTranslation();
+  return (
+    <Sheet visible={visible} onClose={onClose} accessibilityLabel={t('account.profile.name')}>
+      {/* Mounted only while open, so the field restarts from the current name each time. */}
+      {visible ? <EditNameForm {...form} /> : null}
+    </Sheet>
+  );
+}
+
+function EditNameForm({
   initialName,
   loading,
   onSave,
-  onClose,
-}: EditNameSheetProps) {
+}: Omit<EditNameSheetProps, 'visible' | 'onClose'>) {
   const { t } = useTranslation();
   const [name, setName] = useState(initialName);
   const [error, setError] = useState<string | undefined>();
-
-  useEffect(() => {
-    if (visible) {
-      setName(initialName);
-      setError(undefined);
-    }
-  }, [visible, initialName]);
 
   function save() {
     const problem = validateDisplayName(name);
@@ -51,26 +52,24 @@ export function EditNameSheet({
   }
 
   return (
-    <Sheet visible={visible} onClose={onClose} accessibilityLabel={t('account.profile.name')}>
-      <View style={styles.content}>
-        <Text accessibilityRole="header" style={styles.title}>
-          {t('account.profile.name')}
-        </Text>
-        <TextField
-          label={t('account.profile.name')}
-          value={name}
-          onChangeText={(value) => {
-            setName(value);
-            setError(undefined);
-          }}
-          error={error}
-          autoComplete="name"
-          textContentType="name"
-          maxLength={60}
-        />
-        <Button label={t('account.profile.save')} loading={loading} onPress={save} />
-      </View>
-    </Sheet>
+    <View style={styles.content}>
+      <Text accessibilityRole="header" style={styles.title}>
+        {t('account.profile.name')}
+      </Text>
+      <TextField
+        label={t('account.profile.name')}
+        value={name}
+        onChangeText={(value) => {
+          setName(value);
+          setError(undefined);
+        }}
+        error={error}
+        autoComplete="name"
+        textContentType="name"
+        maxLength={60}
+      />
+      <Button label={t('account.profile.save')} loading={loading} onPress={save} />
+    </View>
   );
 }
 

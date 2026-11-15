@@ -281,7 +281,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 
 ## 4. Tarefas
 
-- [ ] **T-01 — Nome da chave publishable (RF-20)**
+- [x] **T-01 — Nome da chave publishable (RF-20)**
   - Arquivos: `alterar src/lib/supabase.ts` · `alterar src/lib/supabase.test.ts` · `alterar .env.example` · `alterar .ai/docs/ARCHITECTURE.md` (tabela de integrações) · `criar src/lib/envNames.test.ts`
   - O que fazer:
     - Trocar a leitura da variável e a mensagem de erro para `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, e acrescentar `isSupabaseConfigured()`.
@@ -294,7 +294,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-08
   - Verificar: `make test`
 
-- [ ] **T-02 — Dependências e sessão cifrada (RF-01, RNF-01)**
+- [x] **T-02 — Dependências e sessão cifrada (RF-01, RNF-01)**
   - Arquivos: `alterar package.json`/`package-lock.json` (seção 3) · `criar src/lib/secureSessionStorage.ts` · `criar src/lib/secureSessionStorage.test.ts` · `alterar src/lib/supabase.ts` · `alterar src/lib/supabase.test.ts` · `alterar jest.setup.ts`
   - O que fazer:
     - Implementar o contrato 2.2 com `AESEncryptionKey.generate(AESKeySize.AES256)`, `aesEncryptAsync` e `aesDecryptAsync` do `expo-crypto`. Confira as assinaturas exatas em `node_modules/expo-crypto/build/aes/aes.types.d.ts` e `build/aes/index.d.ts`.
@@ -311,7 +311,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-01 (parte automatizada)
   - Verificar: `make test`
 
-- [ ] **T-03 — Sessão no app (RF-01, 7.6)**
+- [x] **T-03 — Sessão no app (RF-01, 7.6)**
   - Arquivos: `criar src/lib/authSession.tsx` · `criar src/lib/authSession.test.tsx` · `criar src/lib/appFocus.ts` · `alterar src/app/_layout.tsx` · `alterar src/features/viewer/ViewerProvider.tsx` · `alterar src/features/viewer/ViewerProvider.test.tsx`
   - O que fazer:
     - Implementar `AuthSessionProvider`, `useAuthSession` e `signOut` (contrato 2.2). Um flag de módulo, `appInitiatedSignOut`, distingue a saída pedida pelo app da sessão expirada.
@@ -330,7 +330,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-02
   - Verificar: `make test`
 
-- [ ] **T-04 — Telemetria, URL de privacidade e regras de domínio**
+- [x] **T-04 — Telemetria, URL de privacidade e regras de domínio**
   - Arquivos: `criar src/lib/telemetry.ts` (+ teste) · `criar src/lib/config.ts` (+ teste) · `criar src/domain/email.ts` · `criar src/domain/displayName.ts` · `criar src/domain/access.ts` (+ testes de cada um)
   - O que fazer:
     - Implementar os contratos 2.2 e 2.3.
@@ -343,7 +343,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: base para CA-03, CA-09, CA-17 e CA-21
   - Verificar: `make test` (cobertura de 80% em `src/domain` e `src/lib`)
 
-- [ ] **T-05 — RPCs e testes de banco (RNF-05, RNF-06)**
+- [x] **T-05 — RPCs e testes de banco (RNF-05, RNF-06)**
   - Arquivos: `criar supabase/migrations/<ts>_account_rpcs.sql` (`supabase migration new account_rpcs`) · `criar supabase/tests/account.test.sql` · `alterar src/lib/database.types.ts` (`make db-types`)
   - O que fazer:
     - Criar as funções do contrato 2.1.
@@ -368,7 +368,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-09, CA-12, CA-13, CA-15, CA-16, CA-18, CA-19 e CA-20 (no banco)
   - Verificar: `supabase db reset && make test-db && make db-types && make lint`
 
-- [ ] **T-06 — E-mail do código e rate limits (RF-21, RNF-03)**
+- [x] **T-06 — E-mail do código e rate limits (RF-21, RNF-03)**
   - Arquivos: `alterar supabase/config.toml` · `criar supabase/templates/magic_link.html` · `alterar docs/runbooks/provisioning.md` (item e)
   - O que fazer:
     - No `config.toml`:
@@ -385,7 +385,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-06 (configuração) e CA-23 (local)
   - Verificar: `supabase stop && supabase start`; pedir um código e ver o e-mail no Inbucket (`http://localhost:54324`)
 
-- [ ] **T-07 — Tela Entrar (RF-02 a RF-04)**
+- [x] **T-07 — Tela Entrar (RF-02 a RF-04)**
   - Arquivos: `criar src/features/auth/api.ts` (+ `api.test.ts`) · `criar src/features/auth/components/Signature.tsx` · `criar src/features/auth/SignInScreen.tsx` (+ teste) · `alterar src/app/(tabs)/sign-in.tsx` · `alterar src/theme/theme.ts` (tokens 2.6) · `alterar src/i18n/locales/*.json` (`auth.signature.*`, `auth.signIn.*`, `auth.errors.*`)
   - O que fazer:
     - A tela é um `ScrollView` com:
@@ -404,7 +404,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-03, CA-04 e CA-07 (automatizado)
   - Verificar: `make test`
 
-- [ ] **T-08 — Tela do código (RF-04, RF-05, RF-07, RNF-07, RNF-09)**
+- [x] **T-08 — Tela do código (RF-04, RF-05, RF-07, RNF-07, RNF-09)**
   - Arquivos: `criar src/features/auth/components/CodeField.tsx` · `criar src/features/auth/OtpScreen.tsx` (+ teste) · `criar src/app/sign-in/code.tsx` · `alterar src/i18n/locales/*.json` (`auth.code.*`)
   - O que fazer:
     - `CodeField`: um único `TextInput` invisível sobre 6 caixas de `size.codeBoxWidth`×`size.codeBoxHeight`.
@@ -426,7 +426,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-04, CA-05, CA-06 e CA-21 (no app)
   - Verificar: `make test`
 
-- [ ] **T-09 — Boas-vindas e efeitos de sessão (RF-07 a RF-10, RNF-10, 7.6)**
+- [x] **T-09 — Boas-vindas e efeitos de sessão (RF-07 a RF-10, RNF-10, 7.6)**
   - Arquivos: `criar src/components/UnitPickerSheet.tsx` (+ teste) · `criar src/features/auth/WelcomeScreen.tsx` (+ teste) · `criar src/features/auth/components/ConsentCheckbox.tsx` · `criar src/features/auth/SessionEffects.tsx` (+ teste) · `criar src/app/welcome.tsx` · `alterar src/app/_layout.tsx` (`<SessionEffects />` dentro do `ToastProvider`) · `alterar src/i18n/locales/*.json` (`auth.welcome.*`, `auth.sessionExpired`)
   - O que fazer:
     - `UnitPickerSheet` (contrato 2.4): um `Sheet` com o `ListItem` de `noneLabel` primeiro e, depois, as unidades com `leading: { kind: 'unitDot', unitId }` e `trailing` `check` na selecionada. Não importa `features/` nem `lib/` (CA-20 de `design-system`).
@@ -453,7 +453,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-09 e CA-10
   - Verificar: `make test`
 
-- [ ] **T-10 — Perfil, exportação e exclusão (RF-11 a RF-14)**
+- [x] **T-10 — Perfil, exportação e exclusão (RF-11 a RF-14)**
   - Arquivos: `criar src/features/account/api.ts` (+ `api.test.ts`) · `criar src/features/account/ProfileScreen.tsx` (+ teste) · `criar src/features/account/EditNameSheet.tsx` · `criar src/features/account/LanguageSheet.tsx` · `criar src/features/account/DeleteAccountSheet.tsx` (+ teste) · `alterar src/app/(tabs)/profile.tsx` · `alterar src/i18n/locales/*.json` (`account.profile.*`, `account.languages.*`, `account.delete.*`)
   - O que fazer:
     - `ProfileScreen`:
@@ -483,7 +483,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-11, CA-12, CA-13 e CA-20 (no app)
   - Verificar: `make test`
 
-- [ ] **T-11 — Acessos (RF-15 a RF-18)**
+- [x] **T-11 — Acessos (RF-15 a RF-18)**
   - Arquivos: `criar src/features/account/AccessScreen.tsx` (+ teste) · `criar src/features/account/GrantAccessSheet.tsx` (+ teste) · `criar src/app/profile/access.tsx` · `alterar src/i18n/locales/*.json` (`account.access.*`, `account.roles.*`, `account.groups.*`)
   - O que fazer:
     - `AccessScreen`:
@@ -512,7 +512,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-14, CA-15, CA-16, CA-17 e CA-18 (no app)
   - Verificar: `make test`
 
-- [ ] **T-12 — Documentação**
+- [x] **T-12 — Documentação**
   - Arquivos: `alterar .ai/docs/SECURITY.md` · `alterar .ai/docs/RULES.md` · `alterar .ai/docs/ARCHITECTURE.md` · `alterar AGENTS.md` · `alterar .ai/docs/DESIGN_SYSTEM.md`
   - O que fazer:
     - `SECURITY.md`:
@@ -591,8 +591,43 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 
 ### Arquivos criados e alterados
 
+- **Banco:** `supabase/migrations/20261115030703_account_rpcs.sql` (criado), `supabase/tests/account.test.sql` (criado, 37 testes), `supabase/config.toml` (OTP 6 dígitos/600 s/60 s, rate limits, templates `magic_link` e `confirmation`), `supabase/templates/magic_link.html` (criado), `src/lib/database.types.ts` (regenerado).
+- **lib:** `secureSessionStorage.ts`, `authSession.tsx`, `appFocus.ts`, `telemetry.ts`, `config.ts` (criados, cada um com teste); `supabase.ts` e `supabase.test.ts` (alterados); `envNames.test.ts` (criado).
+- **domain:** `email.ts`, `displayName.ts`, `access.ts` (criados, com testes).
+- **features/auth:** `api.ts`, `SignInScreen.tsx`, `OtpScreen.tsx`, `WelcomeScreen.tsx`, `SessionEffects.tsx`, `components/{Signature,CodeField,ConsentCheckbox}.tsx` (criados, com testes).
+- **features/account:** `api.ts`, `ProfileScreen.tsx`, `EditNameSheet.tsx`, `LanguageSheet.tsx`, `DeleteAccountSheet.tsx`, `AccessScreen.tsx`, `GrantAccessSheet.tsx` (criados, com testes).
+- **components:** `UnitPickerSheet.tsx` (+ teste) criado; `ListItem.tsx` (trailing `check` e `loading`, prop `selected`) e `Sheet.tsx` (`KeyboardAvoidingView`) alterados.
+- **viewer:** `ViewerProvider.tsx` (`refetchInterval` de 5 min e campo `loaded`) e seu teste.
+- **rotas:** `src/app/_layout.tsx` (providers de sessão, `SessionEffects`, splash), `(tabs)/sign-in.tsx`, `(tabs)/profile.tsx`, `sign-in/code.tsx`, `welcome.tsx`, `profile/access.tsx`.
+- **tema e i18n:** `theme.ts` (tokens 2.6), `i18n/locales/{pt-BR,en-US,es-MX}.json`.
+- **config e docs:** `package.json`/`package-lock.json` (5 pacotes da seção 3), `app.config.ts` (plugins `expo-secure-store` e `expo-sharing`), `jest.setup.ts` (mocks de AsyncStorage e SecureStore), `.env.example`, `docs/runbooks/provisioning.md`, `AGENTS.md`, `.ai/docs/{SECURITY,RULES,ARCHITECTURE,DESIGN_SYSTEM}.md`.
+
 ### Desvios do plano
+
+- **`revoke_role` checa a permissão antes de procurar a membership** (o plano listava `not_found` primeiro). Motivo: quem não pode gerenciar acessos não deve conseguir descobrir quais ids existem. Os códigos de erro e os testes de CA-18 não mudam.
+- **`Viewer` ganhou o campo `loaded`** (`ViewerProvider.tsx`). O `SessionEffects` precisa distinguir "perfil ainda carregando" de "conta sem perfil/consentimento"; sem isso, deslogaria durante a carga.
+- **`ListItem` ganhou `trailing` `check` e `loading` e a prop `selected`**: o plano pedia `check` na unidade escolhida, que o componente não tinha; o `loading` atende "Exportar meus dados em loading". Documentado em `DESIGN_SYSTEM.md`.
+- **`Sheet` agora usa `KeyboardAvoidingView` no iOS**: sem isso o teclado cobriria os sheets com campo de texto (nome, exclusão, conceder acesso). Verificar em aparelho (T-13).
+- **Chaves de i18n extras**: `common.genericError` e `common.retry` (erros `unknown`, `not_authorized` e a nova tentativa da tela Acessos). Mesmos textos nos 3 idiomas.
+- **`SignInScreen` não chama `AccessibilityInfo.announceForAccessibility` direto**: o `TextField` já anuncia o erro quando ele aparece (RNF-08); a tela só move o foco. Evita anúncio duplo.
+- **`EditNameSheet` e `GrantAccessSheet` montam o formulário só com o sheet aberto**, para reiniciar o estado a cada abertura sem `setState` em efeito (regra do lint).
+- `verifyCode` lança erro se a leitura de `consented_at` falhar (não presume `consented`).
 
 ### Decisões durante a implementação
 
+- `signOut()` usa o escopo padrão do Supabase (global); o flag `appInitiatedSignOut` é zerado em `finally`, pois o `SIGNED_OUT` chega antes de a promessa resolver.
+- O splash é escondido no `AuthenticatedApp`, depois de fontes e sessão carregadas.
+- A exclusão reaproveita o `signOut()` ao final de `deleteMyAccount`; a tela só navega e mostra o toast.
+- `complete_welcome` rejeita `estaca` como unidade frequentada (`invalid_unit`), coerente com a constraint `home_unit_not_stake`.
+- `npm audit --omit=dev`: relata `deepmerge` (>=4.2.0, prototype poisoning) via cadeia `jest`/`jest-config` já existente, sem relação com os 5 pacotes novos; o "fix" proposto rebaixaria o Jest para 29 (breaking). Não tratado aqui.
+- Template de e-mail e config local verificados: o código de 6 dígitos chega ao Inbucket/Mailpit local com assunto `Seu código de acesso` e sem link.
+- Nenhum ADR novo (as decisões seguem os ADRs 0002 e 0004 e as decisões 14 a 18 da spec).
+
 ### CA sem teste automatizado
+
+- **CA-01 (aparelho):** o teste unitário cobre a cifra (JWT não aparece no AsyncStorage, chave no SecureStore); inspecionar o AsyncStorage no aparelho fica na T-13.
+- **CA-02:** coberto por teste do `AuthSessionProvider` (cliente mockado); reabrir o app de verdade fica no roteiro (passo 4).
+- **CA-21:** coberto no app (spy em `track` e `console`); a busca nos logs do Supabase é manual (T-13).
+- **CA-22 (VoiceOver/TalkBack) e CA-23 (e-mail em produção; SPF/DKIM/DMARC):** manuais (T-13). O e-mail local foi conferido no Mailpit.
+- **CA-07:** testado em componente; a conferência visual em iOS e Android é manual.
+- **T-13 (QA em aparelho e produção): PENDENTE**, é da sessão principal com o usuário: passos 1 a 9 do roteiro contra o Supabase local (o usuário renomeia a variável no `.env`), CA-01 no aparelho, CA-22, CA-23, e, depois do deploy da migration, passos 4 a 6 do runbook no painel e o passo 10 na produção.
