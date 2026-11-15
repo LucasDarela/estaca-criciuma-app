@@ -2,7 +2,7 @@
 
 Fonte de verdade visual: projeto **Design System** no claude.ai/design (`Design System.dc.html`, v1.0, nov/2026). Fonte de verdade dos **valores**: `src/theme/theme.ts`. Este doc diz onde estão e como usar, para que o agente não invente cores e espaçamentos.
 
-> Estado: tokens implementados; componentes **especificados, ainda não construídos** (aguardam o scaffolding do app Expo — ver `ARCHITECTURE.md`). Componentes vão para `src/components/`. Todo texto dos componentes vem do i18n (pt-BR, en-US, es-MX); nomes de unidades não são traduzidos.
+> Estado: tokens e componentes implementados em `src/components/` (spec `design-system`). Catálogo visual em `/dev/components` (só em `__DEV__`). Todo texto dos componentes vem do i18n (pt-BR, en-US, es-MX); nomes de unidades não são traduzidos.
 
 ## Base
 
@@ -11,7 +11,7 @@ Fonte de verdade visual: projeto **Design System** no claude.ai/design (`Design 
 | Plataforma | React Native (Expo) · iOS + Android |
 | Biblioteca de componentes | Própria (ver "Componentes") |
 | Arquivo de tokens / tema | `src/theme/theme.ts` |
-| Ícones | Material Symbols Rounded, 24 px, peso 400. Ativo = preenchido (`FILL 1`), inativo = contornado. Via `@expo/vector-icons` ou SVGs exportados |
+| Ícones | Material Symbols Rounded, 24 px, peso 400. Ativo = preenchido (`FILL 1`), inativo = contornado. SVGs de `@material-symbols/svg-400` (devDependency) convertidos por `npm run icons` em `src/components/icons/glyphs.ts` e desenhados com `react-native-svg` pelo componente `Icon`. Licença Apache 2.0 em `src/components/icons/LICENSE` |
 | Fontes | Noto Serif (substitui McKay Pro) e Noto Sans (substitui Zoram), via `@expo-google-fonts/*`. Noto Sans Mono só em material técnico |
 | Temas suportados | Claro (escuro não está no design v1.0) |
 
@@ -109,25 +109,30 @@ Ordem de exibição: `unitOrder`.
 
 ## Componentes
 
-Todos a construir quando a stack existir. Medidas vêm de `size`, `radius` e `space`.
+Medidas vêm de `size`, `radius`, `space`, `stroke` e `motion`. Valores que o design usa e que não tinham nome entraram em `theme.ts` com o comentário `derived`.
 
 | Componente | Onde está | Variantes | Observações |
 | ---------- | --------- | --------- | ----------- |
-| `Button` | a criar | `primary` (fundo `primary`, pressionado `primaryPressed`), `secondary` (`primarySubtle` + texto `primary`), `outline` (borda 1.5 `borderStrong`), `ghost` (texto `primary`), `danger`, `disabled` (`surfaceDisabled` + `textDisabled`); tamanhos `default` 52 e `compact` 44 | Raio 14 (compact 12). Rótulo `type.button` (compact 15) |
-| `TextField` | a criar | `default`, `focused` (borda 1.5 `primary` + anel 4 `focusRing`), `error` (borda `danger` + mensagem 12.5 `danger` abaixo) | Altura 52, raio 12, padding 14. Rótulo 13/600 acima, gap 6 |
-| `SearchField` | a criar | `default` 44, `compact` 40 | Fundo `surfaceMuted`, sem borda, ícone `search` 20, placeholder `textSubtle` |
-| `FilterChip` | a criar | `selected` (fundo `primary`, texto branco), `unselected` (borda 1 `borderStrong`) | Altura 36, pill, ponto 8 da cor da unidade |
-| `UnitTag` | a criar | uma por `UnitId` | Padding 3×8, raio 6, 12/700, `units[id].tint` + `units[id].text` |
-| `StatusTag` | a criar | `neutral`, `info`, `success`, `warning` | Mesma forma da `UnitTag` |
-| `Badge` | a criar | contagem | Mín. 20×20, pill, `danger` + branco, 11.5/700 |
-| `Segmented` | a criar | 2–3 opções, com ou sem ícone | Trilho `surfaceDisabled` padding 3 raio 12; opção ativa branca, raio 9, sombra leve, 600 |
-| `EventCard` | a criar | — | Borda `border`, raio 16, padding 14. Barra lateral 4 px `units[id].dot`; horário 13/600 `primary`; título 16/600; local 13 `textMuted` com ícone `location_on`; `UnitTag`. Toque abre detalhe (mapa, "Adicionar à agenda", "Compartilhar") |
-| `ListItem` | a criar | com avatar, ícone ou ponto de unidade; com chevron, contagem ou `Switch` | Padding vertical 10–12, separador `divider`; título 15/600, subtítulo 13 `textMuted`; chevron `iconMuted` |
-| `Avatar` | a criar | `default` 44 (`primarySubtle` + iniciais `primary`), `large` 64 (`primary` + iniciais em serifa branca) | Iniciais, sem foto no v1.0 |
-| `Switch` | a criar | on (`primary`), off (`borderStrong`) | 51×31 (compacto 46×28), polegar branco |
-| `Toast` | a criar | sucesso com ação | Fundo `toastBg`, raio 14, ícone e ação em `toastAccent`. Ex.: "Anotação salva · Desfazer" |
-| `TabBar` | a criar | por perfil (abaixo) | Altura 84 com área segura, fundo `surface`, borda superior `border`. Ativo: `primary`, ícone preenchido, rótulo 700. Inativo: `textSubtle`, contornado, 500. Máx. 5 destinos, ícone + rótulo sempre visíveis |
-| `ScreenHeader` | a criar | título grande + ação circular 44 (`primary` com `add`, ou `surfaceMuted`); com voltar | Fundo `surface`, borda inferior `border`, título serif 28/600 |
+| `Button` | `src/components/Button.tsx` | `primary` (fundo `primary`, pressionado `primaryPressed`), `secondary` (`primarySubtle` + texto `primary`), `outline` (borda 1.5 `borderStrong`), `ghost` (texto `primary`), `danger`, `disabled` (`surfaceDisabled` + `textDisabled`); tamanhos `default` 52 e `compact` 44 | Raio 14 (compact 12). Rótulo `type.button` (compact 15) |
+| `TextField` | `src/components/TextField.tsx` | `default`, `focused` (borda 1.5 `primary` + anel 4 `focusRing`), `error` (borda `danger` + mensagem 12.5 `danger` abaixo) | Altura 52, raio 12, padding 14. Rótulo 13/600 acima, gap 6 |
+| `SearchField` | `src/components/SearchField.tsx` | `default` 44, `compact` 40 | Fundo `surfaceMuted`, sem borda, ícone `search` 20, placeholder `textSubtle` |
+| `FilterChip` | `src/components/FilterChip.tsx` | `selected` (fundo `primary`, texto branco), `unselected` (borda 1 `borderStrong`) | Altura 36, pill, ponto 8 da cor da unidade |
+| `UnitTag` | `src/components/UnitTag.tsx` | uma por `UnitId` | Padding 3×8, raio 6, 12/700, `units[id].tint` + `units[id].text` |
+| `StatusTag` | `src/components/StatusTag.tsx` | `neutral`, `info`, `success`, `warning` | Mesma forma da `UnitTag` |
+| `Badge` | `src/components/Badge.tsx` | contagem | Mín. 20×20, pill, `danger` + branco, 11.5/700 |
+| `Segmented` | `src/components/Segmented.tsx` | 2–3 opções, com ou sem ícone | Trilho `surfaceDisabled` padding 3 raio 12; opção ativa branca, raio 9, sombra leve, 600 |
+| `EventCard` | `src/components/EventCard.tsx` | — | Borda `border`, raio 16, padding 14. Barra lateral 4 px `units[id].dot`; horário 13/600 `primary`; título 16/600; local 13 `textMuted` com ícone `location_on`; `UnitTag`. Toque abre detalhe (mapa, "Adicionar à agenda", "Compartilhar") |
+| `ListItem` | `src/components/ListItem.tsx` | com avatar, ícone ou ponto de unidade; com chevron, contagem ou `Switch` | Padding vertical 10–12, separador `divider`; título 15/600, subtítulo 13 `textMuted`; chevron `iconMuted` |
+| `Avatar` | `src/components/Avatar.tsx` | `small` 36 (cabeçalho, mesmas cores do `default`), `default` 44 (`primarySubtle` + iniciais `primary`), `large` 64 (`primary` + iniciais em serifa branca) | Iniciais, sem foto no v1.0 |
+| `Switch` | `src/components/Switch.tsx` | on (`primary`), off (`borderStrong`) | 51×31 (compacto 46×28), polegar branco |
+| `Toast` | `src/components/toast/ToastProvider.tsx` (`ToastProvider`, `useToast`) | sucesso com ação | Fundo `toastBg`, raio 14, ícone e ação em `toastAccent`. Ex.: "Anotação salva · Desfazer" |
+| `TabBar` | `src/components/TabBar.tsx` | por perfil (abaixo) | Altura 84 com área segura, fundo `surface`, borda superior `border`. Ativo: `primary`, ícone preenchido, rótulo 700. Inativo: `textSubtle`, contornado, 500. Máx. 5 destinos, ícone + rótulo sempre visíveis |
+| `ScreenHeader` | `src/components/ScreenHeader.tsx` | título grande + ação circular 44 (`primary` com `add`, ou `surfaceMuted`); com voltar | Fundo `surface`, borda inferior `border`, título serif 28/600. Com `showAvatar`, mostra `Avatar` `small` do viewer (via `HeaderAvatarProvider`) que abre `/profile` |
+| `Icon` | `src/components/icons/Icon.tsx` | contornado (padrão) e preenchido (`filled`); tamanho padrão 24 | Nomes em `icons/glyphs.ts` (tipo `IconName`). Sempre oculto do leitor de tela: o elemento tocável dá o rótulo |
+| `EmptyState` | `src/components/EmptyState.tsx` | ícone e ação opcionais | Borda tracejada `borderStrong`, raio 14 |
+| `OfflineBanner` | `src/components/OfflineBanner.tsx` | — | Faixa `warningSubtle` com `common.offline`, `accessibilityRole="alert"` |
+| `Skeleton` | `src/components/Skeleton.tsx` | largura, altura e raio | Bloco `surfaceDisabled` |
+| `Sheet` / `ConfirmSheet` | `src/components/Sheet.tsx`, `src/components/ConfirmSheet.tsx` | `Sheet` livre; `ConfirmSheet` com `primary` ou `danger` | Modal com alça, raio 24 no topo, fundo `scrim`; fecha ao tocar no fundo ou arrastar para baixo. Entra em 250 ms; com "Reduzir movimento", fade de 150 ms |
 
 ### TabBar por perfil
 
@@ -136,6 +141,10 @@ Todos a construir quando a stack existir. Medidas vêm de `size`, `radius` e `sp
 | Visitante | Agenda (`calendar_month`) · Mural (`campaign`) · Liderança (`account_tree`) · Entrar (`login`) |
 | Membro | Agenda · Mural · Liderança · Anotações (`edit_note`) · Perfil (`account_circle`) |
 | Líder | Agenda · Mural · Liderança · Anotações · Chamados (`assignment_ind`) |
+
+### Regras verificadas por teste
+
+`src/components/designRules.test.ts` falha se um componente tiver cor literal (`#RRGGBB`, `rgb(`) ou texto de UI literal entre tags JSX. Componentes não importam `features/`, `lib/` nem Supabase; o avatar do cabeçalho e as abas por perfil entram por contexto e por `src/features/navigation/`.
 
 ### Telas de referência (seção 07 do design)
 

@@ -24,4 +24,7 @@ module.exports = {
     '!src/lib/database.types.ts',
   ],
   coverageThreshold,
+  // CI runners transform the module graph cold (no Babel cache), so the first test of a suite
+  // that pulls in Modal/Animated can exceed Jest's 5 s default without anything hanging.
+  testTimeout: 20000,
 };

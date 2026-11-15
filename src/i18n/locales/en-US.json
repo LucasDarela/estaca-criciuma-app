@@ -1,6 +1,76 @@
 {
-  "home": {
-    "region": "SANTA CATARINA · BRAZIL",
-    "comingSoon": "Coming soon: the stake calendar, board and leadership."
+  "common": {
+    "offline": "No connection. Showing the last saved version.",
+    "back": "Back",
+    "clear": "Clear",
+    "close": "Close",
+    "cancel": "Cancel",
+    "comingSoon": "This area is coming soon.",
+    "profile": "Open profile"
+  },
+  "tabs": {
+    "agenda": "Calendar",
+    "board": "Board",
+    "leadership": "Leadership",
+    "notes": "Notes",
+    "callings": "Callings",
+    "profile": "Profile",
+    "signIn": "Sign in"
+  },
+  "dev": {
+    "catalog": {
+      "title": "Component catalog",
+      "section": {
+        "button": "Button",
+        "textField": "Text field",
+        "searchField": "Search field",
+        "filterChip": "Filter chip",
+        "unitTag": "Unit tag",
+        "statusTag": "Status tag",
+        "badge": "Badge",
+        "segmented": "Segmented control",
+        "eventCard": "Event card",
+        "listItem": "List item",
+        "avatar": "Avatar",
+        "switch": "Switch",
+        "toast": "Toast",
+        "tabBar": "Tab bar",
+        "screenHeader": "Screen header",
+        "sheet": "Bottom sheet",
+        "emptyState": "Empty state",
+        "offlineBanner": "Offline banner",
+        "skeleton": "Skeleton",
+        "icons": "Icons"
+      },
+      "sample": {
+        "label": "Sample label",
+        "error": "Enter your email.",
+        "hint": "Helper text.",
+        "message": "Note saved",
+        "undo": "Undo",
+        "title": "Stake conference",
+        "time": "Saturday, 09:00",
+        "place": "Central chapel",
+        "name": "Maria da Silva",
+        "subtitle": "Sample subtitle",
+        "open": "Open",
+        "confirm": "Confirm",
+        "sheetTitle": "Delete note?",
+        "sheetMessage": "This cannot be undone.",
+        "delete": "Delete",
+        "keep": "Keep",
+        "search": "Search events",
+        "month": "Month",
+        "week": "Week",
+        "day": "Day",
+        "loading": "Loading",
+        "disabled": "Disabled",
+        "vanished": "Notice",
+        "neutral": "Neutral",
+        "info": "Info",
+        "success": "Approved",
+        "warning": "Pending"
+      }
+    }
   }
 }

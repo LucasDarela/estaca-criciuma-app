@@ -37,10 +37,14 @@ Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec d
 ```
 src/
   app/                    Rotas do expo-router: SÓ arquivos de rota (re-export de telas). Tudo aqui vai para o bundle
-    index.tsx             Hoje: tela inicial provisória (HomeScreen)
-    (tabs)/               A criar: agenda, board, leadership, notes, callings, profile
+    index.tsx             Redireciona para /agenda
+    (tabs)/               Abas: agenda, board, leadership, notes, callings, profile, sign-in (telas provisórias até cada feature chegar)
+    dev/components.tsx    Catálogo de componentes, só em __DEV__
     _layout.tsx           Providers: Query, i18n, fontes, splash (Auth e Sentry entram com suas specs)
   features/<feature>/     Uma pasta por área: calendar, board, leadership, notes, callings, notifications, auth
+    navigation/           Layout das abas por perfil (TabsLayout), avatar do cabeçalho e redirecionamento da raiz
+    placeholder/          Telas "em breve" das abas sem feature
+    dev/                  Catálogo de componentes (/dev/components)
     components/           Componentes específicos da feature
     api.ts                Queries/mutations TanStack + chamadas Supabase da feature
     hooks.ts              Hooks da feature
@@ -79,11 +83,11 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 | Para criar... | Siga o padrão de |
 | ------------- | ---------------- |
 | Rota | `src/app/index.tsx` (re-export da tela) |
-| Tela | `src/features/home/HomeScreen.tsx` (tokens + `t()` + `accessibilityRole`) |
-| Teste de componente | `src/features/home/HomeScreen.test.tsx` |
+| Tela | `src/features/placeholder/ComingSoonScreen.tsx` (tokens + `t()` + `accessibilityRole`) |
+| Teste de componente | `src/features/navigation/TabsLayout.test.tsx` |
 | Teste unitário (função pura) | `src/i18n/resolveLanguage.test.ts` |
 | Texto traduzido | `src/i18n/locales/*.json` (paridade verificada por `src/i18n/locales.test.ts`) |
-| Componente do design system | A definir: primeiro componente em `src/components/` |
+| Componente do design system | `src/components/Button.tsx` (+ `Button.test.tsx`) |
 | Acesso a dados | `src/features/viewer/api.ts` (cliente de `src/lib/supabase.ts`, tipos de `src/lib/database.types.ts`) |
 | Migration com RLS | `supabase/migrations/*_base_units_profiles_roles.sql` |
 | Teste de RLS | `supabase/tests/base_rls.test.sql` (pgTAP; `make test-db`) |

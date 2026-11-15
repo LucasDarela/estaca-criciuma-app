@@ -15,6 +15,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 
+import { ToastProvider } from '@/components/toast/ToastProvider';
+import { ViewerHeaderAvatar } from '@/features/navigation/ViewerHeaderAvatar';
 import { ViewerProvider } from '@/features/viewer/ViewerProvider';
 
 void SplashScreen.preventAutoHideAsync();
@@ -43,8 +45,12 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       {/* auth-account replaces null with the Supabase session. */}
       <ViewerProvider session={null}>
-        <StatusBar style="auto" />
-        <Stack screenOptions={{ headerShown: false }} />
+        <ToastProvider>
+          <ViewerHeaderAvatar>
+            <StatusBar style="auto" />
+            <Stack screenOptions={{ headerShown: false }} />
+          </ViewerHeaderAvatar>
+        </ToastProvider>
       </ViewerProvider>
     </QueryClientProvider>
   );

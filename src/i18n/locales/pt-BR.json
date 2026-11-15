@@ -1,6 +1,76 @@
 {
-  "home": {
-    "region": "SANTA CATARINA · BRASIL",
-    "comingSoon": "Em breve: agenda, mural e liderança da estaca."
+  "common": {
+    "offline": "Sem conexão. Mostrando a última versão salva.",
+    "back": "Voltar",
+    "clear": "Limpar",
+    "close": "Fechar",
+    "cancel": "Cancelar",
+    "comingSoon": "Esta área chega em breve.",
+    "profile": "Abrir perfil"
+  },
+  "tabs": {
+    "agenda": "Agenda",
+    "board": "Mural",
+    "leadership": "Liderança",
+    "notes": "Anotações",
+    "callings": "Chamados",
+    "profile": "Perfil",
+    "signIn": "Entrar"
+  },
+  "dev": {
+    "catalog": {
+      "title": "Catálogo de componentes",
+      "section": {
+        "button": "Botão",
+        "textField": "Campo de texto",
+        "searchField": "Campo de busca",
+        "filterChip": "Chip de filtro",
+        "unitTag": "Etiqueta de unidade",
+        "statusTag": "Etiqueta de status",
+        "badge": "Contador",
+        "segmented": "Controle segmentado",
+        "eventCard": "Cartão de evento",
+        "listItem": "Item de lista",
+        "avatar": "Avatar",
+        "switch": "Interruptor",
+        "toast": "Aviso rápido",
+        "tabBar": "Barra de abas",
+        "screenHeader": "Cabeçalho de tela",
+        "sheet": "Painel inferior",
+        "emptyState": "Estado vazio",
+        "offlineBanner": "Faixa sem conexão",
+        "skeleton": "Carregando",
+        "icons": "Ícones"
+      },
+      "sample": {
+        "label": "Rótulo de exemplo",
+        "error": "Informe seu e-mail.",
+        "hint": "Texto de apoio.",
+        "message": "Anotação salva",
+        "undo": "Desfazer",
+        "title": "Conferência de estaca",
+        "time": "Sábado, 09:00",
+        "place": "Capela Central",
+        "name": "Maria da Silva",
+        "subtitle": "Subtítulo de exemplo",
+        "open": "Abrir",
+        "confirm": "Confirmar",
+        "sheetTitle": "Apagar anotação?",
+        "sheetMessage": "Esta ação não pode ser desfeita.",
+        "delete": "Apagar",
+        "keep": "Manter",
+        "search": "Buscar eventos",
+        "month": "Mês",
+        "week": "Semana",
+        "day": "Dia",
+        "loading": "Carregando",
+        "disabled": "Desabilitado",
+        "vanished": "Aviso",
+        "neutral": "Neutro",
+        "info": "Informação",
+        "success": "Aprovado",
+        "warning": "Pendente"
+      }
+    }
   }
 }

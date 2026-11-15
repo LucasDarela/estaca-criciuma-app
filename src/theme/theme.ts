@@ -125,6 +125,10 @@ export const radius = {
   tag: 6,
   input: 12,
   button: 14,
+  buttonCompact: 12, // derived
+  segmentedThumb: 9, // derived
+  toast: 14, // derived
+  emptyState: 14, // derived
   card: 16,
   sheet: 24,
   pill: 999,
@@ -148,6 +152,32 @@ export const size = {
   switchWidth: 51,
   switchHeight: 31,
   badge: 20,
+  tabBar: 84, // derived · includes the safe area
+  headerAvatar: 36, // derived · ScreenHeader avatar
+  switchWidthCompact: 46, // derived
+  switchHeightCompact: 28, // derived
+  searchCompact: 40, // derived
+  sheetHandleWidth: 36, // derived
+  sheetHandleHeight: 5, // derived
+  unitDot: 8, // derived
+  eventCardBar: 4, // derived
+  iconSearch: 20, // derived
+} as const;
+
+/** Border and ring widths. */
+export const stroke = {
+  hairline: 1, // derived
+  strong: 1.5, // derived
+  focusRing: 4, // derived
+} as const;
+
+/** Interaction feedback and animation timings. */
+export const motion = {
+  pressedOpacity: 0.7, // derived
+  sheetSlideMs: 250, // derived
+  reducedFadeMs: 150, // derived
+  toastMs: 4000, // derived
+  toastWithActionMs: 6000, // derived
 } as const;
 
 /**
@@ -188,6 +218,15 @@ export const type = {
     lineHeight: 14,
     letterSpacing: 0.1,
   },
+  headerTitle: { fontFamily: fontFamily.serifSemiBold, fontSize: 28, lineHeight: 34 }, // derived
+  fieldLabel: { fontFamily: fontFamily.sansSemiBold, fontSize: 13, lineHeight: 18 }, // derived
+  fieldError: { fontFamily: fontFamily.sansRegular, fontSize: 12.5, lineHeight: 17 }, // derived
+  buttonCompact: { fontFamily: fontFamily.sansSemiBold, fontSize: 15, lineHeight: 20 }, // derived
+  tag: { fontFamily: fontFamily.sansBold, fontSize: 12, lineHeight: 16 }, // derived
+  badge: { fontFamily: fontFamily.sansBold, fontSize: 11.5, lineHeight: 14 }, // derived
+  listTitle: { fontFamily: fontFamily.sansSemiBold, fontSize: 15, lineHeight: 20 }, // derived
+  cardTitle: { fontFamily: fontFamily.sansSemiBold, fontSize: 16, lineHeight: 22 }, // derived
+  avatarLarge: { fontFamily: fontFamily.serifSemiBold, fontSize: 24, lineHeight: 30 }, // derived
 } as const;
 
 /** System font scale cap for TabBar labels (`maxFontSizeMultiplier`). */
@@ -223,6 +262,8 @@ export const tokens = {
   space,
   radius,
   size,
+  stroke,
+  motion,
   fontFamily,
   type,
   elevation,
