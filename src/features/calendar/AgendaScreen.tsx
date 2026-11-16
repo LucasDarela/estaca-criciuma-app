@@ -20,6 +20,7 @@ import { addDays, addMonthsClamped, civilDateOf, type CivilDate } from '@/domain
 import { unitIds } from '@/domain/units';
 import { useLocale } from '@/i18n/useLocale';
 import { useIsOnline } from '@/lib/network';
+import { useHasUnread } from '@/lib/notificationInbox';
 import { radius, size, space, stroke, theme, type, units } from '@/theme/theme';
 
 import { useEventsAround } from './api';
@@ -40,6 +41,7 @@ export function AgendaScreen() {
   const router = useRouter();
   const locale = useLocale();
   const online = useIsOnline();
+  const hasUnread = useHasUnread();
   const now = useNow();
   const today = civilDateOf(now);
 
@@ -84,8 +86,11 @@ export function AgendaScreen() {
         actions={[
           {
             icon: 'notifications',
-            accessibilityLabel: t('calendar.notifications'),
+            accessibilityLabel: hasUnread
+              ? t('calendar.notificationsUnread')
+              : t('calendar.notifications'),
             tone: 'neutral',
+            badge: hasUnread,
             onPress: () => router.push('/notifications'),
           },
         ]}

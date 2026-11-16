@@ -14,6 +14,8 @@ export type HeaderAction = {
   accessibilityLabel: string;
   onPress: () => void;
   tone?: 'primary' | 'neutral';
+  /** A small dot in the corner of the button, e.g. unread notifications. */
+  badge?: boolean;
 };
 
 export type ScreenHeaderProps = {
@@ -63,6 +65,7 @@ export function ScreenHeader({ title, overline, onBack, actions, showAvatar }: S
             ]}
           >
             <Icon name={action.icon} color={primary ? theme.onPrimary : theme.text} />
+            {action.badge ? <View testID="header-action-badge" style={styles.badge} /> : null}
           </Pressable>
         );
       })}
@@ -101,6 +104,17 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: space.xs,
+    right: space.xs,
+    width: size.unitDot,
+    height: size.unitDot,
+    borderRadius: radius.pill,
+    backgroundColor: theme.danger,
+    borderWidth: stroke.hairline,
+    borderColor: theme.surfaceMuted,
   },
   primary: { backgroundColor: theme.primary },
   neutral: { backgroundColor: theme.surfaceMuted },

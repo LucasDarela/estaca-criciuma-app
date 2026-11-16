@@ -439,7 +439,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-07, CA-08, RF-13, RNF-11
   - Verificar: `make test`
 
-- [ ] **T-09 — Ponto no sino**
+- [x] **T-09 — Ponto no sino**
   - Arquivos: `alterar src/components/ScreenHeader.tsx` (+ teste) · `alterar src/features/calendar/AgendaScreen.tsx` (+ teste) · `alterar src/i18n/locales/*.json` (`calendar.notificationsUnread`)
   - O que fazer:
     - `HeaderAction.badge` desenha um ponto `theme.danger` de `size.unitDot` no canto superior direito do botão.

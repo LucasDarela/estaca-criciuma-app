@@ -66,4 +66,16 @@ describe('ScreenHeader', () => {
     await user.press(screen.getByRole('button', { name: 'Voltar' }));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
+
+  it('CA-16: an action with badge shows the dot, and without it no dot is drawn', async () => {
+    const action = {
+      icon: 'notifications' as const,
+      accessibilityLabel: 'Notificações',
+      onPress: jest.fn(),
+    };
+    await render(<ScreenHeader title="Agenda" actions={[{ ...action, badge: true }]} />);
+    expect(screen.getByTestId('header-action-badge')).toBeOnTheScreen();
+    await render(<ScreenHeader title="Agenda" actions={[action]} />);
+    expect(screen.queryByTestId('header-action-badge')).not.toBeOnTheScreen();
+  });
 });
