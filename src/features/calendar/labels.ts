@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 
 import type { CalendarEvent, DayPart } from '@/domain/calendar';
-import { formatCivil, formatTime, type CivilDate } from '@/domain/time';
+import { civilDateOf, formatCivil, formatTime, sameDate, type CivilDate } from '@/domain/time';
 
 function capitalize(text: string, locale: string): string {
   return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
@@ -90,4 +90,12 @@ export function dayA11yLabel(
       ? t('calendar.a11y.dayNone', { date: spoken })
       : t('calendar.a11y.day', { date: spoken, count });
   return isToday ? `${t('calendar.a11y.todayPrefix')}${label}` : label;
+}
+
+/** Date line of an event (RF-12, RF-15): one long date, or a range when it spans several days. */
+export function eventDateLabel(event: CalendarEvent, locale: string): string {
+  const first = civilDateOf(event.startsAt);
+  // `ends_at` is exclusive, so an event ending at 00:00 ends on the previous day.
+  const last = civilDateOf(new Date(event.endsAt.getTime() - 1));
+  return sameDate(first, last) ? longDate(first, locale) : dateRange(first, last, locale);
 }

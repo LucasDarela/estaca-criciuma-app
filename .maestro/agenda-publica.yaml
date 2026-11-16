@@ -1,0 +1,27 @@
+# Fluxo E2E da agenda pública (spec calendar, CA-03 e CA-05 de ponta a ponta).
+#
+# Como rodar:
+#   1. Instale o Maestro (https://docs.maestro.dev) e abra um simulador/emulador com o Expo Go.
+#   2. Suba o Supabase local com o seed: `supabase start` e `supabase db reset`.
+#   3. Aponte o app para o Supabase local e rode `make dev` (Metro em 127.0.0.1:8081).
+#   4. Rode `make test-e2e`.
+#
+# O seed põe sempre eventos de Içara no mês atual (datas relativas ao mês de hoje em Brasília).
+appId: host.exp.Exponent
+---
+- launchApp
+- openLink: exp://127.0.0.1:8081
+# 1. A agenda abre para o visitante.
+- extendedWaitUntil:
+    visible: 'Agenda'
+    timeout: 60000
+# 2. Filtra por Ala Içara.
+- tapOn: 'Unidade: Todas'
+- tapOn: 'Içara'
+# 3. O seed tem o evento "Conselho da Ala Içara" no dia 18 do mês atual; o dia 18 só aparece
+#    uma vez na grade (os dias de fora do mês são do fim do anterior ou do começo do seguinte).
+- tapOn: '18 de .*'
+- assertVisible: 'Conselho da Ala Içara'
+# 4. Abre o evento e confere a ação de calendário.
+- tapOn: 'Conselho da Ala Içara'
+- assertVisible: 'Adicionar à agenda'

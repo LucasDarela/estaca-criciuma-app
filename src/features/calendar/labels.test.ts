@@ -4,6 +4,7 @@ import { makeEvent } from '@/test/factories';
 import {
   dateRange,
   dayLabel,
+  eventDateLabel,
   eventTimeLabel,
   longDate,
   monthLabel,
@@ -63,5 +64,23 @@ describe('eventTimeLabel (RF-11)', () => {
       endsAt: new Date('2026-11-14T00:00:00Z'),
     });
     expect(eventTimeLabel(single, 'single', t)).toBe('19:00–21:00 · Reunião');
+  });
+});
+
+describe('eventDateLabel', () => {
+  it('uses one long date for a single-day event', () => {
+    const single = makeEvent({
+      startsAt: new Date('2026-11-13T22:00:00Z'),
+      endsAt: new Date('2026-11-14T02:00:00Z'),
+    });
+    expect(eventDateLabel(single, 'pt-BR')).toBe('Sexta-feira, 13 de novembro de 2026');
+  });
+
+  it('uses a range for a multi-day event', () => {
+    const trip = makeEvent({
+      startsAt: new Date('2026-11-14T21:00:00Z'),
+      endsAt: new Date('2026-11-16T15:00:00Z'),
+    });
+    expect(eventDateLabel(trip, 'pt-BR')).toBe('14 de novembro – 16 de novembro de 2026');
   });
 });

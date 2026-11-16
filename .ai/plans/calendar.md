@@ -348,7 +348,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-10 e CA-11 (tela), RNF-10
   - Verificar: `make test`
 
-- [ ] **T-09 — Detalhe do evento (RF-12 a RF-16)**
+- [x] **T-09 — Detalhe do evento (RF-12 a RF-16)**
   - Arquivos: `alterar package.json` (`expo-calendar`, se não entrou na T-04) · `criar src/features/calendar/eventActions.ts` (+ teste) · `criar src/features/calendar/EventDetailScreen.tsx` (+ teste) · `criar src/app/event/[id].tsx` · `alterar app.config.ts` (plugin `expo-calendar`)
   - O que fazer:
     - Implementar 2.4.
@@ -366,7 +366,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-13, CA-14, CA-15, CA-16, CA-17 (automatizado; o diálogo real fica na T-12)
   - Verificar: `make check`
 
-- [ ] **T-10 — Documentação**
+- [x] **T-10 — Documentação**
   - Arquivos: `alterar .ai/docs/ARCHITECTURE.md` · `alterar .ai/docs/SECURITY.md`
   - O que fazer:
     - `ARCHITECTURE.md`:
@@ -377,7 +377,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: DoD
   - Verificar: `make check`
 
-- [ ] **T-11 — Fluxo Maestro (DoD)**
+- [x] **T-11 — Fluxo Maestro (DoD)**
   - Arquivos: `criar .maestro/agenda-publica.yaml`
   - O que fazer:
     - Criar o fluxo com `appId: host.exp.Exponent` (Expo Go), abrindo pelo deep link do Metro (`exp://127.0.0.1:8081`).
@@ -442,8 +442,58 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
 
 ### Arquivos criados e alterados
 
+**Banco**
+- criados: `supabase/migrations/20261116003640_events.sql`, `supabase/tests/events_read.test.sql`
+- alterados: `supabase/seed.sql` (20 eventos relativos ao mês atual de São Paulo), `src/lib/database.types.ts` (`make db-types`)
+
+**Domínio e lib**
+- criados: `src/domain/time.ts`, `eventTypes.ts`, `calendar.ts` (+ testes), `src/lib/queryPersistence.ts`, `src/lib/network.ts` (+ testes), `src/test/factories.ts` (`makeEvent`)
+- alterados: `jest.config.js` (`TZ=Europe/Lisbon`), `jest.setup.ts` (mock do NetInfo), `src/app/_layout.tsx` (`PersistQueryClientProvider` e `wireOnlineManager`)
+
+**Feature `src/features/calendar/`**
+- criados: `api.ts`, `labels.ts`, `useNow.ts`, `DayCell.tsx` (`DayCell`, `WeekdayHeader`, `DayStrip`), `PeriodBar.tsx`, `AgendaScreen.tsx`, `MonthView.tsx`, `WeekView.tsx`, `DayView.tsx`, `EventDetailScreen.tsx`, `eventActions.ts` (+ testes: `api`, `labels`, `AgendaScreen`, `MonthView`, `WeekView`, `DayView`, `EventDetailScreen`, `eventActions`)
+- rotas: `src/app/(tabs)/agenda.tsx` (alterado), `src/app/event/[id].tsx`, `src/app/notifications.tsx` (criados); `src/features/placeholder/screens.tsx` (`NotificationsPlaceholder`) e `ComingSoonScreen.tsx` (aceita `notifications.*`)
+
+**Design system, tema, i18n, config**
+- `src/components/FilterChip.tsx` (prop `compact`, usa `size.typeChip`), `src/theme/theme.ts` (7 tokens da seção 2.5), `src/i18n/locales/*.json` (`calendar.*`, `notifications.title`), `src/i18n/locales.test.ts` (aceita arrays), `app.config.ts` (plugin `expo-calendar` com a mensagem em pt-BR)
+- dependências: as 4 da seção 3, nas versões indicadas (`package.json`, `package-lock.json`)
+
+**Docs e E2E**
+- `.ai/docs/ARCHITECTURE.md`, `SECURITY.md`, `RULES.md`; `.maestro/agenda-publica.yaml`
+
 ### Desvios do plano
+
+1. **`createEventInCalendarAsync` vem de `expo-calendar/legacy`.** No SDK 58 a função exportada na raiz de `expo-calendar` está `@deprecated` e **lança erro em tempo de execução** (`src/legacyWarnings.ts`). A mesma função, com o mesmo comportamento, existe em `expo-calendar/legacy`; `eventActions.ts` importa de lá (e o teste mocka esse caminho). Sem mudança visível ao usuário.
+2. **O cache guarda eventos com datas em ISO (`StoredEvent`), não `Date`.** O cache persistido é JSON: um `Date` voltaria do disco como texto e quebraria `.getTime()`. Por isso `fetchEventsInMonth` e `fetchEvent` devolvem `StoredEvent` (`startsAt`/`endsAt` em ISO) e `useEventsAround` / `useEvent` convertem para `CalendarEvent` (`toCalendarEvent`, em `combine` e `select`). A assinatura pública dos hooks não mudou.
+3. **`useEventsAround` usa `useQueries({ combine })`** em vez de `useMemo`/`useCallback` (o lint do React Compiler recusou as dependências manuais). Além disso, `status` vira `'error'` também quando a query do mês visível está pausada sem dados (offline sem cache), para não ficar em `Skeleton` para sempre; o botão `Tentar de novo` continua valendo.
+4. **`eventTypes.ts` define `EventTypeIcon` localmente** em vez de importar `IconName` de `components/icons`: `domain` não importa `components` (mesmo padrão de `TabIcon` em `tabs.ts`).
+5. **`FilterChip` ganhou a prop `compact`** (altura `size.typeChip`, 32). O componente tinha altura fixa de 36 e a spec pede chips de 32; é a menor mudança que usa o token novo.
+6. **`DayCell.tsx` (com `WeekdayHeader` e `DayStrip`) e `labels.ts`/`useNow.ts` são arquivos novos** não listados na seção 2.4. São a extração do que Mês, Semana e Dia compartilham (célula do dia, faixa de 7 dias, rótulos de período) e do `useNow()` pedido na T-06.
+7. **Testes de CA-05 e CA-06 de tela ficaram em `AgendaScreen.test.tsx`**, não em `MonthView.test.tsx` como diz a matriz: o filtro mora na `AgendaScreen`; a `MonthView` recebe os eventos já filtrados. CA-04 também ganhou um teste de tela, e CA-07 um de tela (31/01 → 28/02), além dos de domínio.
+8. **`ComingSoonScreen` aceita `titleKey` com prefixo `notifications.`** (além de `tabs.`), para a tela provisória `/notifications`.
+9. **`locales.test.ts` passa a tratar arrays como folhas** (a chave `calendar.weekdaysShort` é um array de 7 iniciais) e ganhou um teste dos 7 iniciais por idioma.
+10. **Fluxo Maestro:** em vez de "tocar no filtro `Todas` e depois em `Ala Içara`" + procurar um evento qualquer de Içara, o fluxo toca no dia 18 e confere `Conselho da Ala Içara`, porque o seed garante esse evento nesse dia do mês atual (conferir com filtro seria dependente do dia de hoje). O filtro `Unidade: Todas` → `Içara` continua no fluxo. Não foi executado (Maestro não instalado): é a T-12.
+11. **Rótulo do cabeçalho do detalhe:** o `ScreenHeader` do `/event/[id]` usa o título `Agenda` (`calendar.title`) ao lado do voltar, porque o componente exige um título; o título do evento (serif 26) fica no corpo, como pede o RF-12.
 
 ### Decisões durante a implementação
 
+- **Fuso:** toda a conta de datas passa por `src/domain/time.ts` (offset fixo UTC−3, ADR 0005); a suíte roda em `TZ=Europe/Lisbon` e o teste confirma `process.env.TZ`. A suíte inteira passou sem outro ajuste.
+- **`monthGrid`:** no mínimo 5 linhas (35 células), como diz o contrato; fevereiro de 2026 (28 dias, começa no domingo) também ocupa 35 células.
+- **`shareText`:** a linha do local é omitida quando o evento não tem local (a spec não define a linha vazia).
+- **`pt-BR` e o plural de 0:** o i18next usa a regra do `Intl` e dá `0 evento` (no singular, como o português cardinal faz); o texto `{n} evento(s)` da spec fica assim.
+- **Rótulos de período:** `plain()` tira os pontos e o "de" que o `Intl` coloca (`8 de nov.` vira `8 nov`), conforme a seção 2.4; `Sex, 13 nov`, `Novembro 2026` e `8 nov – 14 nov` saem como na spec em pt-BR.
+- **Navegação:** as telas de visão recebem `onOpenEvent(id)`; só a `AgendaScreen` conhece o router (`router.push({ pathname: '/event/[id]', params: { id } })`), o que mantém Mês/Semana/Dia testáveis sem router.
+- **Falhas de ações do sistema** (mapa e link sem handler, compartilhar): toast `common.genericError` em vez de silêncio (RULES.md: erro não é engolido). O calendário indisponível usa o toast de 7.5.
+- **Banner offline:** aparece quando `!useIsOnline()` e o mês visível tem dados (`status === 'success'`), mesmo que o mês esteja vazio.
+- **Dependências:** só as 4 da seção 3 (`@tanstack/react-query-persist-client` 5.107.1, `@tanstack/query-async-storage-persister` 5.107.1, `@react-native-community/netinfo` 12.0.1, `expo-calendar` ~58.0.7). `expo install` não criou `app.json`; o plugin foi direto no `app.config.ts`, só com `calendarPermission`.
+- **`npm audit --omit=dev`:** 21 vulnerabilidades (1 baixa, 20 moderadas, 0 altas/críticas), todas em `expo` (via `@expo/fingerprint`, `glob`, `minimatch`, `deepmerge`) e na cadeia do `jest`/`babel-jest` (puxada pelo `jest-expo`). O resultado é **idêntico antes e depois** de instalar as 4 dependências novas (comparado pelo lockfile): nenhuma vem delas.
+- **`createEventInCalendarAsync` no Android (tipos e fonte do pacote, `src/legacy/Calendar.ts`, `DialogEventResult`):** no Android a ação é **sempre `done`** e o `id` é sempre `null`: o Android não informa se a pessoa salvou, cancelou ou apagou. No iOS vem `saved`, `canceled` ou `deleted`. Como o toast só aparece com `saved`, **no Android o toast `Evento adicionado à sua agenda.` não aparece** (o diálogo abre normalmente e nada acontece depois). O risco da seção 6 se confirma; conferir na T-12 e, se o usuário quiser confirmação no Android, decidir à parte (por exemplo mostrar o toast em `done`). Além disso, `startNewActivityTask` vale `true` por padrão no Android: a promessa resolve com `done` assim que a Activity do calendário abre.
+- Nenhum ADR novo: a única decisão de projeto (fuso) já é o ADR 0005; o cache persistido só de dados públicos ficou em `ARCHITECTURE.md` e `SECURITY.md`.
+
 ### CA sem teste automatizado
+
+- **CA-14** (abrir o app de mapas) e **CA-15** (diálogo real do sistema sem pedir acesso total): a lógica tem teste automatizado com `Linking`, `Share` e `expo-calendar` mockados (URLs por plataforma, fallback, dados do diálogo, toast só em `saved`); o comportamento nos apps reais é **manual (T-12)**.
+- **CA-22** (VoiceOver/TalkBack): os rótulos de RNF-07 e RNF-10, `selected` e `accessibilityLiveRegion` têm teste automatizado; o anúncio real no leitor de tela é **manual (T-12)**.
+- **CA-03 e CA-05 de ponta a ponta:** o fluxo `.maestro/agenda-publica.yaml` foi escrito (T-11) e **não foi executado** (Maestro não instalado). Também é T-12.
+- **T-12** (QA em aparelho iOS e Android, passos 1 a 8 do roteiro, instalar o Maestro e rodar `make test-e2e`): **pendente**, da sessão principal com o usuário.
+- Todos os demais CA (01 a 13, 16 a 21) têm teste automatizado com o ID no nome: CA-01/02 em `events_read.test.sql`; CA-03, 07, 08, 18, 19 e 21 em `AgendaScreen.test.tsx`; CA-04, 05, 06, 07, 09, 11, 12 e 16 em `calendar.test.ts`; CA-09 e 12 em `MonthView.test.tsx`; CA-10 em `WeekView.test.tsx`; CA-11 em `DayView.test.tsx`; CA-13, 15, 16, 17 e 20 em `EventDetailScreen.test.tsx`; CA-14, 15 e 16 em `eventActions.test.ts`; CA-19 em `queryPersistence.test.ts`; CA-20 em `time.test.ts`.
