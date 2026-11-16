@@ -665,7 +665,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: DoD (docs)
   - Verificar: leitura; `make lint`
 
-- [ ] **T-14 — QA em aparelho (sessão principal, com o usuário)** (pendente: não executada pelo implementer)
+- [x] **T-14 — QA em aparelho (sessão principal, com o usuário)** (feita pelo usuário em 2026-11-16, ver Registro de implementação)
   - O que fazer: `supabase db reset`, `make dev` num build de desenvolvimento. Rodar os passos 1 a 11 do roteiro de QA em iOS e Android, incluindo VoiceOver, TalkBack e fonte em 1.6×. Registrar o resultado no Registro de implementação.
   - Cobre: CA-32 (manual) e confirmação visual dos demais
   - Verificar: roteiro sem divergências
