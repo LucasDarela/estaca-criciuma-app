@@ -10,7 +10,6 @@ import {
   AgendaPlaceholder,
   BoardPlaceholder,
   CallingsPlaceholder,
-  LeadershipPlaceholder,
   NotesPlaceholder,
   ProfilePlaceholder,
   SignInPlaceholder,
@@ -57,13 +56,16 @@ function Shell() {
   );
 }
 
+// The real Leadership screen has its own tests; this file only checks the tab bar.
+const LeadershipRoute = () => null;
+
 const routes = {
   _layout: Shell,
   index: RootRedirect,
   '(tabs)/_layout': TabsLayout,
   '(tabs)/agenda': AgendaPlaceholder,
   '(tabs)/board': BoardPlaceholder,
-  '(tabs)/leadership': LeadershipPlaceholder,
+  '(tabs)/leadership': LeadershipRoute,
   '(tabs)/notes': NotesPlaceholder,
   '(tabs)/callings': CallingsPlaceholder,
   '(tabs)/profile': ProfilePlaceholder,
@@ -122,7 +124,6 @@ describe('tabs layout', () => {
   it.each([
     ['agenda', 'Agenda'],
     ['board', 'Mural'],
-    ['leadership', 'Liderança'],
   ])('CA-18: the %s tab shows its title and the coming soon message', async (route, title) => {
     await renderRouter(routes, { initialUrl: `/${route}` });
     expect(screen.getByRole('header', { name: title })).toBeOnTheScreen();

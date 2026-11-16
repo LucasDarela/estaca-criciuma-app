@@ -1,1 +1,1 @@
-export { LeadershipPlaceholder as default } from '@/features/placeholder/screens';
+export { LeadershipScreen as default } from '@/features/leadership/LeadershipScreen';

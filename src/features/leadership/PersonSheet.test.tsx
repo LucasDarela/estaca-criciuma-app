@@ -118,7 +118,7 @@ describe('PersonSheet', () => {
 
   it('[leadership] CA-20: a signed-in member can call and open WhatsApp', async () => {
     const user = userEvent.setup();
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     await render(ui(sumo));
     expect(await screen.findByText('(48) 99999-0000')).toBeOnTheScreen();
     await user.press(screen.getByRole('button', { name: 'Ligar para Ana Sumo' }));
