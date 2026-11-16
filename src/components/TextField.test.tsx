@@ -43,4 +43,9 @@ describe('TextField', () => {
     });
     expect(onChangeText).toHaveBeenCalledWith('maria@exemplo.com');
   });
+
+  it('[leadership] shows the placeholder when the field is empty', async () => {
+    await render(<TextField {...base} label="Telefone" placeholder="(48) 99999-0000" />);
+    expect(screen.getByPlaceholderText('(48) 99999-0000')).toBeOnTheScreen();
+  });
 });

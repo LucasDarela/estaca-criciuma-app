@@ -9,7 +9,7 @@ import type { Membership } from '@/domain/permissions';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import { signOut } from '@/lib/authSession';
 
-import { exportMyData, updateProfile } from './api';
+import { exportMyData, fetchMyPhone, setMyPhone, updateProfile } from './api';
 import { bishop } from './callingFixtures';
 import { ProfileScreen } from './ProfileScreen';
 
@@ -22,6 +22,8 @@ jest.mock('./api', () => ({
   ...jest.requireActual('./api'),
   updateProfile: jest.fn(),
   exportMyData: jest.fn(),
+  fetchMyPhone: jest.fn(),
+  setMyPhone: jest.fn(),
 }));
 jest.mock('@/lib/authSession', () => ({
   signOut: jest.fn(),
@@ -59,6 +61,8 @@ beforeEach(async () => {
   mockCalls = [];
   jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   (updateProfile as jest.Mock).mockResolvedValue(undefined);
+  (fetchMyPhone as jest.Mock).mockResolvedValue(null);
+  (setMyPhone as jest.Mock).mockResolvedValue(undefined);
   (exportMyData as jest.Mock).mockResolvedValue(undefined);
   (signOut as jest.Mock).mockResolvedValue(undefined);
   await i18n.changeLanguage('pt-BR');
@@ -203,5 +207,23 @@ describe('ProfileScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Sair' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/agenda'));
     expect(signOut).toHaveBeenCalled();
+  });
+
+  it('[leadership] CA-24: the Telefone row follows Idioma and saving it updates the subtitle', async () => {
+    (fetchMyPhone as jest.Mock)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ phoneE164: '+5548999990000', showOnOrgChart: true });
+    await setup();
+    const labels = screen.getAllByRole('button').map((b) => b.props.accessibilityLabel as string);
+    expect(labels.slice(2, 4)).toEqual(['Idioma, Português (Brasil)', 'Telefone, Não informado']);
+    await fireEvent.press(screen.getByRole('button', { name: 'Telefone, Não informado' }));
+    await fireEvent.changeText(screen.getByPlaceholderText('(48) 99999-0000'), '48999990000');
+    await fireEvent.press(
+      screen.getByRole('switch', { name: 'Mostrar meu telefone no organograma' }),
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    await waitFor(() => expect(setMyPhone).toHaveBeenCalledWith('+5548999990000', true));
+    expect(await screen.findByText('Telefone salvo')).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Telefone, (48) 99999-0000' })).toBeTruthy();
   });
 });
