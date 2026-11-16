@@ -299,7 +299,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
 
 ## 4. Tarefas
 
-- [ ] **T-01 — Banco: tabelas, registro, histórico e limpeza**
+- [x] **T-01 — Banco: tabelas, registro, histórico e limpeza**
   - Arquivos: `criar supabase/migrations/<ts>_push.sql` · `criar supabase/tests/push.test.sql` · `alterar src/lib/database.types.ts` (`make db-types`)
   - O que fazer:
     - Escrever de 2.1: a troca da constraint de `profiles.organizations`, as cinco tabelas com RLS e `revoke`, e as funções `push_audience_options`, `push_register_device`, `my_notifications`, `my_device_units`, `set_device_units`, `mark_notifications_read` e `push_cleanup`, mais o `cron.schedule` e o novo `export_my_data`.

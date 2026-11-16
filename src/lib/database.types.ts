@@ -271,6 +271,129 @@ export type Database = {
           },
         ];
       };
+      notification_deliveries: {
+        Row: {
+          device_token: string;
+          notification_id: string;
+          user_id: string | null;
+        };
+        Insert: {
+          device_token: string;
+          notification_id: string;
+          user_id?: string | null;
+        };
+        Update: {
+          device_token?: string;
+          notification_id?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notification_deliveries_notification_id_fkey';
+            columns: ['notification_id'];
+            isOneToOne: false;
+            referencedRelation: 'notifications';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notification_deliveries_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      notification_reads: {
+        Row: {
+          notification_id: string;
+          read_at: string;
+          user_id: string;
+        };
+        Insert: {
+          notification_id: string;
+          read_at?: string;
+          user_id: string;
+        };
+        Update: {
+          notification_id?: string;
+          read_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notification_reads_notification_id_fkey';
+            columns: ['notification_id'];
+            isOneToOne: false;
+            referencedRelation: 'notifications';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notification_reads_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          audience: string[];
+          body: string;
+          created_at: string;
+          event_location: string | null;
+          event_starts_at: string | null;
+          id: string;
+          item_id: string;
+          kind: string;
+          sent_by: string | null;
+          title: string;
+          unit_id: string;
+        };
+        Insert: {
+          audience: string[];
+          body?: string;
+          created_at?: string;
+          event_location?: string | null;
+          event_starts_at?: string | null;
+          id?: string;
+          item_id: string;
+          kind: string;
+          sent_by?: string | null;
+          title: string;
+          unit_id: string;
+        };
+        Update: {
+          audience?: string[];
+          body?: string;
+          created_at?: string;
+          event_location?: string | null;
+          event_starts_at?: string | null;
+          id?: string;
+          item_id?: string;
+          kind?: string;
+          sent_by?: string | null;
+          title?: string;
+          unit_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_sent_by_fkey';
+            columns: ['sent_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_unit_id_fkey';
+            columns: ['unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           consented_at: string | null;
@@ -311,6 +434,62 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      push_devices: {
+        Row: {
+          created_at: string;
+          last_seen_at: string;
+          locale: string;
+          platform: string;
+          token: string;
+          units: string[];
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          last_seen_at?: string;
+          locale: string;
+          platform: string;
+          token: string;
+          units: string[];
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          last_seen_at?: string;
+          locale?: string;
+          platform?: string;
+          token?: string;
+          units?: string[];
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'push_devices_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      push_register_attempts: {
+        Row: {
+          created_at: string;
+          id: number;
+          ip_hash: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          ip_hash: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          ip_hash?: string;
+        };
+        Relationships: [];
       };
       role_grants_log: {
         Row: {
@@ -418,10 +597,27 @@ export type Database = {
           user_id: string;
         }[];
       };
+      mark_notifications_read: { Args: { p_ids: string[] }; Returns: undefined };
       my_accesses: {
         Args: never;
         Returns: {
           access: string;
+          unit_id: string;
+        }[];
+      };
+      my_device_units: { Args: { p_device_token: string }; Returns: string[] };
+      my_notifications: {
+        Args: { p_device_token: string };
+        Returns: {
+          body: string;
+          created_at: string;
+          event_location: string;
+          event_starts_at: string;
+          id: string;
+          item_id: string;
+          kind: string;
+          read: boolean;
+          title: string;
           unit_id: string;
         }[];
       };
@@ -439,6 +635,18 @@ export type Database = {
           unit_id: string;
         }[];
       };
+      push_audience_options: { Args: { p_unit: string }; Returns: string[] };
+      push_cleanup: { Args: never; Returns: undefined };
+      push_register_device: {
+        Args: {
+          p_ip_hash: string;
+          p_locale: string;
+          p_platform: string;
+          p_token: string;
+          p_user_id: string;
+        };
+        Returns: string;
+      };
       revoke_admin: { Args: { p_user_id: string }; Returns: undefined };
       revoke_calling: { Args: { p_member_call_id: string }; Returns: undefined };
       save_calling: {
@@ -454,6 +662,10 @@ export type Database = {
           p_org_chart_section: string;
         };
         Returns: string;
+      };
+      set_device_units: {
+        Args: { p_device_token: string; p_units: string[] };
+        Returns: undefined;
       };
       set_org_chart_consent: {
         Args: { p_accepted: boolean; p_member_call_id: string };
