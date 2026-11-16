@@ -1,8 +1,8 @@
 # Notificações push e histórico
 
-> **Status:** Pronta para planejamento
+> **Status:** Em implementação
 > **Área:** rota `/notifications`, seção `Avisos` do Perfil, `src/features/notifications/`, `src/lib/push.ts`, `src/lib/reminderLog.ts`, `src/domain/audience.ts`, `src/components/AudiencePicker.tsx`, `supabase/functions/register-device`, `supabase/functions/send-push`
-> **Última atualização:** 2026-11-13
+> **Última atualização:** 2026-11-15
 
 ## 0. Skills obrigatórias
 
@@ -82,7 +82,7 @@ O aparelho (com ou sem conta) se registra para receber push das unidades escolhi
 | ID | Requisito |
 | -- | --------- |
 | RF-01 | `push_devices`: `token text pk`, `user_id uuid null` → `profiles on delete set null`, `platform` (`ios` \| `android`), `locale`, `units text[]` (unidades assinadas), `last_seen_at`, `created_at`. Sem acesso direto do app: só por `register-device` e pelas RPCs de RF-04. |
-| RF-02 | `notifications`: `id`, `kind` (`event` \| `post`), `item_id uuid`, `unit_id`, `audience text[]`, `title`, `body`, `sent_by`, `created_at`. `notification_deliveries`: (`notification_id`, `device_token`, `user_id null`). `notification_reads`: (`notification_id`, `user_id`, `read_at`), só o dono lê e escreve. |
+| RF-02 | `notifications`: `id`, `kind` (`event` \| `post`), `item_id uuid`, `unit_id`, `audience text[]`, `title`, `body`, `event_starts_at` e `event_location` (só evento; o histórico monta o corpo no idioma do app, decisão P2), `sent_by`, `created_at`. `notification_deliveries`: (`notification_id`, `device_token`, `user_id null`). `notification_reads`: (`notification_id`, `user_id`, `read_at`), só o dono lê e escreve. |
 | RF-03 | Padrão de `units` no registro: visitante `['estaca']`; logado `['estaca', home_unit_id]` (ou só `['estaca']` sem unidade). |
 | RF-04 | RPCs: `my_notifications(p_device_token text)` → notificações dos últimos 90 dias entregues a esse token ou a qualquer token de `auth.uid()`, com `read` (logado); `set_device_units(p_device_token, p_units text[])`; `mark_notifications_read(p_ids uuid[] \| null)` (nulo = todas). |
 
@@ -177,7 +177,7 @@ app.config.ts                                    # plugin expo-notifications, pr
 
 | ID | Cobre | Dado | Quando | Então |
 | -- | ----- | ---- | ------ | ----- |
-| CA-01 | RF-01, RF-02, RF-04, RNF-08 | dois aparelhos visitantes A e B | A chama `my_notifications` com o token de B | não recebe as entregas de B (só as de A, se usar o próprio token) |
+| CA-01 | RF-01, RF-02, RF-04, RNF-08 | dois aparelhos visitantes A e B com entregas diferentes | A chama `my_notifications` com o próprio token; e qualquer pessoa tenta ler `push_devices`, `notifications` ou `notification_deliveries` pela API | A recebe só as próprias entregas; a leitura direta é negada e nenhuma resposta contém um token (o token é a credencial do aparelho, decisão P1) |
 | CA-02 | RF-03, RF-07 | visitante com permissão | abre o app | o token é registrado com `units = ['estaca']` e `user_id` nulo |
 | CA-03 | RF-07 | visitante registrado | entra numa conta com unidade `icara` | o mesmo token passa a ter `user_id`; ao sair, volta a `null` mantendo `units` |
 | CA-04 | RNF-02 | o mesmo IP | faz 11 registros em 1 hora | o 11º recebe 429 |
@@ -185,7 +185,7 @@ app.config.ts                                    # plugin expo-notifications, pr
 | CA-06 | RF-06, RF-08 | visitante com permissão negada | abro Notificações | vejo `As notificações estão desativadas nas configurações do celular.` e `Abrir configurações` |
 | CA-07 | RF-09, RF-13 | `AudiencePicker` de unidade `icara` | toco em `Todos da ala` | todos os chips ficam marcados e o resumo é `Todos os membros da ala com o app receberão o aviso.` |
 | CA-08 | RF-13 | `AudiencePicker` sem seleção | olho o resumo | `Selecione ao menos um grupo para enviar a notificação.` |
-| CA-09 | RF-10 | aparelhos: visitante Estaca; membro com `primary`; bispo com grupo `bishops`; membro só de `criciuma1` | aviso da Estaca para `primary` + `bishops` | recebem o membro com `primary` e o bispo; não recebem o visitante nem o de `criciuma1` |
+| CA-09 | RF-10 | aparelhos: visitante Estaca; membro com `primary`; bispo com chamado de grupo `bishoprics`; membro só de `criciuma1` | aviso da Estaca para `primary` + `bishoprics` | recebem o membro com `primary` e o bispo; não recebem o visitante nem o de `criciuma1` |
 | CA-10 | RF-10 | visitante assinando `icara` | aviso de `icara` para `all` | o visitante recebe |
 | CA-11 | RF-11, RNF-01 | evento `Batismo` em 21/11 15:00 na `Capela do Ramo Gaivota` | envio | título `Batismo`, corpo `Sábado, 21 de novembro · 15:00 · Capela do Ramo Gaivota`, dados `{kind:'event', itemId}` |
 | CA-12 | RF-12, RNF-03 | conta `publicador.icara` | envia para um item de `criciuma1` | 403 e a mensagem de RF-12 |
@@ -241,6 +241,9 @@ Nenhuma decisão em aberto.
 | A3 | Limite de reenvio | 1 envio por item a cada 10 min | padrão do projeto |
 | A4 | Conteúdo do push | Título + data/hora/local ou 1ª linha (sem dado sensível) | padrão do projeto |
 | 29 | Grupos de liderança no aviso | Vêm do `notify_group` do chamado (`roles-of-leadership`), 13 grupos fixos (2026-11-15) | usuário |
+| P1 | Histórico de visitante x CA-01 (no plano) | O token Expo é a credencial do aparelho: nenhuma tabela, RPC ou log o expõe; CA-01 reescrito | usuário (2026-11-15) |
+| P2 | Idioma do corpo no histórico (no plano) | `notifications` guarda `event_starts_at`/`event_location` e o app monta o corpo no idioma atual | usuário (2026-11-15) |
+| P3 | Aviso do mural (`kind = 'post'`) | Contrato pronto, mas `send-push` responde `unsupported_kind` até a `board` criar `posts` e estender `push_item` | plano (consequência: `posts` não existe) |
 
 ## 15. Próximos passos (fora desta entrega)
 
