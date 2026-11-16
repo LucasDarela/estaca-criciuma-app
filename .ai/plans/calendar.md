@@ -233,7 +233,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-01, CA-02
   - Verificar: `supabase db reset && make test-db && make db-types`
 
-- [ ] **T-02 — Tempo e tipos no domínio (RNF-04, RF-02)**
+- [x] **T-02 — Tempo e tipos no domínio (RNF-04, RF-02)**
   - Arquivos: `criar src/domain/time.ts` (+ teste) · `criar src/domain/eventTypes.ts` (+ teste) · `alterar jest.config.js` (`process.env.TZ = 'Europe/Lisbon'` na primeira linha, com comentário citando o ADR 0005) · `alterar .ai/docs/RULES.md` ("Datas e fuso" cita o ADR 0005)
   - O que fazer:
     - Implementar o contrato 2.2 de `time.ts` e `eventTypes.ts`.

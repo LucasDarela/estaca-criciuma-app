@@ -55,6 +55,7 @@ Ver `ARCHITECTURE.md`. Em resumo: rotas em `src/app`, uma pasta por feature em `
 ## Datas e fuso
 
 - Datas gravadas em `timestamptz` (UTC). Exibição no fuso `America/Sao_Paulo` e no formato do idioma ativo (`Intl.DateTimeFormat`). Motivo: eventos são presenciais em SC, mesmo vistos de fora.
+- O fuso é tratado com offset fixo UTC−3 em `src/domain/time.ts` (ADR 0005). Nunca use `getHours`, `getDate`, `getDay` nem os outros getters locais de `Date` em regra de negócio ou exibição: eles seguem o fuso do aparelho. Rótulos: `formatCivil` / `formatTime`. A suíte roda com `TZ=Europe/Lisbon` para provar isso.
 
 ## Comentários e documentação
 
