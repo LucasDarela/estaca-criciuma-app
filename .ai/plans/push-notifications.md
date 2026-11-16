@@ -390,7 +390,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: RF-01, RF-12 (servidor), RNF-07
   - Verificar: o smoke acima · `make lint` (o `index.ts` fica fora do `tsc` e do ESLint)
 
-- [ ] **T-06 — `src/lib/push.ts`**
+- [x] **T-06 — `src/lib/push.ts`**
   - Arquivos: `alterar package.json` (`npx expo install expo-notifications expo-device`) · `alterar app.config.ts` (plugin `['expo-notifications', { color: BRAND_BLUE }]`; `android.googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json'`) · `alterar .gitignore` (`google-services.json`) · `alterar .env.example` (`GOOGLE_SERVICES_JSON`, com comentário: arquivo do Firebase, variável de arquivo da EAS) · `criar src/lib/push.ts` (+ teste)
   - O que fazer:
     - Implementar 2.5 (`push.ts`). O `projectId` vem de `Constants.expoConfig?.extra?.eas?.projectId` (preenchido na T-14).

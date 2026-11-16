@@ -134,7 +134,11 @@
       "delete": "Eliminar cuenta",
       "updated": "Perfil actualizado",
       "save": "Guardar",
-      "unitLocked": "Para cambiar de unidad, pide al liderazgo de la estaca que primero quite tus accesos."
+      "unitLocked": "Para cambiar de unidad, pide al liderazgo de la estaca que primero quite tus accesos.",
+      "notices": "Avisos",
+      "noticesHistory": "Notificaciones",
+      "groups": "Grupos que sigo",
+      "groupsHint": "Recibes los avisos enviados a los grupos marcados."
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -330,9 +334,81 @@
       "calendarUnavailable": "No se pudo abrir la agenda del teléfono.",
       "gone": "Este evento ya no está disponible.",
       "seeAgenda": "Ver agenda"
-    }
+    },
+    "notificationsUnread": "Notificaciones, hay no leídas"
   },
   "notifications": {
-    "title": "Notificaciones"
+    "title": "Notificaciones",
+    "readAll": "Leer todas",
+    "sections": {
+      "today": "HOY",
+      "thisWeek": "ESTA SEMANA",
+      "earlier": "ANTERIORES"
+    },
+    "empty": "Ninguna notificación en los últimos 90 días.",
+    "unread": "No leída",
+    "myNotes": "Mis notas",
+    "itemGone": "Este elemento ya no está disponible.",
+    "card": {
+      "enable": "Recibe avisos de la estaca y de las unidades que elijas.",
+      "enableButton": "Activar avisos",
+      "disabled": "Las notificaciones están desactivadas en los ajustes del celular.",
+      "openSettings": "Abrir ajustes",
+      "deviceOnly": "Los avisos solo funcionan en un celular."
+    },
+    "prefs": {
+      "title": "Recibir avisos de",
+      "stake": "Estaca",
+      "myWard": "Mi barrio · {{unit}}",
+      "myBranch": "Mi rama · {{unit}}",
+      "others": "Otras unidades",
+      "switchLabel": "Recibir avisos de {{unit}}",
+      "switchLabelOthers": "Recibir avisos de otras unidades"
+    }
+  },
+  "push": {
+    "channelName": "Avisos",
+    "audience": {
+      "title": "ENVIAR A · {{unit}}",
+      "stakeUpper": "ESTACA",
+      "all": {
+        "stake": "Toda la estaca",
+        "ward": "Todo el barrio",
+        "branch": "Toda la rama"
+      },
+      "leaders": {
+        "stake": "Líderes",
+        "unit": "Todos los líderes"
+      },
+      "organizations": {
+        "relief_society": "Sociedad de Socorro",
+        "elders_quorum": "Cuórum de Élderes",
+        "young_women": "Mujeres Jóvenes",
+        "young_men": "Hombres Jóvenes",
+        "primary": "Primaria",
+        "temple_family_history": "Templo e Historia Familiar"
+      },
+      "summary": {
+        "empty": "Selecciona al menos un grupo para enviar la notificación.",
+        "everyone": {
+          "stake": "Todos los miembros de la estaca con la app recibirán el aviso.",
+          "ward": "Todos los miembros del barrio con la app recibirán el aviso.",
+          "branch": "Todos los miembros de la rama con la app recibirán el aviso."
+        },
+        "groups": "Push para: {{groups}}."
+      }
+    },
+    "errors": {
+      "forbidden": "No tienes permiso para avisar a esta unidad.",
+      "rateLimited": "Espera 10 minutos para avisar de nuevo sobre este elemento.",
+      "unavailable": "El elemento se guardó, pero el aviso no se envió. Intenta avisar de nuevo en unos instantes.",
+      "network": "Sin conexión. Revisa tu internet e inténtalo de nuevo."
+    },
+    "enable": {
+      "title": "¿Recibir avisos?",
+      "body": "Te avisamos de eventos y comunicados de la estaca y de tu barrio. Tú eliges qué recibir en Notificaciones.",
+      "confirm": "Activar avisos",
+      "later": "Ahora no"
+    }
   }
 }

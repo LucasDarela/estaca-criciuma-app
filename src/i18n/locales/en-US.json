@@ -134,7 +134,11 @@
       "delete": "Delete account",
       "updated": "Profile updated",
       "save": "Save",
-      "unitLocked": "To change your unit, ask the stake leadership to remove your access first."
+      "unitLocked": "To change your unit, ask the stake leadership to remove your access first.",
+      "notices": "Notices",
+      "noticesHistory": "Notifications",
+      "groups": "Groups I follow",
+      "groupsHint": "You receive notices sent to the groups you check."
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -330,9 +334,81 @@
       "calendarUnavailable": "Could not open the phone calendar.",
       "gone": "This event is no longer available.",
       "seeAgenda": "See calendar"
-    }
+    },
+    "notificationsUnread": "Notifications, there are unread ones"
   },
   "notifications": {
-    "title": "Notifications"
+    "title": "Notifications",
+    "readAll": "Mark all read",
+    "sections": {
+      "today": "TODAY",
+      "thisWeek": "THIS WEEK",
+      "earlier": "EARLIER"
+    },
+    "empty": "No notifications in the last 90 days.",
+    "unread": "Unread",
+    "myNotes": "My notes",
+    "itemGone": "This item is no longer available.",
+    "card": {
+      "enable": "Get notices from the stake and the units you choose.",
+      "enableButton": "Turn on notices",
+      "disabled": "Notifications are turned off in your phone settings.",
+      "openSettings": "Open settings",
+      "deviceOnly": "Notices only work on a phone."
+    },
+    "prefs": {
+      "title": "Receive notices from",
+      "stake": "Stake",
+      "myWard": "My ward · {{unit}}",
+      "myBranch": "My branch · {{unit}}",
+      "others": "Other units",
+      "switchLabel": "Receive notices from {{unit}}",
+      "switchLabelOthers": "Receive notices from other units"
+    }
+  },
+  "push": {
+    "channelName": "Notices",
+    "audience": {
+      "title": "SEND TO · {{unit}}",
+      "stakeUpper": "STAKE",
+      "all": {
+        "stake": "Whole stake",
+        "ward": "Whole ward",
+        "branch": "Whole branch"
+      },
+      "leaders": {
+        "stake": "Leaders",
+        "unit": "All leaders"
+      },
+      "organizations": {
+        "relief_society": "Relief Society",
+        "elders_quorum": "Elders Quorum",
+        "young_women": "Young Women",
+        "young_men": "Young Men",
+        "primary": "Primary",
+        "temple_family_history": "Temple and Family History"
+      },
+      "summary": {
+        "empty": "Select at least one group to send the notification.",
+        "everyone": {
+          "stake": "All stake members with the app will receive the notice.",
+          "ward": "All ward members with the app will receive the notice.",
+          "branch": "All branch members with the app will receive the notice."
+        },
+        "groups": "Push to: {{groups}}."
+      }
+    },
+    "errors": {
+      "forbidden": "You don't have permission to notify this unit.",
+      "rateLimited": "Wait 10 minutes to notify again about this item.",
+      "unavailable": "The item was saved, but the notice was not sent. Try notifying again in a moment.",
+      "network": "No connection. Check your internet and try again."
+    },
+    "enable": {
+      "title": "Receive notices?",
+      "body": "We notify you about stake and ward events and announcements. You choose what to receive in Notifications.",
+      "confirm": "Turn on notices",
+      "later": "Not now"
+    }
   }
 }
