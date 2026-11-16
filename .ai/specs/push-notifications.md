@@ -1,6 +1,6 @@
 # Notificações push e histórico
 
-> **Status:** Em implementação
+> **Status:** Aguardando assessment
 > **Área:** rota `/notifications`, seção `Avisos` do Perfil, `src/features/notifications/`, `src/lib/push.ts`, `src/lib/reminderLog.ts`, `src/domain/audience.ts`, `src/components/AudiencePicker.tsx`, `supabase/functions/register-device`, `supabase/functions/send-push`
 > **Última atualização:** 2026-11-15
 
