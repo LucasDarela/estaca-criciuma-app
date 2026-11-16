@@ -86,6 +86,7 @@ Uma pessoa entra com código por e-mail, aceita o consentimento no primeiro aces
 | RF-03 | Campo `E-mail`: obrigatório, `trim` + minúsculas, formato de e-mail, até 254 caracteres. Erros ao tocar em `Receber código`: vazio → `Informe seu e-mail.`; inválido → `Informe um e-mail válido.` |
 | RF-04 | Com e-mail válido, envia OTP de 6 dígitos (validade 10 min) e abre `Digite o código` com `Enviamos um código de 6 dígitos para {email}.`, campo `Código` (6 dígitos, teclado numérico, preenchimento automático do sistema), botão `Entrar`, link `Reenviar código` (desabilitado como `Reenviar em {s} s` por 60 s após cada envio) e link `Usar outro e-mail`. |
 | RF-05 | Código errado ou expirado → `Código inválido ou expirado. Confira ou peça um novo.`; limite do servidor → `Muitas tentativas. Aguarde alguns minutos e tente de novo.`; sem rede → `Sem conexão. Verifique a internet e tente de novo.` |
+| RF-05a | Ajuste de 2026-11-15 (decisão 23): ao **pedir** o código (`Receber código` e `Reenviar código`), qualquer recusa do servidor que não seja limite (RF-05) nem falta de rede mostra `Não foi possível enviar o código. Tente de novo.`; `Código inválido ou expirado…` só aparece ao **verificar** o código. |
 | RF-06 | Removido (decisão 14): sem Google e Apple nesta entrega. |
 | RF-07 | Após o login: se `profiles.consented_at` é nulo, abre `/welcome`; senão volta para a tela de onde a pessoa veio (ou `/agenda`). |
 
@@ -190,6 +191,7 @@ src/i18n/locales/*.json                       # chaves auth.*, account.*
 | CA-08 | RF-20 | o repositório | busco `SUPABASE_ANON_KEY` em `src/`, `.env.example` e docs | nenhuma ocorrência; o cliente lê `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
 | CA-09 | RF-07, RF-08, RF-09, RF-10 | primeiro login | toco em `Começar` sem marcar o consentimento | vejo a mensagem de RF-09; marcando, o perfil é salvo com `consented_at` e vou para a Agenda |
 | CA-27 | RF-08b | a tela `/welcome` em pt-BR | escolho `Español (México)` e toco em `Começar` com dados válidos | a interface fica em espanhol na hora e `profiles.locale = 'es-MX'` |
+| CA-28 | RF-05a | a aba Entrar | peço o código e o servidor recusa com 400, 401 ou 403 | vejo `Não foi possível enviar o código. Tente de novo.`, e não `Código inválido ou expirado…` |
 | CA-10 | RF-10 | a tela `/welcome` | saio sem concluir | a sessão é encerrada |
 | CA-11 | RF-11, RF-12 | perfil de membro | mudo o idioma para `English (US)` | a interface muda na hora e `profiles.locale = 'en-US'` |
 | CA-12 | RF-13 | perfil com papéis | toco em `Exportar meus dados` | abre o compartilhamento com `meus-dados-estaca-criciuma.json` contendo perfil e papéis |
@@ -256,6 +258,7 @@ Nenhuma decisão em aberto.
 | 20 | Troca de unidade com acesso | Bloqueada enquanto o acesso existir; a liderança remove o acesso antes (2026-11-15, QA) | usuário |
 | 21 | Lista completa de grupos de liderança | Fora desta entrega: spec própria, que também alimenta organograma e avisos; aqui ficam os 3 grupos atuais (2026-11-15, QA) | usuário |
 | 22 | Idioma em Boas-vindas | A pessoa escolhe o idioma já no primeiro acesso, além da unidade (pedido do usuário no QA, 2026-11-15) | usuário |
+| 23 | Erro ao pedir o código | Mensagem própria para recusa do servidor ao enviar; achado do QA (chave da produção errada mostrava "código inválido") (2026-11-15) | usuário |
 | 18 | Biblioteca de cifra da sessão | `expo-crypto` (AES-256-GCM nativo, do SDK, funciona no Expo Go) no lugar de `aes-js` + `react-native-get-random-values` (2026-11-14) | usuário (`/create-plan`) |
 | 15 | Template do e-mail e nome da chave | Template pt-BR com código em destaque e `PUBLISHABLE_KEY`, pendências levadas de `supabase-cloud` (assessment G-04, plano QA da T-09) (2026-11-14) | usuário |
 

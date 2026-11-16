@@ -587,6 +587,19 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-27
   - Verificar: `make check`
 
+- [ ] **T-16 — Mensagem ao falhar o envio do código (RF-05a, decisão 23; achado do QA)**
+  - Arquivos: `alterar src/features/auth/api.ts` (+ `api.test.ts`) · `alterar src/features/auth/SignInScreen.tsx` (+ teste) · `alterar src/features/auth/OtpScreen.tsx` (+ teste) · `alterar src/i18n/locales/*.json`
+  - O que fazer:
+    - `AuthErrorCode` ganha `'send_failed'`. No `requestCode`, um `AuthApiError` com status 400, 401 ou 403 (e qualquer outro erro do servidor que não seja limite nem rede) vira `send_failed`. O `toAuthFlowError` do `verifyCode` não muda.
+    - Chave nova `auth.errors.sendFailed`: "Não foi possível enviar o código. Tente de novo." em pt-BR, traduzida em en-US e es-MX.
+    - A mensagem aparece no campo de e-mail (`SignInScreen`) e no reenvio (`OtpScreen`).
+    - Testes:
+      - "CA-28": 401 em `requestCode` mostra a mensagem nova, e não "Código inválido…";
+      - no `api.test.ts`, `requestCode` com 400, 401 e 403 devolve `send_failed`, e `verifyCode` com 403 continua `invalid_code`.
+  - Referência: `src/features/auth/api.ts:20-55`
+  - Cobre: CA-28
+  - Verificar: `make check`
+
 ## 5. Matriz de cobertura
 
 | CA | Tarefa | Tipo de teste | Arquivo de teste |
@@ -616,6 +629,7 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 | CA-25 | T-14 | banco + componente | `account.test.sql`, `GrantAccessSheet.test.tsx` |
 | CA-26 | T-14 | banco + componente | `account.test.sql`, `ProfileScreen.test.tsx` |
 | CA-27 | T-15 | componente | `src/features/auth/WelcomeScreen.test.tsx` |
+| CA-28 | T-16 | unitário + componente | `src/features/auth/api.test.ts`, `SignInScreen.test.tsx` |
 | CA-22 | T-13 | manual (VoiceOver/TalkBack) | roteiro de QA |
 | CA-23 | T-06, T-13 | manual (Inbucket e produção) | roteiro de QA |
 
