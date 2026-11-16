@@ -100,6 +100,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      events: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          ends_at: string;
+          id: string;
+          links: string[];
+          location: string;
+          notes: string;
+          starts_at: string;
+          title: string;
+          type: string;
+          unit_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          ends_at: string;
+          id?: string;
+          links?: string[];
+          location?: string;
+          notes?: string;
+          starts_at: string;
+          title: string;
+          type: string;
+          unit_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string;
+          id?: string;
+          links?: string[];
+          location?: string;
+          notes?: string;
+          starts_at?: string;
+          title?: string;
+          type?: string;
+          unit_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'events_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'events_unit_id_fkey';
+            columns: ['unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       member_calls: {
         Row: {
           calling_id: string;
@@ -399,6 +459,7 @@ export type Database = {
         Args: { p_accepted: boolean; p_member_call_id: string };
         Returns: undefined;
       };
+      valid_event_links: { Args: { p_links: string[] }; Returns: boolean };
     };
     Enums: {
       [_ in never]: never;

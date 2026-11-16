@@ -1,6 +1,6 @@
 # Agenda pública
 
-> **Status:** Planejada
+> **Status:** Em implementação
 > **Área:** aba `agenda`, rota `/event/[id]`, `src/features/calendar/`, `src/lib/queryPersistence.ts`, `supabase/migrations/`
 > **Última atualização:** 2026-11-13
 

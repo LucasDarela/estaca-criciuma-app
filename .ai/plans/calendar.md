@@ -211,7 +211,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
 
 ## 4. Tarefas
 
-- [ ] **T-01 — Tabela `events` e seed (RF-01)**
+- [x] **T-01 — Tabela `events` e seed (RF-01)**
   - Arquivos: `criar supabase/migrations/<ts>_events.sql` (`supabase migration new events`) · `alterar supabase/seed.sql` · `criar supabase/tests/events_read.test.sql` · `alterar src/lib/database.types.ts` (`make db-types`)
   - O que fazer:
     - Implementar o contrato 2.1.
