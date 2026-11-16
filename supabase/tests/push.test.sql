@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(55);
+select plan(87);
 
 -- Seed users (see supabase/seed.sql):
 --   ...001 membro, ...002 publicador (icara), ...003 bispo (criciuma1), ...004 estaca, ...005 admin
@@ -233,6 +233,156 @@ select is(
   'RNF-04: a device unseen for 181 days is removed');
 select ok(exists (select 1 from cron.job where jobname = 'push-cleanup'),
   'CA-21: the push-cleanup job is scheduled');
+
+-- T-02: recipients and sending. Clean slate for devices; events are created here.
+reset role;
+truncate public.push_devices cascade;
+truncate public.notifications cascade;
+insert into public.events (id, unit_id, type, title, starts_at, ends_at, location) values
+  ('30000000-0000-4000-8000-000000000001', 'icara', 'activity', 'Evento de Icara', '2026-11-21T18:00Z', '2026-11-21T19:00Z', 'Capela de Icara'),
+  ('30000000-0000-4000-8000-000000000002', 'criciuma1', 'activity', 'Evento de Criciuma 1', '2026-11-21T18:00Z', '2026-11-21T19:00Z', 'Capela 1'),
+  ('30000000-0000-4000-8000-000000000003', 'estaca', 'activity', 'Evento da Estaca', '2026-11-21T18:00Z', '2026-11-21T19:00Z', 'Centro de Estaca');
+
+-- CA-09: visitor, member with primary, bishop with a bishoprics calling, member of criciuma1 only.
+update public.profiles set organizations = '{primary}' where id in
+  ('00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000005');
+insert into public.push_devices (token, user_id, platform, locale, units) values
+  ('ExponentPushToken[visitor0000000000000000]', null, 'ios', 'pt-BR', '{estaca}'),
+  ('ExponentPushToken[member00000000000000000]', '00000000-0000-4000-8000-000000000001', 'ios', 'pt-BR', '{estaca}'),
+  ('ExponentPushToken[bishop000000000000000000]', '00000000-0000-4000-8000-000000000003', 'android', 'en-US', '{estaca}'),
+  ('ExponentPushToken[ward1only00000000000000]', '00000000-0000-4000-8000-000000000005', 'ios', 'pt-BR', '{criciuma1}');
+select results_eq(
+  $$ select token from public.push_recipients('estaca', '{primary,bishoprics}') order by token $$,
+  $$ values ('ExponentPushToken[bishop000000000000000000]'::text), ('ExponentPushToken[member00000000000000000]') $$,
+  'CA-09: the member with primary and the bishop receive; the visitor and the criciuma1-only member do not');
+
+-- CA-10: a visitor subscribed to icara receives 'all' of icara.
+insert into public.push_devices (token, user_id, platform, locale, units) values
+  ('ExponentPushToken[visitoricara00000000000]', null, 'android', 'es-MX', '{icara}');
+select results_eq(
+  $$ select token from public.push_recipients('icara', '{all}') order by token $$,
+  $$ values ('ExponentPushToken[visitoricara00000000000]'::text) $$,
+  'CA-10: the visitor subscribed to icara receives all');
+select is_empty(
+  $$ select 1 from public.push_recipients('icara', '{primary}') $$,
+  'a visitor never receives a targeted audience');
+
+-- leaders: 002 (publisher of icara) and 003 (bishop of criciuma1), both subscribed to all three.
+insert into public.push_devices (token, user_id, platform, locale, units) values
+  ('ExponentPushToken[leadericara0000000000000]', '00000000-0000-4000-8000-000000000002', 'ios', 'pt-BR', '{estaca,criciuma1,icara}'),
+  ('ExponentPushToken[leaderward10000000000000]', '00000000-0000-4000-8000-000000000003', 'ios', 'pt-BR', '{estaca,criciuma1,icara}');
+select results_eq(
+  $$ select token from public.push_recipients('icara', '{leaders}') order by token $$,
+  $$ values ('ExponentPushToken[leadericara0000000000000]'::text) $$,
+  'leaders: a unit item reaches only leaders of that unit');
+select results_eq(
+  $$ select token from public.push_recipients('estaca', '{leaders}') order by token $$,
+  $$ values ('ExponentPushToken[bishop000000000000000000]'::text), ('ExponentPushToken[leadericara0000000000000]'),
+            ('ExponentPushToken[leaderward10000000000000]') $$,
+  'leaders: a stake item reaches leaders of any unit');
+select results_eq(
+  $$ select token from public.push_recipients('icara', '{bishoprics,relief_society_presidency}') order by token $$,
+  $$ values ('ExponentPushToken[leadericara0000000000000]'::text) $$,
+  'a notify group in a unit item only counts in the same unit');
+select results_eq(
+  $$ select token from public.push_recipients('estaca', '{bishoprics}') order by token $$,
+  $$ values ('ExponentPushToken[bishop000000000000000000]'::text), ('ExponentPushToken[leaderward10000000000000]') $$,
+  'a notify group in a stake item counts in any unit');
+update public.profiles set organizations = '{relief_society}' where id = '00000000-0000-4000-8000-000000000002';
+select is(
+  (select count(*)::int from public.push_recipients('icara', '{relief_society,relief_society_presidency,leaders,all}')
+    where token = 'ExponentPushToken[leadericara0000000000000]'),
+  1, 'a device matching several criteria appears once');
+
+-- Permissions and validation of push_prepare.
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000002',
+       '{all}', 'T', '', now(), 'L') $$,
+  'P0001', 'forbidden', 'CA-12: a publisher of icara cannot notify for criciuma1');
+select throws_ok(
+  $$ select public.push_prepare(null, 'event', '30000000-0000-4000-8000-000000000001', '{all}', 'T', '', now(), 'L') $$,
+  'P0001', 'forbidden', 'no actor is forbidden');
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000001',
+       '{}', 'T', '', now(), 'L') $$,
+  'P0001', 'invalid_audience', 'an empty audience is invalid');
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000001',
+       '{stake_presidency}', 'T', '', now(), 'L') $$,
+  'P0001', 'invalid_audience', 'stake_presidency is invalid for a unit item');
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000001',
+       '{foo}', 'T', '', now(), 'L') $$,
+  'P0001', 'invalid_audience', 'an unknown audience key is invalid');
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'post', gen_random_uuid(), '{all}', 'T', 'b', null, null) $$,
+  'P0001', 'unsupported_kind', 'a post is unsupported until the board spec');
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', gen_random_uuid(), '{all}', 'T', '', now(), 'L') $$,
+  'P0001', 'item_not_found', 'an unknown event is not found');
+select throws_ok($$ select public.push_item('post', gen_random_uuid()) $$, 'P0001', 'unsupported_kind',
+  'push_item rejects post');
+
+-- CA-13 and the stored data. The actor 002 publishes for icara; the stake admin 004 for the stake item.
+create temp table prepared as
+  select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000001',
+    '{all}', 'Evento de Icara', '', '2026-11-21T18:00Z', 'Capela de Icara') as j;
+select is(
+  (select count(*)::int from public.notification_deliveries
+    where notification_id = ((select j from prepared) ->> 'notification_id')::uuid),
+  jsonb_array_length((select j from prepared) -> 'recipients'),
+  'push_prepare stores one delivery per recipient');
+select is(jsonb_array_length((select j from prepared) -> 'recipients'), 3,
+  'push_prepare returns the recipients (icara subscribers)');
+select results_eq(
+  $$ select unit_id, kind, event_starts_at, event_location, sent_by, audience from public.notifications
+     where id = ((select j from prepared) ->> 'notification_id')::uuid $$,
+  $$ values ('icara'::text, 'event'::text, '2026-11-21T18:00Z'::timestamptz, 'Capela de Icara'::text,
+             '00000000-0000-4000-8000-000000000002'::uuid, '{all}'::text[]) $$,
+  'push_prepare stores the event time, location, sender and audience');
+select ok(not ((select j from prepared)::text like '%"user_id"%'), 'push_prepare returns only token and locale');
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000001',
+       '{all}', 'Evento de Icara', '', '2026-11-21T18:00Z', 'Capela de Icara') $$,
+  'P0001', 'rate_limited', 'CA-13: a second send of the same item is rate limited');
+select lives_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000004', 'event', '30000000-0000-4000-8000-000000000003',
+       '{all}', 'Evento da Estaca', '', '2026-11-21T18:00Z', 'Centro de Estaca') $$,
+  'CA-13: another item is not limited');
+select lives_ok(
+  $$ select public.push_discard(((select j from prepared) ->> 'notification_id')::uuid) $$,
+  'push_discard runs');
+select is(
+  (select count(*)::int from public.notification_deliveries
+    where notification_id = ((select j from prepared) ->> 'notification_id')::uuid), 0,
+  'push_discard removes the deliveries too');
+select lives_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000001',
+       '{all}', 'Evento de Icara', '', '2026-11-21T18:00Z', 'Capela de Icara') $$,
+  'CA-13: after push_discard the item can be sent again');
+
+-- CA-14: removing reported tokens.
+select lives_ok(
+  $$ select public.push_remove_devices('{"ExponentPushToken[visitor0000000000000000]"}') $$, 'push_remove_devices runs');
+select is((select count(*)::int from public.push_devices where token = 'ExponentPushToken[visitor0000000000000000]'), 0,
+  'CA-14: the reported token is removed');
+select is((select count(*)::int from public.push_devices where token = 'ExponentPushToken[member00000000000000000]'), 1,
+  'CA-14: other tokens stay');
+
+-- Only the service role runs the send functions.
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"00000000-0000-4000-8000-000000000002","role":"authenticated"}';
+select throws_ok(
+  $$ select public.push_prepare('00000000-0000-4000-8000-000000000002', 'event', '30000000-0000-4000-8000-000000000001',
+       '{all}', 'T', '', now(), 'L') $$,
+  '42501', null, 'authenticated cannot execute push_prepare');
+select throws_ok($$ select * from public.push_recipients('icara', '{all}') $$, '42501', null,
+  'authenticated cannot execute push_recipients');
+select throws_ok($$ select public.push_remove_devices('{x}') $$, '42501', null,
+  'authenticated cannot execute push_remove_devices');
+select throws_ok($$ select public.push_discard(gen_random_uuid()) $$, '42501', null,
+  'authenticated cannot execute push_discard');
+reset role;
 
 select * from finish();
 rollback;

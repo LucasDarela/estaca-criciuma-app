@@ -320,7 +320,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-01, CA-02, CA-03, CA-04, CA-18, CA-20 e CA-21 (banco), RNF-02, RNF-04, RNF-05, RNF-08
   - Verificar: `supabase db reset && make test-db` · `make db-types` · `make lint`
 
-- [ ] **T-02 — Banco: destinatários e envio**
+- [x] **T-02 — Banco: destinatários e envio**
   - Arquivos: `alterar supabase/migrations/<ts>_push.sql` · `alterar supabase/tests/push.test.sql`
   - O que fazer:
     - Acrescentar `push_recipients`, `push_item`, `push_prepare`, `push_discard` e `push_remove_devices` (2.1), só para `service_role`.

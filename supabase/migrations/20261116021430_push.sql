@@ -289,3 +289,116 @@ grant execute on function public.my_device_units(text) to anon, authenticated;
 grant execute on function public.set_device_units(text, text[]) to anon, authenticated;
 grant execute on function public.mark_notifications_read(uuid[]) to authenticated;
 grant execute on function public.push_cleanup() to service_role;
+
+-- RF-10 with the roles-of-leadership adjustment. One row per device. Devices without an account
+-- only match 'all'. 'leaders' matches a person with a calling that gives access in the item's unit
+-- (any unit for a stake item); a notify group matches in the same unit (any unit for a stake item).
+create function public.push_recipients(p_unit text, p_audience text[])
+returns table (token text, user_id uuid, locale text)
+language sql stable security definer set search_path = public as $$
+  select d.token, d.user_id, d.locale
+  from push_devices d
+  where p_unit = any(d.units)
+    and ('all' = any(p_audience)
+      or (d.user_id is not null and (
+            exists (select 1 from profiles p
+                    where p.id = d.user_id and p.organizations && p_audience)
+         or exists (select 1 from member_calls mc join calling_catalog c on c.id = mc.calling_id
+                    where mc.user_id = d.user_id and c.active
+                      and c.notify_group = any(p_audience)
+                      and (p_unit = 'estaca' or mc.unit_id = p_unit))
+         or ('leaders' = any(p_audience) and exists (
+                    select 1 from member_calls mc join calling_catalog c on c.id = mc.calling_id
+                    where mc.user_id = d.user_id and c.active and c.access <> 'none'
+                      and (p_unit = 'estaca' or mc.unit_id = p_unit))))));
+$$;
+
+-- The item a push is about. 'post' arrives with the board spec, which replaces this function.
+create function public.push_item(p_kind text, p_item_id uuid)
+returns table (unit_id text, title text, starts_at timestamptz, location text, text_body text)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if p_kind = 'event' then
+    return query
+      select e.unit_id, e.title, e.starts_at, e.location, null::text
+      from events e where e.id = p_item_id;
+    if not found then raise exception 'item_not_found' using errcode = 'P0001'; end if;
+  else
+    raise exception 'unsupported_kind' using errcode = 'P0001';
+  end if;
+end;
+$$;
+
+-- RNF-03 and RF-10. The server decides: the actor must publish for the item's unit, the audience
+-- must be valid for that unit and an item is notified once every 10 minutes. Stores the
+-- notification and one delivery per recipient. p_actor goes into the JWT claims (transaction local)
+-- so can_publish, which reads auth.uid(), evaluates for that person (ADR 0006).
+create function public.push_prepare(
+  p_actor uuid, p_kind text, p_item_id uuid, p_audience text[], p_title text, p_body text,
+  p_event_starts_at timestamptz, p_event_location text)
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  v_unit text;
+  v_id uuid;
+  v_recipients jsonb;
+begin
+  select i.unit_id into v_unit from push_item(p_kind, p_item_id) i;
+
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', p_actor, 'role', 'authenticated')::text, true);
+  if p_actor is null or not can_publish(v_unit) then
+    raise exception 'forbidden' using errcode = 'P0001';
+  end if;
+
+  if p_audience is null or cardinality(p_audience) = 0
+     or not (p_audience <@ push_audience_options(v_unit)) then
+    raise exception 'invalid_audience' using errcode = 'P0001';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtext(p_kind || p_item_id::text));
+  if exists (select 1 from notifications n
+             where n.kind = p_kind and n.item_id = p_item_id
+               and n.created_at > now() - interval '10 minutes') then
+    raise exception 'rate_limited' using errcode = 'P0001';
+  end if;
+
+  insert into notifications (kind, item_id, unit_id, audience, title, body,
+                             event_starts_at, event_location, sent_by)
+  values (p_kind, p_item_id, v_unit, p_audience, p_title, coalesce(p_body, ''),
+          p_event_starts_at, p_event_location, p_actor)
+  returning id into v_id;
+
+  insert into notification_deliveries (notification_id, device_token, user_id)
+  select v_id, r.token, r.user_id from push_recipients(v_unit, p_audience) r;
+
+  select coalesce(jsonb_agg(jsonb_build_object('token', r.token, 'locale', r.locale)), '[]'::jsonb)
+  into v_recipients from push_recipients(v_unit, p_audience) r;
+
+  return jsonb_build_object('notification_id', v_id, 'recipients', v_recipients);
+end;
+$$;
+
+-- Used when no batch reached the Expo Push API, so the 10 minute limit does not block a retry.
+create function public.push_discard(p_notification_id uuid) returns void
+language sql security definer set search_path = public as $$
+  delete from notifications where id = p_notification_id;
+$$;
+
+-- RNF-04: tokens the Expo Push API reported as DeviceNotRegistered.
+create function public.push_remove_devices(p_tokens text[]) returns void
+language sql security definer set search_path = public as $$
+  delete from push_devices where token = any(p_tokens);
+$$;
+
+revoke all on function public.push_recipients(text, text[]) from public, anon, authenticated;
+revoke all on function public.push_item(text, uuid) from public, anon, authenticated;
+revoke all on function public.push_prepare(uuid, text, uuid, text[], text, text, timestamptz, text) from public, anon, authenticated;
+revoke all on function public.push_discard(uuid) from public, anon, authenticated;
+revoke all on function public.push_remove_devices(text[]) from public, anon, authenticated;
+
+grant execute on function public.push_recipients(text, text[]) to service_role;
+grant execute on function public.push_item(text, uuid) to service_role;
+grant execute on function public.push_prepare(uuid, text, uuid, text[], text, text, timestamptz, text) to service_role;
+grant execute on function public.push_discard(uuid) to service_role;
+grant execute on function public.push_remove_devices(text[]) to service_role;

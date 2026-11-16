@@ -637,6 +637,38 @@ export type Database = {
       };
       push_audience_options: { Args: { p_unit: string }; Returns: string[] };
       push_cleanup: { Args: never; Returns: undefined };
+      push_discard: { Args: { p_notification_id: string }; Returns: undefined };
+      push_item: {
+        Args: { p_item_id: string; p_kind: string };
+        Returns: {
+          location: string;
+          starts_at: string;
+          text_body: string;
+          title: string;
+          unit_id: string;
+        }[];
+      };
+      push_prepare: {
+        Args: {
+          p_actor: string;
+          p_audience: string[];
+          p_body: string;
+          p_event_location: string;
+          p_event_starts_at: string;
+          p_item_id: string;
+          p_kind: string;
+          p_title: string;
+        };
+        Returns: Json;
+      };
+      push_recipients: {
+        Args: { p_audience: string[]; p_unit: string };
+        Returns: {
+          locale: string;
+          token: string;
+          user_id: string;
+        }[];
+      };
       push_register_device: {
         Args: {
           p_ip_hash: string;
@@ -647,6 +679,7 @@ export type Database = {
         };
         Returns: string;
       };
+      push_remove_devices: { Args: { p_tokens: string[] }; Returns: undefined };
       revoke_admin: { Args: { p_user_id: string }; Returns: undefined };
       revoke_calling: { Args: { p_member_call_id: string }; Returns: undefined };
       save_calling: {
