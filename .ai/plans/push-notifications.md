@@ -590,10 +590,92 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
 
 ## 7. Registro de implementação
 
+Rodada inicial (2026-11-16), tarefas T-01 a T-13. **T-14 (credenciais, EAS, build de desenvolvimento e QA em aparelho) está pendente**, é da sessão principal com o usuário.
+
 ### Arquivos criados e alterados
+
+Banco:
+- `supabase/migrations/20261116021430_push.sql` (criado: T-01 e T-02 no mesmo arquivo, ainda não implantado em produção)
+- `supabase/tests/push.test.sql` (criado; 87 asserções)
+- `src/lib/database.types.ts` (gerado por `make db-types`)
+- `supabase/config.toml` (`verify_jwt = false` nas duas funções)
+
+Edge Functions:
+- `supabase/functions/_shared/pushContent.ts`, `sendPush.ts`, `registerDevice.ts` (+ um `*.test.ts` cada)
+- `supabase/functions/register-device/index.ts`, `supabase/functions/send-push/index.ts`
+- `tsconfig.json` e `eslint.config.js` (ignoram só `supabase/functions/*/index.ts`)
+
+Domínio e infra do app:
+- `src/domain/audience.ts`, `src/domain/notifications.ts` (+ testes); `src/domain/profile.ts` (6ª organização e lista `organizations`); `src/features/viewer/api.ts` (usa a lista)
+- `src/lib/push.ts`, `src/lib/reminderLog.ts`, `src/lib/notificationInbox.ts` (+ testes)
+- `package.json` e `package-lock.json` (`expo-notifications ~58.1.9`, `expo-device ~58.0.5`), `app.config.ts` (plugin e `googleServicesFile`), `.gitignore`, `.env.example`
+
+UI:
+- `src/components/AudiencePicker.tsx` (+ teste); `src/components/ScreenHeader.tsx` (+ teste: `badge` e `textAction`); `src/theme/theme.ts` (`size.notificationCircle`)
+- `src/features/notifications/`: `api.ts`, `NotificationsScreen.tsx`, `NotificationPrefsCard.tsx`, `EnablePushSheet.tsx`, `PushEffects.tsx` (+ testes)
+- `src/features/account/NoticesSection.tsx` (+ teste), `ProfileScreen.tsx`, `api.ts` (+ teste: `organizations`)
+- `src/features/calendar/AgendaScreen.tsx` (+ teste: ponto no sino); `src/features/auth/WelcomeScreen.tsx` (+ teste)
+- `src/features/dev/DevPushScreen.tsx` (+ teste), `src/app/dev/push.tsx`, `ComponentCatalogScreen.tsx` (seção do seletor), `DevComponentsRoute.test.tsx`
+- `src/app/notifications.tsx`, `src/app/_layout.tsx`, `src/features/placeholder/screens.tsx` (sem `NotificationsPlaceholder`)
+- `src/i18n/locales/{pt-BR,en-US,es-MX}.json`
+
+Docs: `.ai/docs/SECURITY.md`, `ARCHITECTURE.md`, `O11Y.md`; `.ai/adrs/0006-edge-functions-nucleo-puro.md` (já criado com o plano).
 
 ### Desvios do plano
 
+| # | Plano | O que foi feito | Motivo |
+| - | ----- | --------------- | ------ |
+| 1 | `SendPushDeps` sem gerador de corpo | Ganhou `content: { eventPushBody, postPushBody }`, injetado pelo `index.ts` | O núcleo não pode importar `pushContent.ts` (ADR 0006: sem imports). Sem mudança de comportamento. |
+| 2 | `my_notifications(p_device_token text)` e `mark_notifications_read(p_ids uuid[])` | Os dois parâmetros ganharam `default null` | O tipo gerado passa a aceitar a chamada sem o argumento (o "nulo" do contrato) sem `as`. Mesma assinatura de tipos. |
+| 3 | `push_register_device` só faz upsert | Além disso: (a) `p_user_id` sem `profiles` ainda (logou, mas não concluiu `/welcome`) grava o aparelho como visitante; (b) ao entrar numa conta, as entregas antigas do token (feitas como visitante, `user_id` nulo) passam para a pessoa | (a) A FK de `user_id` quebraria o registro. (b) Sem isso, o histórico de visitante aparecia não lido para sempre depois do login, porque `mark_notifications_read` só marca o que é da pessoa. Testado em `push.test.sql`. |
+| 4 | `markRead(ids, items)` | `markRead(ids, items, client)` e o hook `useMarkRead()` que injeta o `QueryClient` | A função precisa atualizar e invalidar o cache; o plano não dizia de onde vinha o cliente. Também exporta `fetchInbox`, usada pelo `PushEffects` ao tocar numa notificação com o app fechado. |
+| 5 | Cabeçalho da tela "serif 22" com `Ler todas` | `ScreenHeader` ganhou `textAction`; o título usa `type.headerTitle` (28) como as outras telas | Não há token serif 22; só tokens (RULES). Se o design exigir 22, pede-se um token novo. |
+| 6 | Círculo de 40 | Novo token `size.notificationCircle: 40` (derived) | Não havia token de 40. |
+| 7 | Teste de resumo `Push para: Primária, Bispados.` | Teste espera `Push para: Bispados, Primária.` | O próprio plano manda seguir a ordem das opções, e `bishoprics` vem antes das organizações. O exemplo do plano contradizia a regra. |
+| 8 | Rótulos RF-09 (`Presidência`, `Bispos`, `Presidentes`) | Os grupos de liderança usam `callings.groups.*` (`Bispados`, ...) | Ajuste de `roles-of-leadership` já previsto no plano (seção 2.7). |
+| 9 | `DevPushScreen` + `src/app/dev/push.tsx` | O redirecionamento fora de `__DEV__` ficou como `DevPushRoute` no mesmo arquivo da tela; chaves novas `dev.push.*` e `dev.catalog.section.audiencePicker` | Mesma ideia de `DevComponentsRoute`, sem arquivo extra. |
+| 10 | T-11, passo 5 (sheet) | Com o prompt pendente, o `PushEffects` consulta a permissão: `undetermined` abre o sheet; `granted` não pergunta de novo e só faz `registerDevice({ force: true })` (liga o aparelho à conta); `denied` e `unsupported` não abrem o sheet | Evita pedir de novo o que já foi concedido e cobre o aparelho que já tinha permissão como visitante. |
+| 11 | Ordem estrita teste-primeiro | No banco (T-01, T-02) e nas Edge Functions o código e o teste saíram juntos; a falha do teste só foi vista em ordenações de texto e contagem do plano | Os testes pgTAP precisam da migration para existir. Todos os CA têm teste com o ID no nome. |
+
 ### Decisões durante a implementação
 
+- `markRead` e a abertura do item são de melhor esforço: falha ao marcar como lido mostra o toast genérico (tela) ou é ignorada (toque na notificação, o item já abriu); se `itemExists` falha (offline), assume que o item existe e navega.
+- `send-push` devolve `recipients` = tickets `ok` da Expo (não o total de entregas gravadas). `push_dispatched` loga o total de destinatários.
+- A lista de lidos local (`notifications.read.v1`) é podada no `fetchInbox`: ids que saíram da janela de 90 dias são descartados.
+- `PushEffects` marca como lido os itens do inbox com o mesmo `kind` e `itemId` da notificação tocada, buscando o inbox na hora (`fetchQuery`, `staleTime: 0`), porque com o app fechado o cache está vazio.
+- O núcleo trata a falha de `verifyUser` como 500 (não 401): uma queda do Auth não vira "não autorizado".
+- `pg_cron` entra como `create extension if not exists pg_cron with schema pg_catalog` (o local do Supabase). Não testado em produção: conferir que a extensão está habilitada no projeto Cloud antes do `db push`.
+- Nenhum ADR novo além do 0006 (já criado com o plano).
+
+### Smoke das Edge Functions (T-05)
+
+`supabase functions serve` + `curl` rodaram nesta máquina (Docker, runtime de Edge do CLI; sem Deno instalado):
+
+| Chamada | Resposta |
+| ------- | -------- |
+| `register-device` visitante (publishable key), token fictício | `200 {"status":"registered"}`; linha em `push_devices` com `units={estaca}` e `user_id` nulo |
+| `register-device` com JWT de `publicador.icara` | `200`; `user_id` preenchido e `units={estaca,icara}` |
+| `register-device` com corpo `{"token":"x"}` | `400 invalid_request` |
+| `send-push` sem `Authorization` | `401 unauthorized` |
+| `send-push` só com a publishable key | `401 unauthorized` |
+| `send-push`, publicador de Içara, evento de Criciúma 1 | `403 forbidden` |
+| `send-push`, evento de Içara, público `primary` (ninguém assina) | `200 {"recipients":0}`; sem chamada à Expo |
+| mesmo envio repetido | `429 rate_limited` |
+| público `stake_presidency` num item de unidade | `400 invalid_audience` |
+| evento inexistente | `404 item_not_found` |
+
+Os logs do servidor saíram em JSON com `timestamp`, `level`, `event`, `request_id` e `user_id`, sem token. O envio real à Expo (tokens reais) fica para a T-14.
+
 ### CA sem teste automatizado
+
+- **CA-05**: o sheet, a permissão e o registro têm teste (`EnablePushSheet.test.tsx`, `PushEffects.test.tsx`, `push.test.ts`), mas o diálogo real do sistema só se confere em aparelho (T-14).
+- **CA-17 com o app fechado**: a navegação e o "marcar lido" têm teste com `getLastNotificationResponseAsync` e com o listener; o toque real no banner do sistema é manual (T-14).
+- **CA-24**: os rótulos têm teste (`Não lida`, interruptores, `checkbox` com `checked`, sino com `há não lidas`, anúncio do resumo); a leitura com VoiceOver e TalkBack é manual (T-14).
+- **CA-23**: `sendPush` converte o 502 em `PushError('unavailable')` com a mensagem certa (teste). A tela do formulário que a mostra é de `event-form` e `board`.
+- **CA-22**: coberto no núcleo (`_shared/*.test.ts`) e conferido nos logs do smoke; os logs reais da Edge Function em produção não são varridos por teste.
+
+### Pendências e observações para a sessão principal
+
+- **T-14 pendente**: `eas init` e `projectId` em `app.config.ts`; Firebase e `google-services.json` como variável de arquivo `GOOGLE_SERVICES_JSON` na EAS; chave APNs; `EXPO_ACCESS_TOKEN` nos secrets; build de desenvolvimento; roteiro de QA em iOS e Android (passo 3 pela tela `/dev/push`). Sem `projectId`, `getDevicePushToken` devolve `null` e nada registra.
+- `app.config.ts` aponta `googleServicesFile` para `./google-services.json` quando `GOOGLE_SERVICES_JSON` não existe; o arquivo não está no repositório (`.gitignore`). `make build` passa sem ele; o build Android da EAS precisa da variável.
+- Teste preexistente instável, fora desta entrega: `src/features/calendar/api.test.ts` › `uses the event found in a cached month as placeholder` falhou em 1 de 3 rodadas isoladas (passa na maioria). Não foi alterado.
