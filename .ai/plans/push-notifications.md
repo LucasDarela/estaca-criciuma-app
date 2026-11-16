@@ -340,7 +340,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-09, CA-10, CA-12, CA-13 e CA-14 (banco), RF-10, RNF-03
   - Verificar: `supabase db reset && make test-db`
 
-- [ ] **T-03 — Domínio: público, histórico e preferências**
+- [x] **T-03 — Domínio: público, histórico e preferências**
   - Arquivos: `alterar src/domain/profile.ts` · `criar src/domain/audience.ts` (+ teste) · `criar src/domain/notifications.ts` (+ teste) · `alterar src/features/viewer/api.ts` (lista de organizações de `profile.ts`)
   - O que fazer:
     - Implementar 2.4.
