@@ -379,7 +379,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-04, CA-11, CA-12, CA-13, CA-14, CA-22 e CA-23 (função), RF-11, RNF-01, RNF-06
   - Verificar: `make test` · `make lint`
 
-- [ ] **T-05 — Edge Functions em Deno**
+- [x] **T-05 — Edge Functions em Deno**
   - Arquivos: `criar supabase/functions/send-push/index.ts` · `criar supabase/functions/register-device/index.ts` · `alterar supabase/config.toml` (`verify_jwt = false` nas duas)
   - O que fazer:
     - Implementar 2.3.
