@@ -279,7 +279,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-19 (regras)
   - Verificar: `make check`
 
-- [ ] **T-05 — API dos eventos**
+- [x] **T-05 — API dos eventos**
   - Arquivos: `criar src/features/calendar/api.ts` (+ `api.test.ts`)
   - O que fazer:
     - Implementar o contrato 2.3 da api, com o cliente Supabase mockado.
