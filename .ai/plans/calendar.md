@@ -247,7 +247,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-20 (domínio); base para CA-06
   - Verificar: `make test`
 
-- [ ] **T-03 — Regras da agenda (RF-04 a RF-11, 7.5)**
+- [x] **T-03 — Regras da agenda (RF-04 a RF-11, 7.5)**
   - Arquivos: `criar src/domain/calendar.ts` (+ `calendar.test.ts`)
   - O que fazer:
     - Implementar o contrato 2.2 de `calendar.ts`.
