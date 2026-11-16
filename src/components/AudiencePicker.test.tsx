@@ -15,8 +15,8 @@ function Harness({ unitId, initial = [] }: { unitId: UnitId; initial?: AudienceK
 }
 
 beforeEach(() => {
-  jest.restoreAllMocks();
   jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => undefined);
+  jest.mocked(AccessibilityInfo.announceForAccessibility).mockClear();
 });
 
 describe('AudiencePicker', () => {
