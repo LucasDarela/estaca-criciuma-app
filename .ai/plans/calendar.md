@@ -267,7 +267,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-04, CA-05, CA-06, CA-07, CA-09, CA-11, CA-12 e CA-16 (domínio)
   - Verificar: `make test`
 
-- [ ] **T-04 — Cache persistido e rede (RF-18, RNF-01, RNF-02)**
+- [x] **T-04 — Cache persistido e rede (RF-18, RNF-01, RNF-02)**
   - Arquivos: `alterar package.json`/`package-lock.json` (seção 3) · `criar src/lib/queryPersistence.ts` (+ teste) · `criar src/lib/network.ts` (+ teste) · `alterar src/app/_layout.tsx` · `alterar jest.setup.ts` (mock do NetInfo: `@react-native-community/netinfo/jest/netinfo-mock`)
   - O que fazer:
     - Implementar o contrato 2.3 da lib.

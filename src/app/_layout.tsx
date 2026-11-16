@@ -8,7 +8,8 @@ import { NotoSans_700Bold } from '@expo-google-fonts/noto-sans/700Bold';
 import { NotoSerif_400Regular } from '@expo-google-fonts/noto-serif/400Regular';
 import { NotoSerif_400Regular_Italic } from '@expo-google-fonts/noto-serif/400Regular_Italic';
 import { NotoSerif_600SemiBold } from '@expo-google-fonts/noto-serif/600SemiBold';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -21,6 +22,8 @@ import { ViewerHeaderAvatar } from '@/features/navigation/ViewerHeaderAvatar';
 import { ViewerProvider } from '@/features/viewer/ViewerProvider';
 import { useAppStateFocus } from '@/lib/appFocus';
 import { AuthSessionProvider, useAuthSession } from '@/lib/authSession';
+import { wireOnlineManager } from '@/lib/network';
+import { persistOptions } from '@/lib/queryPersistence';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -39,15 +42,16 @@ export default function RootLayout() {
   const ready = fontsLoaded || fontError !== null;
 
   useAppStateFocus();
+  useEffect(() => wireOnlineManager(), []);
 
   if (!ready) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <AuthSessionProvider>
         <AuthenticatedApp />
       </AuthSessionProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 
