@@ -377,12 +377,10 @@ describe('setOrgChartConsent', () => {
 
 describe('my phone', () => {
   it('[leadership] CA-24: reads the own row and maps it', async () => {
-    const maybeSingle = jest
-      .fn()
-      .mockResolvedValue({
-        data: { phone_e164: '+5548999990000', show_on_org_chart: true },
-        error: null,
-      });
+    const maybeSingle = jest.fn().mockResolvedValue({
+      data: { phone_e164: '+5548999990000', show_on_org_chart: true },
+      error: null,
+    });
     const eq = jest.fn(() => ({ maybeSingle }));
     const select = jest.fn(() => ({ eq }));
     const from = jest.fn(() => ({ select }));
