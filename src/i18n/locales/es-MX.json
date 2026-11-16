@@ -90,6 +90,7 @@
       "emailRequired": "Ingresa tu correo electrónico.",
       "emailInvalid": "Ingresa un correo electrónico válido.",
       "invalidCode": "Código inválido o vencido. Revísalo o pide uno nuevo.",
+      "sendFailed": "No se pudo enviar el código. Inténtalo de nuevo.",
       "rateLimited": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
       "network": "Sin conexión. Revisa tu internet e inténtalo de nuevo."
     },

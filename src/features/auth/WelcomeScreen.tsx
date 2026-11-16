@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
+import { LanguageSheet } from '@/components/LanguageSheet';
 import { ListItem } from '@/components/ListItem';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { TextField } from '@/components/TextField';
@@ -30,7 +31,7 @@ import { space, theme, unitOrder, units } from '@/theme/theme';
 import { completeWelcome } from './api';
 import { ConsentCheckbox } from './components/ConsentCheckbox';
 
-const locales: readonly string[] = ['pt-BR', 'en-US', 'es-MX'];
+const locales: readonly Locale[] = ['pt-BR', 'en-US', 'es-MX'];
 const selectableUnits = unitOrder.filter((id) => id !== 'estaca');
 
 export function WelcomeScreen() {
@@ -42,12 +43,14 @@ export function WelcomeScreen() {
   const [nameError, setNameError] = useState<string | undefined>();
   const [unit, setUnit] = useState<UnitId | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [consent, setConsent] = useState(false);
   const [consentError, setConsentError] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const inFlight = useRef(false);
   const nameInput = useRef<ComponentRef<typeof TextInput>>(null);
   const privacy = privacyUrl();
+  const currentLocale = locales.find((locale) => locale === i18n.language) ?? 'pt-BR';
 
   // RF-10: leaving without finishing ends the session (an account without consent is not used).
   async function leave() {
@@ -87,7 +90,7 @@ export function WelcomeScreen() {
       await completeWelcome({
         displayName: name.trim(),
         homeUnitId: unit,
-        locale: (locales.includes(i18n.language) ? i18n.language : 'pt-BR') as Locale,
+        locale: currentLocale,
       });
       await queryClient.invalidateQueries({ queryKey: ['viewer'] });
       router.replace('/agenda');
@@ -128,6 +131,14 @@ export function WelcomeScreen() {
               onPress={() => setPickerOpen(true)}
             />
           </View>
+          <View>
+            <ListItem
+              title={t('account.profile.language')}
+              subtitle={t(`account.languages.${currentLocale}`)}
+              trailing={{ kind: 'chevron' }}
+              onPress={() => setLanguageOpen(true)}
+            />
+          </View>
           <ConsentCheckbox
             checked={consent}
             onChange={(value) => {
@@ -162,6 +173,17 @@ export function WelcomeScreen() {
           setPickerOpen(false);
         }}
         onClose={() => setPickerOpen(false)}
+      />
+      <LanguageSheet
+        visible={languageOpen}
+        title={t('account.profile.language')}
+        options={locales.map((value) => ({ value, label: t(`account.languages.${value}`) }))}
+        value={currentLocale}
+        onSelect={(next) => {
+          setLanguageOpen(false);
+          void i18n.changeLanguage(next);
+        }}
+        onClose={() => setLanguageOpen(false)}
       />
     </SafeAreaView>
   );

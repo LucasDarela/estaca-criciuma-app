@@ -573,6 +573,33 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
   - Cobre: CA-01 (aparelho), CA-21 (logs do Supabase), CA-22, CA-23 e o passo 10
   - Verificar: roteiro de QA
 
+- [x] **T-15 — Idioma em Boas-vindas (RF-08b, decisão 22; ajuste pós-merge)**
+  - Arquivos: `criar src/components/LanguageSheet.tsx` (+ teste) · `remover src/features/account/LanguageSheet.tsx` · `alterar src/features/account/ProfileScreen.tsx` · `alterar src/features/auth/WelcomeScreen.tsx` (+ teste)
+  - O que fazer:
+    - Mover o `LanguageSheet` para o design system, porque uma feature não importa outra. O componente recebe por props `title`, `options: readonly { value: Locale; label: string }[]`, `value`, `onSelect` e `onClose`, e não importa `features/` nem `lib/`. O Perfil passa a usá-lo de lá, sem mudar o comportamento.
+    - Em `WelcomeScreen`, acrescentar o `ListItem` `Idioma` (chave `account.profile.language` já existente, ou uma chave nova `auth.welcome.language` com o mesmo texto `Idioma` nos 3 locales), entre a unidade e o consentimento, mostrando o idioma atual com as chaves `account.languages.*`.
+    - Escolher o idioma chama `i18n.changeLanguage`. O `completeWelcome` já envia o locale de `i18n.language`, então não muda.
+    - Testes:
+      - "CA-27": escolher `Español (México)` muda os textos da tela e faz `completeWelcome` receber `es-MX`;
+      - o `LanguageSheet` marca a opção atual e chama `onSelect`;
+      - o teste "CA-11" do Perfil continua passando.
+  - Referência: `src/features/account/LanguageSheet.tsx`, `src/components/UnitPickerSheet.tsx` (componente do design system com rótulos por props)
+  - Cobre: CA-27
+  - Verificar: `make check`
+
+- [x] **T-16 — Mensagem ao falhar o envio do código (RF-05a, decisão 23; achado do QA)**
+  - Arquivos: `alterar src/features/auth/api.ts` (+ `api.test.ts`) · `alterar src/features/auth/SignInScreen.tsx` (+ teste) · `alterar src/features/auth/OtpScreen.tsx` (+ teste) · `alterar src/i18n/locales/*.json`
+  - O que fazer:
+    - `AuthErrorCode` ganha `'send_failed'`. No `requestCode`, um `AuthApiError` com status 400, 401 ou 403 (e qualquer outro erro do servidor que não seja limite nem rede) vira `send_failed`. O `toAuthFlowError` do `verifyCode` não muda.
+    - Chave nova `auth.errors.sendFailed`: "Não foi possível enviar o código. Tente de novo." em pt-BR, traduzida em en-US e es-MX.
+    - A mensagem aparece no campo de e-mail (`SignInScreen`) e no reenvio (`OtpScreen`).
+    - Testes:
+      - "CA-28": 401 em `requestCode` mostra a mensagem nova, e não "Código inválido…";
+      - no `api.test.ts`, `requestCode` com 400, 401 e 403 devolve `send_failed`, e `verifyCode` com 403 continua `invalid_code`.
+  - Referência: `src/features/auth/api.ts:20-55`
+  - Cobre: CA-28
+  - Verificar: `make check`
+
 ## 5. Matriz de cobertura
 
 | CA | Tarefa | Tipo de teste | Arquivo de teste |
@@ -601,6 +628,8 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 | CA-24 | T-14 | banco + componente | `account.test.sql`, `GrantAccessSheet.test.tsx` |
 | CA-25 | T-14 | banco + componente | `account.test.sql`, `GrantAccessSheet.test.tsx` |
 | CA-26 | T-14 | banco + componente | `account.test.sql`, `ProfileScreen.test.tsx` |
+| CA-27 | T-15 | componente | `src/features/auth/WelcomeScreen.test.tsx` |
+| CA-28 | T-16 | unitário + componente | `src/features/auth/api.test.ts`, `SignInScreen.test.tsx` |
 | CA-22 | T-13 | manual (VoiceOver/TalkBack) | roteiro de QA |
 | CA-23 | T-06, T-13 | manual (Inbucket e produção) | roteiro de QA |
 
@@ -652,7 +681,17 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 - Template de e-mail e config local verificados: o código de 6 dígitos chega ao Inbucket/Mailpit local com assunto `Seu código de acesso` e sem link.
 - **Achado do QA (T-13), corrigido:** depois de `Começar`, o usuário caía na Agenda deslogado. O `await invalidateQueries(['viewer'])` resolve antes de o TanStack entregar o dado novo ao observer do `ViewerProvider`, e o `router.replace('/agenda')` renderiza primeiro; o `SessionEffects` via `/agenda` com o perfil antigo (`consentedAt` nulo) e chamava `signOut()`. Correção: a guarda de consentimento roda uma vez por id de usuário logado, na primeira vez em que o viewer daquele usuário está carregado (ref com o id já checado, zerada ao deslogar). Navegação posterior nunca a dispara. Cobre só o caso para o qual existe (app fechado no meio do `/welcome`, RF-10). Testes de regressão em `SessionEffects.test.tsx`.
 - **T-14 (QA, decisões 19 a 21):** a migration `20261115173955_role_home_unit.sql` redefine `grant_role` (passos `no_home_unit` e `wrong_unit` depois de `no_account`, antes de `already_granted`) e cria o trigger `profiles_guard_home_unit` (`before update of home_unit_id`, `security definer`), que cobre também o `on conflict do update` do `complete_welcome` e updates diretos pela API. O seed passou a dar unidade a quem tem papel (bispo `criciuma1`, publicador `icara`, estaca `criciuma3`, admin `criciuma1`); o membro (`...001`) ficou sem unidade. `grant_admin.sql` devolve `error: user has no home unit` (conferido no banco local: membro sem unidade recusado, publicador com unidade concedido). pgTAP: 48 testes em `account.test.sql` (CA-24, CA-25, CA-26), com um usuário extra `...006` sem unidade. App: três códigos novos em `AccountError` e as mensagens literais nos 3 idiomas (`account.access.noHomeUnit`, `account.access.wrongUnit`, `account.profile.unitLocked`); `GrantAccessSheet` mostra os dois erros no campo de e-mail; `ProfileScreen` mostra `home_unit_locked` dentro do sheet de unidade e mantém a unidade. `UnitPickerSheet` ganhou a prop opcional `error` para isso. Runbook item (j) atualizado.
+- **T-15 (decisão 22):** `LanguageSheet` foi para `src/components/` (props `title`, `options`, `value`, `onSelect`, `onClose`; teste próprio) e o Perfil passa as opções. `/welcome` ganhou o `ListItem` `Idioma` (reaproveita `account.profile.language` e `account.languages.*`, sem chave nova) entre unidade e consentimento; escolher chama `i18n.changeLanguage`, e `completeWelcome` segue lendo `i18n.language`. Teste CA-27 em `WelcomeScreen.test.tsx`; o teste CA-11 do Perfil continua passando.
+- **T-16 (decisão 23, RF-05a):** `AuthErrorCode` ganhou `send_failed`; `requestCode` passa o erro por `toSendFlowError` (privada), que troca `invalid_code` por `send_failed`, e `toAuthFlowError`/`verifyCode` ficam intactos. `authErrorKey` cobre o código novo (usado por `SignInScreen` e `OtpScreen`, sem mudar o `OtpScreen`). Chave `auth.errors.sendFailed` nos 3 idiomas. Testes CA-28 em `api.test.ts`, `SignInScreen.test.tsx` e `OtpScreen.test.tsx`.
 - Nenhum ADR novo (as decisões seguem os ADRs 0002 e 0004 e as decisões 14 a 18 da spec).
+
+### Resultado parcial da T-13 (2026-11-15, produção)
+
+- Deploy das migrations `account_rpcs` e `role_home_unit` (run 43773020344, com `calling_catalog` e `member_calls`), com backup prévio.
+- Painel: templates `Magic Link` e `Confirm signup`, OTP de 6 dígitos (a produção vinha com 8) e rate limits, conforme item (e) do runbook.
+- Passo 10: o admin técnico entrou no app de produção com código por e-mail, concluiu `Boas-vindas` e o `grant_admin.sql` retornou `granted`. Fecha o passo 10 e o CA-12 de `supabase-cloud`.
+- Achados do QA corrigidos: escolha de idioma em `Boas-vindas` (T-15) e mensagem própria quando o envio do código falha, que antes aparecia como "código inválido" com a chave errada (T-16).
+- Pendentes: Android, VoiceOver/TalkBack (CA-22), inspeção do AsyncStorage no aparelho (CA-01), conferência de SPF/DKIM/DMARC e da pasta de entrega do e-mail na produção (CA-23), busca nos logs (CA-21).
 
 ### CA sem teste automatizado
 

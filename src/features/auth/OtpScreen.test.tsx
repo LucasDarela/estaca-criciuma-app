@@ -78,6 +78,17 @@ describe('OtpScreen', () => {
     expect(screen.getByRole('button', { name: 'Reenviar em 60 s' })).toBeTruthy();
   });
 
+  it('CA-28: a 401 when resending shows the send message, not the invalid code one', async () => {
+    signInWithOtp.mockResolvedValue({ error: new AuthApiError('server message', 401, undefined) });
+    await render(<OtpScreen />);
+    await waitSeconds(60);
+    await fireEvent.press(screen.getByRole('button', { name: 'Reenviar código' }));
+    expect(
+      await screen.findByText('Não foi possível enviar o código. Tente de novo.'),
+    ).toBeTruthy();
+    expect(screen.queryByText(/Código inválido ou expirado/)).toBeNull();
+  });
+
   it('CA-05: a wrong code shows the invalid code message', async () => {
     verifyOtp.mockResolvedValue({
       data: { user: null },

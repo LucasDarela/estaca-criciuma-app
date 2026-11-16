@@ -90,6 +90,7 @@
       "emailRequired": "Enter your email.",
       "emailInvalid": "Enter a valid email.",
       "invalidCode": "Invalid or expired code. Check it or request a new one.",
+      "sendFailed": "Couldn't send the code. Try again.",
       "rateLimited": "Too many attempts. Wait a few minutes and try again.",
       "network": "No connection. Check your internet and try again."
     },

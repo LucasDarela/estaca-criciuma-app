@@ -16,14 +16,16 @@ import { TextField } from '@/components/TextField';
 import { EMAIL_MAX_LENGTH, normalizeEmail, validateEmail } from '@/domain/email';
 import { space, theme, type } from '@/theme/theme';
 
-import { requestCode, toAuthFlowError } from './api';
+import { requestCode, toAuthFlowError, type AuthErrorCode } from './api';
 import { Signature } from './components/Signature';
 
 /** Translation key for a code error shown under the e-mail or code field. */
-export function authErrorKey(code: 'invalid_code' | 'rate_limited' | 'network' | 'unknown') {
+export function authErrorKey(code: AuthErrorCode) {
   switch (code) {
     case 'invalid_code':
       return 'auth.errors.invalidCode';
+    case 'send_failed':
+      return 'auth.errors.sendFailed';
     case 'rate_limited':
       return 'auth.errors.rateLimited';
     case 'network':

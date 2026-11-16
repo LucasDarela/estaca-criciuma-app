@@ -1,4 +1,4 @@
-import '@/i18n';
+import i18n from '@/i18n';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
@@ -44,9 +44,30 @@ beforeEach(() => {
   (completeWelcome as jest.Mock).mockResolvedValue(undefined);
   (signOut as jest.Mock).mockResolvedValue(undefined);
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(async () => {
+  jest.restoreAllMocks();
+  await i18n.changeLanguage('pt-BR');
+});
 
 describe('WelcomeScreen', () => {
+  it('CA-27: choosing Español (México) switches the texts and saves es-MX', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByRole('button', { name: /Idioma/ }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Español (México)' }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Comenzar' })).toBeTruthy());
+    await fireEvent.changeText(screen.getByLabelText('¿Cómo podemos llamarte?'), 'Ana');
+    await fireEvent.press(screen.getByRole('checkbox', { name: /Autorizo a la Estaca Criciúma/ }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Comenzar' }));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/agenda'));
+    expect(completeWelcome).toHaveBeenCalledWith({
+      displayName: 'Ana',
+      homeUnitId: null,
+      locale: 'es-MX',
+    });
+  });
+
   it('CA-09: Começar without consent shows the RF-09 message and saves nothing', async () => {
     await renderScreen();
     await fireEvent.changeText(screen.getByLabelText('Como podemos chamar você?'), 'Ana Souza');
