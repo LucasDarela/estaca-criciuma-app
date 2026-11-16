@@ -757,4 +757,4 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
 - **CA-32** (VoiceOver, TalkBack e fonte 1.6× em aparelho): parte automatizada (rótulos `{nome}, {chamado}`, posição vazia anunciada, linhas ocultas, papéis `header`/`radiogroup`/`list`, colunas empilhadas, `Switch` com rótulo); o percurso com leitor de tela real e a checagem de texto cortado ficam para a **T-14** (QA em aparelho, sessão principal).
 - **CA-23** (cache em disco sem chave de telefone): o teste cobre a chave (`isPublicQueryKey`) e as telas em cache com banner e sem telefone; a inspeção do `AsyncStorage` no aparelho é do roteiro de QA, passo 10.
 - **CA-20 e CA-21** usam `Linking` e clipboard simulados, como previsto na spec.
-- **T-14** não foi executada (QA em aparelho, é da sessão principal com o usuário).
+- **T-14** (QA em aparelho): o usuário informou em 2026-11-16, depois da rodada 1 do assessment, que fez os testes em aparelho. Não há registro de divergências.
