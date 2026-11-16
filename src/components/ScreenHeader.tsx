@@ -7,7 +7,7 @@ import { Avatar } from './Avatar';
 import { useHeaderAvatar } from './HeaderAvatarContext';
 import { Icon } from './icons/Icon';
 import type { IconName } from './icons/glyphs';
-import { pressedStyle } from './pressable';
+import { minTouchSlop, pressedStyle } from './pressable';
 
 export type HeaderAction = {
   icon: IconName;
@@ -23,12 +23,21 @@ export type ScreenHeaderProps = {
   overline?: string;
   onBack?: () => void;
   actions?: readonly HeaderAction[];
+  /** A text button in the header's right side (e.g. "Ler todas"). */
+  textAction?: { label: string; onPress: () => void };
   showAvatar?: boolean;
 };
 
 const maxActions = 2;
 
-export function ScreenHeader({ title, overline, onBack, actions, showAvatar }: ScreenHeaderProps) {
+export function ScreenHeader({
+  title,
+  overline,
+  onBack,
+  actions,
+  textAction,
+  showAvatar,
+}: ScreenHeaderProps) {
   const { t } = useTranslation();
   const avatar = useHeaderAvatar();
 
@@ -50,6 +59,17 @@ export function ScreenHeader({ title, overline, onBack, actions, showAvatar }: S
           {title}
         </Text>
       </View>
+      {textAction ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={textAction.label}
+          hitSlop={minTouchSlop(size.iconButton)}
+          onPress={textAction.onPress}
+          style={(state) => pressedStyle(state)}
+        >
+          <Text style={styles.textAction}>{textAction.label}</Text>
+        </Pressable>
+      ) : null}
       {(actions ?? []).slice(0, maxActions).map((action) => {
         const primary = (action.tone ?? 'primary') === 'primary';
         return (
@@ -98,6 +118,7 @@ const styles = StyleSheet.create({
   titles: { flex: 1 },
   overline: { ...type.overline, color: theme.primary },
   title: { ...type.headerTitle, color: theme.heading },
+  textAction: { ...type.callout, color: theme.primary },
   circle: {
     width: size.iconButton,
     height: size.iconButton,

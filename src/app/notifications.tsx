@@ -1,1 +1,1 @@
-export { NotificationsPlaceholder as default } from '@/features/placeholder/screens';
+export { NotificationsScreen as default } from '@/features/notifications/NotificationsScreen';

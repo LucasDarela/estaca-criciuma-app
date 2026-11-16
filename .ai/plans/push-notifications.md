@@ -451,7 +451,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-16 (sino), RF-19, RNF-12
   - Verificar: `make test`
 
-- [ ] **T-10 — Tela Notificações**
+- [x] **T-10 — Tela Notificações**
   - Arquivos: `criar src/features/notifications/api.ts` (+ teste) · `criar src/features/notifications/NotificationsScreen.tsx` (+ teste) · `criar src/features/notifications/NotificationPrefsCard.tsx` (+ teste) · `alterar src/app/notifications.tsx` (re-export) · `alterar src/features/placeholder/screens.tsx` (remover `NotificationsPlaceholder`) · `alterar src/i18n/locales/*.json` (`notifications.*`)
   - O que fazer:
     - Cabeçalho: voltar, `Notificações` e a ação `Ler todas` só com não lidas.

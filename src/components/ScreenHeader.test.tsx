@@ -78,4 +78,14 @@ describe('ScreenHeader', () => {
     await render(<ScreenHeader title="Agenda" actions={[action]} />);
     expect(screen.queryByTestId('header-action-badge')).not.toBeOnTheScreen();
   });
+
+  it('renders a text action and calls it when pressed', async () => {
+    const user = userEvent.setup();
+    const onPress = jest.fn();
+    await render(
+      <ScreenHeader title="Notificações" textAction={{ label: 'Ler todas', onPress }} />,
+    );
+    await user.press(screen.getByRole('button', { name: 'Ler todas' }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
 });
