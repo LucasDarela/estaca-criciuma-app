@@ -26,7 +26,7 @@ Agenda, mural e liderança são públicos: um visitante entende o que acontece e
 | ID | Regra | Motivo |
 | -- | ----- | ------ |
 | RN-01 | Eventos, avisos do mural e liderança **publicados** são visíveis sem login. Rascunhos não. | Acolhimento: visitantes entendem o que acontece sem criar conta |
-| RN-02 | Líder de unidade publica eventos, avisos, liderança e push **só da própria unidade**. Liderança da estaca publica para a estaca e todas as unidades. Presidências de organizações da estaca (`stake_publisher`) publicam só para a Estaca. Admin, para todas. | Cada unidade é responsável pelo próprio conteúdo |
+| RN-02 | Líder de unidade publica eventos, avisos e push **só da própria unidade**. Liderança da estaca publica para a estaca e todas as unidades. Presidências de organizações da estaca (`stake_publisher`) publicam só para a Estaca. Admin, para todas. | Cada unidade é responsável pelo próprio conteúdo |
 | RN-03 | Anotações são **privadas do autor**. Ninguém mais as lê, nem admin. | Anotações têm impressões pessoais e espirituais |
 | RN-04 | Chamados são visíveis só ao bispado/presidência de ramo e secretários da unidade, e à liderança da estaca. Admin técnico **não** vê. | Informação confidencial sobre membros |
 | RN-05 | Um chamado passa pelas etapas, nesta ordem: Proposto → Aprovado → Entrevista → Apoio → Designação. | Segue o processo da Igreja para chamados |
@@ -49,7 +49,7 @@ O acesso vem do **chamado** da pessoa (Catálogo de chamados, spec `roles-of-lea
 - **Membership**: só o `admin` (Role `admin`, na Estaca). Membro comum não tem Membership: é só uma conta autenticada.
 - **Event**: pertence a 1 Unit; tem tipo, início/fim, local, notas, links e opcionalmente público de push. Evento do tipo Reunião tem N **MeetingItems** (`agenda` | `decision` | `pending`).
 - **Post** (aviso do mural): pertence a 1 Unit; pode ser fixado; pode ter imagem.
-- **LeadershipPosition**: posição no organograma (unidade, chamado/cargo, nome exibido, ordem). Não precisa estar ligada a um Profile.
+- **OrgChartLink**: vínculos de acompanhamento da liderança (`high_council_links`, `high_council_units`, `unit_org_links`): qual conselheiro da presidência acompanha cada sumo conselheiro, quais unidades cada sumo conselheiro acompanha, e qual conselheiro do bispado (ou da presidência do ramo) acompanha cada organização. Apontam para `member_calls` e somem com o chamado. As pessoas do organograma vêm só de `member_calls` (`org_chart_members()`); o telefone, de `profile_phones`.
 - **Note**: pertence a 1 Profile; tipo `reminder` (com data/hora e lembrete local), `text` ou `drawing` (traços vetoriais em JSON).
 - **CallingProcess** (chamado): pertence a 1 Unit; cargo, pessoa indicada, etapa atual (RN-05).
 - **PushToken** e **NotificationPreference**: tokens do aparelho e origens que a pessoa aceita (RN-09). **Notification**: histórico exibido na tela de notificações.
@@ -72,9 +72,9 @@ O acesso vem do **chamado** da pessoa (Catálogo de chamados, spec `roles-of-lea
 | Publicador de unidade | Presidente de organização que publica pela própria unidade, sem ver pautas e chamados | `unit_publisher` (nível de acesso) | Bispado (`unit_leader`) |
 | Publicação da estaca | Presidência de organização da estaca que publica só pela Estaca, sem ver pautas e chamados | `stake_publisher` (nível de acesso) | Liderança da estaca (`stake_leader`) |
 | Catálogo de chamados | Lista dos chamados da estaca, das alas e do ramo, com o acesso, o grupo de aviso e a seção do organograma de cada um | `calling_catalog` | Chamado como processo (`calling_processes`) |
-| Liderança | Organograma público de quem serve onde | `leadership_positions` | Role / papel de acesso |
+| Liderança | Organograma público de quem serve onde | `org_chart_members()` (de `member_calls`) | Role / papel de acesso |
 | Perfil (de acesso) | Visitante, Membro, Líder (no design) | `role` (visitante = sem sessão) | `profiles` (dados da pessoa) |
-| Organizações | Sociedade de Socorro, Quórum de Élderes, Moças, Rapazes, Primária | `organization` (`relief_society`, `elders_quorum`, `young_women`, `young_men`, `primary`) | Unidade |
+| Organizações | Sociedade de Socorro, Quórum de Élderes, Moças, Rapazes, Primária; Escola Dominical (só no organograma) | `organization` (`relief_society`, `elders_quorum`, `young_women`, `young_men`, `primary`; `sunday_school` só em `unit_org_links` e no agrupamento do organograma) | Unidade |
 | Anotação | Nota pessoal privada | `note` | Notas do evento (`event.notes`) |
 
 ## Fora do produto
