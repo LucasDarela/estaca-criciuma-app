@@ -17,19 +17,22 @@ import {
   searchMembers,
   type OrgChartMember,
 } from '@/domain/orgChart';
+import { isStakeLeader } from '@/domain/permissions';
 import { unitKind } from '@/domain/units';
 import { useLocale } from '@/i18n/useLocale';
 import { useIsOnline } from '@/lib/network';
 import { space, theme, type, unitOrder, units } from '@/theme/theme';
 
+import { useViewer } from '../viewer/ViewerProvider';
 import { useOrgChart } from './api';
+import { EditBanner } from './EditBanner';
+import { HighCouncilorLinkSheet } from './HighCouncilorLinkSheet';
 import { PersonSheet } from './PersonSheet';
 import { StakeTree } from './StakeTree';
 import { TreeSkeleton } from './TreeSkeleton';
 
 type Segment = 'stake' | 'units';
 
-const noop = () => {};
 const MIN_SEARCH_LENGTH = 2;
 
 /** Aba Liderança: search, Estaca | Unidades, and the stake tree or the list of units (RF-14, RF-15). */
@@ -38,30 +41,64 @@ export function LeadershipScreen() {
   const router = useRouter();
   const locale = useLocale();
   const online = useIsOnline();
-  const { members, links, status, refetch } = useOrgChart();
+  const viewer = useViewer();
+  const { members, links, status, refetch, refetchLinks } = useOrgChart();
 
   const [segment, setSegment] = useState<Segment>('stake');
   const [term, setTerm] = useState('');
   const [person, setPerson] = useState<OrgChartMember | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [linking, setLinking] = useState<OrgChartMember | null>(null);
 
   const stakeTree = useMemo(() => buildStakeTree(members, links), [members, links]);
+  const canEdit = segment === 'stake' && isStakeLeader(viewer.memberships) && status === 'success';
   const searching = normalizeSearch(term).length >= MIN_SEARCH_LENGTH;
   const results = searching ? searchMembers(members, term, locale) : [];
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
-      <ScreenHeader title={t('leadership.title')} showAvatar />
+      <ScreenHeader
+        title={t('leadership.title')}
+        showAvatar
+        actions={
+          canEdit && !editing
+            ? [
+                {
+                  icon: 'edit',
+                  accessibilityLabel: online
+                    ? t('leadership.edit.button')
+                    : t('leadership.edit.offline'),
+                  disabled: !online,
+                  onPress: () => setEditing(true),
+                },
+              ]
+            : undefined
+        }
+      />
       {!online && status === 'success' ? <OfflineBanner /> : null}
-      <View style={styles.controls}>
-        <SearchField
-          size="compact"
-          placeholder={t('leadership.search.placeholder')}
-          value={term}
-          onChangeText={setTerm}
+      {editing ? (
+        <EditBanner
+          onDone={() => {
+            setEditing(false);
+            void refetchLinks();
+          }}
         />
+      ) : null}
+      <View style={styles.controls}>
+        {editing ? null : (
+          <SearchField
+            size="compact"
+            placeholder={t('leadership.search.placeholder')}
+            value={term}
+            onChangeText={setTerm}
+          />
+        )}
         <Segmented<Segment>
           value={segment}
-          onChange={setSegment}
+          onChange={(next) => {
+            setSegment(next);
+            setEditing(false);
+          }}
           options={[
             { value: 'stake', label: t('leadership.segment.stake') },
             { value: 'units', label: t('leadership.segment.units') },
@@ -82,7 +119,7 @@ export function LeadershipScreen() {
               action={{ label: t('common.retry'), onPress: refetch }}
             />
           </View>
-        ) : searching ? (
+        ) : searching && !editing ? (
           results.length === 0 ? (
             <Text style={styles.noResults}>
               {t('leadership.search.empty', { term: term.trim() })}
@@ -104,9 +141,9 @@ export function LeadershipScreen() {
         ) : segment === 'stake' ? (
           <StakeTree
             tree={stakeTree}
-            editing={false}
+            editing={editing}
             onPersonPress={setPerson}
-            onEditHighCouncilor={noop}
+            onEditHighCouncilor={setLinking}
           />
         ) : (
           unitOrder
@@ -129,6 +166,12 @@ export function LeadershipScreen() {
         )}
       </ScrollView>
       <PersonSheet person={person} links={links} onClose={() => setPerson(null)} />
+      <HighCouncilorLinkSheet
+        person={linking}
+        links={links}
+        onSaved={() => void refetchLinks()}
+        onClose={() => setLinking(null)}
+      />
     </SafeAreaView>
   );
 }

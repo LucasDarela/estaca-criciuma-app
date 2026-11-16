@@ -7,17 +7,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/EmptyState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { buildUnitTree, type OrgChartMember } from '@/domain/orgChart';
+import { buildUnitTree, type LinkOrganization, type OrgChartMember } from '@/domain/orgChart';
+import { canLead } from '@/domain/permissions';
 import { isUnitId, unitKind, type UnitId } from '@/domain/units';
 import { useIsOnline } from '@/lib/network';
 import { space, theme, units } from '@/theme/theme';
 
+import { useViewer } from '../viewer/ViewerProvider';
 import { useOrgChart } from './api';
+import { EditBanner } from './EditBanner';
+import { OrgCounselorSheet } from './OrgCounselorSheet';
 import { PersonSheet } from './PersonSheet';
 import { TreeSkeleton } from './TreeSkeleton';
 import { UnitTree } from './UnitTree';
-
-const noop = () => {};
 
 /** `/leadership/unit/[id]`: the tree of a ward or branch (RF-16, RF-12). */
 export function UnitLeadershipScreen() {
@@ -50,15 +52,47 @@ function UnitContent({ unitId }: { unitId: UnitId }) {
   const { t } = useTranslation();
   const router = useRouter();
   const online = useIsOnline();
-  const { members, links, status, refetch } = useOrgChart();
+  const viewer = useViewer();
+  const { members, links, status, refetch, refetchLinks } = useOrgChart();
   const [person, setPerson] = useState<OrgChartMember | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [organization, setOrganization] = useState<LinkOrganization | null>(null);
 
-  const tree = useMemo(() => buildUnitTree(unitId, members, links), [unitId, members, links]);
+  const tree = useMemo(
+    () => buildUnitTree(unitId, members, links, { editing }),
+    [unitId, members, links, editing],
+  );
+  const canEdit = canLead(viewer.memberships, unitId) && status === 'success';
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/leadership'));
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
-      <ScreenHeader title={units[unitId].label} onBack={goBack} />
+      <ScreenHeader
+        title={units[unitId].label}
+        onBack={goBack}
+        actions={
+          canEdit && !editing
+            ? [
+                {
+                  icon: 'edit',
+                  accessibilityLabel: online
+                    ? t('leadership.edit.button')
+                    : t('leadership.edit.offline'),
+                  disabled: !online,
+                  onPress: () => setEditing(true),
+                },
+              ]
+            : undefined
+        }
+      />
+      {editing ? (
+        <EditBanner
+          onDone={() => {
+            setEditing(false);
+            void refetchLinks();
+          }}
+        />
+      ) : null}
       {!online && status === 'success' ? <OfflineBanner /> : null}
       <ScrollView style={styles.body} contentContainerStyle={styles.content}>
         {status === 'loading' ? (
@@ -73,13 +107,20 @@ function UnitContent({ unitId }: { unitId: UnitId }) {
         ) : (
           <UnitTree
             tree={tree}
-            editing={false}
+            editing={editing}
             onPersonPress={setPerson}
-            onEditOrganization={noop}
+            onEditOrganization={setOrganization}
           />
         )}
       </ScrollView>
       <PersonSheet person={person} links={links} onClose={() => setPerson(null)} />
+      <OrgCounselorSheet
+        unitId={unitId}
+        organization={organization}
+        links={links}
+        onSaved={() => void refetchLinks()}
+        onClose={() => setOrganization(null)}
+      />
     </SafeAreaView>
   );
 }

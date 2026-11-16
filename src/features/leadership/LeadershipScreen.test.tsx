@@ -19,6 +19,10 @@ jest.mock('@/lib/authSession', () => ({
   useAuthSession: () => ({ status: 'signedIn', userId: 'u1', email: 'ana@exemplo.org' }),
 }));
 jest.mock('@/lib/network', () => ({ useIsOnline: jest.fn() }));
+let mockMemberships: { unitId: string; role: string }[] = [];
+jest.mock('../viewer/ViewerProvider', () => ({
+  useViewer: () => ({ memberships: mockMemberships }),
+}));
 const mockRpc = jest.fn();
 jest.mock('@/lib/supabase', () => ({ getSupabase: () => ({ rpc: mockRpc }) }));
 
@@ -105,6 +109,7 @@ async function setup(data: { members?: unknown[]; links?: unknown[] } = { member
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockMemberships = [];
   client = newClient();
   onlineManager.setOnline(true);
   (useIsOnline as jest.Mock).mockReturnValue(true);
@@ -250,5 +255,91 @@ describe('LeadershipScreen', () => {
       await screen.findByText('Sem conexão. Conecte-se para ver a liderança.'),
     ).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeOnTheScreen();
+  });
+
+  describe('edit mode', () => {
+    const roles = {
+      estaca: [{ unitId: 'estaca', role: 'stake_leader' }],
+      bispo: [{ unitId: 'criciuma1', role: 'unit_leader' }],
+      publicador: [{ unitId: 'icara', role: 'unit_publisher' }],
+      membro: [],
+    };
+
+    it.each([
+      ['estaca', true],
+      ['bispo', false],
+      ['publicador', false],
+      ['membro', false],
+    ] as const)('[leadership] CA-26: %s sees Editar on the stake tree: %s', async (who, sees) => {
+      mockMemberships = roles[who];
+      await setup();
+      await screen.findByText('Presidente');
+      expect(!!screen.queryByRole('button', { name: 'Editar' })).toBe(sees);
+    });
+
+    it('[leadership] CA-26: Editar is not offered on the Unidades segment', async () => {
+      const user = userEvent.setup();
+      mockMemberships = roles.estaca;
+      await setup();
+      await screen.findByText('Presidente');
+      await user.press(screen.getByText('Unidades'));
+      expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeOnTheScreen();
+    });
+
+    it('[leadership] CA-26: offline, Editar is disabled with its own label', async () => {
+      mockMemberships = roles.estaca;
+      (useIsOnline as jest.Mock).mockReturnValue(false);
+      seedCache(
+        client,
+        [makeCalled('stake_president', 'stake_presidency', { namePt: 'Presidente da Estaca' })],
+        [],
+      );
+      onlineManager.setOnline(false);
+      await setup();
+      const button = await screen.findByRole('button', { name: 'Editar indisponível sem conexão' });
+      expect(button).toBeDisabled();
+    });
+
+    it('[leadership] RF-23: Editar shows the banner and hides the search; Concluir reloads the links', async () => {
+      const user = userEvent.setup();
+      mockMemberships = roles.estaca;
+      await setup();
+      await user.press(await screen.findByRole('button', { name: 'Editar' }));
+      expect(screen.getByText('Modo de edição')).toBeOnTheScreen();
+      expect(screen.queryByPlaceholderText('Buscar nome ou chamado')).not.toBeOnTheScreen();
+      expect(screen.getByLabelText('Editar acompanhamento de Caetano Sumo')).toBeOnTheScreen();
+      const before = mockRpc.mock.calls.filter(([name]) => name === 'org_chart_links').length;
+      await user.press(screen.getByRole('button', { name: 'Concluir' }));
+      expect(screen.queryByText('Modo de edição')).not.toBeOnTheScreen();
+      expect(screen.getByPlaceholderText('Buscar nome ou chamado')).toBeOnTheScreen();
+      await waitFor(() =>
+        expect(mockRpc.mock.calls.filter(([name]) => name === 'org_chart_links')).toHaveLength(
+          before + 1,
+        ),
+      );
+    });
+
+    it('[leadership] CA-27: saving a high councilor sends the links and reloads', async () => {
+      const user = userEvent.setup();
+      mockMemberships = roles.estaca;
+      await setup();
+      await user.press(await screen.findByRole('button', { name: 'Editar' }));
+      await user.press(screen.getByLabelText('Editar acompanhamento de Caetano Sumo'));
+      await user.press(screen.getByRole('button', { name: '2º Conselheiro' }));
+      await user.press(screen.getByRole('button', { name: 'Araranguá' }));
+      const before = mockRpc.mock.calls.filter(([name]) => name === 'org_chart_links').length;
+      await user.press(screen.getByRole('button', { name: 'Salvar' }));
+      expect(await screen.findByText('Acompanhamento salvo')).toBeOnTheScreen();
+      expect(mockRpc).toHaveBeenCalledWith('set_high_councilor_links', {
+        p_high_councilor_call_id: 'm2',
+        p_counselor_calling_id: 'stake_second_counselor',
+        p_unit_ids: ['icara', 'ararangua'],
+      });
+      await waitFor(() =>
+        expect(mockRpc.mock.calls.filter(([name]) => name === 'org_chart_links')).toHaveLength(
+          before + 1,
+        ),
+      );
+    });
   });
 });
