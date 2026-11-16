@@ -407,7 +407,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-02, CA-03, CA-12, CA-13 e CA-23 (app), RF-07, RF-12
   - Verificar: `make test` · `make lint` · `make build`
 
-- [ ] **T-07 — `reminderLog` e inbox**
+- [x] **T-07 — `reminderLog` e inbox**
   - Arquivos: `criar src/lib/reminderLog.ts` (+ teste) · `criar src/lib/notificationInbox.ts` (+ teste)
   - O que fazer:
     - Implementar 2.5. O inbox usa `getDevicePushToken()` (pode ser nulo), `my_notifications`, `readReminderLog` + `dueReminders`, os lidos locais e o idioma de `i18n.language` para `eventPushBody`. `staleTime` de 1 min; refaz ao voltar ao app (`focusManager`, já ligado).

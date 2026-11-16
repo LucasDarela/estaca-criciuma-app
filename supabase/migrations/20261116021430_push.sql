@@ -151,7 +151,7 @@ $$;
 
 -- RF-04. The last 90 days delivered to this token or to any device of the signed-in person.
 -- Never returns a token. p_device_token may be null (signed in on a device without a token).
-create function public.my_notifications(p_device_token text)
+create function public.my_notifications(p_device_token text default null)
 returns table (id uuid, kind text, item_id uuid, unit_id text, title text, body text,
                event_starts_at timestamptz, event_location text, created_at timestamptz, read boolean)
 language sql stable security definer set search_path = public as $$
@@ -195,7 +195,7 @@ end;
 $$;
 
 -- RF-14. Null marks everything the person received. Only ids they received are accepted.
-create function public.mark_notifications_read(p_ids uuid[]) returns void
+create function public.mark_notifications_read(p_ids uuid[] default null) returns void
 language plpgsql security definer set search_path = public as $$
 begin
   if auth.uid() is null then raise exception 'not_authenticated' using errcode = 'P0001'; end if;

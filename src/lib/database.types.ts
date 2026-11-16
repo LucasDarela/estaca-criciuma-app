@@ -597,7 +597,10 @@ export type Database = {
           user_id: string;
         }[];
       };
-      mark_notifications_read: { Args: { p_ids: string[] }; Returns: undefined };
+      mark_notifications_read: {
+        Args: { p_ids?: string[] };
+        Returns: undefined;
+      };
       my_accesses: {
         Args: never;
         Returns: {
@@ -607,7 +610,7 @@ export type Database = {
       };
       my_device_units: { Args: { p_device_token: string }; Returns: string[] };
       my_notifications: {
-        Args: { p_device_token: string };
+        Args: { p_device_token?: string };
         Returns: {
           body: string;
           created_at: string;
