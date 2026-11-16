@@ -42,7 +42,8 @@
         "emptyState": "Empty state",
         "offlineBanner": "Offline banner",
         "skeleton": "Skeleton",
-        "icons": "Icons"
+        "icons": "Icons",
+        "audiencePicker": "Audience picker"
       },
       "sample": {
         "label": "Sample label",

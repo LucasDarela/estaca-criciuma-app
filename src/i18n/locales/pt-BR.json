@@ -42,7 +42,8 @@
         "emptyState": "Estado vazio",
         "offlineBanner": "Faixa sem conexão",
         "skeleton": "Carregando",
-        "icons": "Ícones"
+        "icons": "Ícones",
+        "audiencePicker": "Seletor de público"
       },
       "sample": {
         "label": "Rótulo de exemplo",

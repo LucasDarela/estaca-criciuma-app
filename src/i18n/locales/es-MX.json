@@ -42,7 +42,8 @@
         "emptyState": "Estado vacío",
         "offlineBanner": "Banner sin conexión",
         "skeleton": "Cargando",
-        "icons": "Íconos"
+        "icons": "Íconos",
+        "audiencePicker": "Selector de público"
       },
       "sample": {
         "label": "Etiqueta de ejemplo",

@@ -423,7 +423,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-16 e CA-19 (dados), RF-19, RF-20
   - Verificar: `make test` (≥ 80% em `src/lib`)
 
-- [ ] **T-08 — `AudiencePicker`**
+- [x] **T-08 — `AudiencePicker`**
   - Arquivos: `criar src/components/AudiencePicker.tsx` (+ teste) · `alterar src/i18n/locales/*.json` (`push.audience.*`) · `alterar src/features/dev/ComponentCatalogScreen.tsx` (exemplo)
   - O que fazer:
     - Título (overline), chips de 32 de altura (`size.typeChip`). Selecionado: fundo `primarySubtle`, borda e texto `primary`. Ícone `groups` no 1º; `add` ou `check` nos demais. Resumo abaixo.
