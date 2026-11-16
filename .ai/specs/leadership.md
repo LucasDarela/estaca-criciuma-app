@@ -1,6 +1,6 @@
 # Liderança: organograma, acompanhamento e contatos
 
-> **Status:** Em implementação
+> **Status:** Aguardando assessment
 > **Área:** aba `leadership`, rota `/leadership/unit/[id]`, `src/features/leadership/`, `src/domain/orgChart.ts`, `src/domain/phone.ts`, Perfil (telefone), `supabase/migrations/`
 > **Última atualização:** 2026-11-16
 
