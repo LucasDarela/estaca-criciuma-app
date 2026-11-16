@@ -65,13 +65,16 @@ describe('addToDeviceCalendar', () => {
     const result = await addToDeviceCalendar(event);
 
     expect(result).toBe('saved');
-    expect(createEventInCalendarAsync).toHaveBeenCalledWith({
-      title: 'Conferência de Estaca',
-      startDate: event.startsAt,
-      endDate: event.endsAt,
-      location: 'Centro de Estaca, Criciúma',
-      notes: 'Chegue cedo.\nhttps://example.org/a\nhttps://example.org/b',
-    });
+    expect(createEventInCalendarAsync).toHaveBeenCalledWith(
+      {
+        title: 'Conferência de Estaca',
+        startDate: event.startsAt,
+        endDate: event.endsAt,
+        location: 'Centro de Estaca, Criciúma',
+        notes: 'Chegue cedo.\nhttps://example.org/a\nhttps://example.org/b',
+      },
+      { startNewActivityTask: false },
+    );
   });
 
   it('CA-15: leaves the notes empty when there are neither notes nor links', async () => {
@@ -81,13 +84,25 @@ describe('addToDeviceCalendar', () => {
 
     expect(createEventInCalendarAsync).toHaveBeenLastCalledWith(
       expect.objectContaining({ notes: '' }),
+      { startNewActivityTask: false },
     );
   });
 
-  it.each(['canceled', 'deleted', 'done'])('reports "other" for the %s action', async (action) => {
-    (createEventInCalendarAsync as jest.Mock).mockResolvedValue({ action, id: null });
+  it.each(['canceled', 'deleted', 'done'])(
+    'reports "other" for the %s action on iOS',
+    async (action) => {
+      jest.replaceProperty(Platform, 'OS', 'ios');
+      (createEventInCalendarAsync as jest.Mock).mockResolvedValue({ action, id: null });
 
-    await expect(addToDeviceCalendar(event)).resolves.toBe('other');
+      await expect(addToDeviceCalendar(event)).resolves.toBe('other');
+    },
+  );
+
+  it('CA-15: reports "saved" for the done action on Android, which cannot tell save from cancel', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    (createEventInCalendarAsync as jest.Mock).mockResolvedValue({ action: 'done', id: null });
+
+    await expect(addToDeviceCalendar(event)).resolves.toBe('saved');
   });
 
   it('rejects when the dialog cannot open', async () => {
