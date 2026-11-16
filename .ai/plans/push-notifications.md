@@ -481,7 +481,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-06, CA-15, CA-16, CA-17 (lista), CA-18, CA-19, RF-14 a RF-18, RNF-09, RNF-10
   - Verificar: `make test`
 
-- [ ] **T-11 — Registro automático, toque e "Receber avisos?"**
+- [x] **T-11 — Registro automático, toque e "Receber avisos?"**
   - Arquivos: `criar src/features/notifications/EnablePushSheet.tsx` (+ teste) · `criar src/features/notifications/PushEffects.tsx` (+ teste) · `alterar src/app/_layout.tsx` (montar `<PushEffects />` ao lado de `<SessionEffects />`) · `alterar src/features/auth/WelcomeScreen.tsx` (+ teste: `requestEnablePushPrompt()` antes de `router.replace('/agenda')`) · `alterar src/i18n/locales/*.json` (`push.enable.*`)
   - O que fazer:
     - `PushEffects`:

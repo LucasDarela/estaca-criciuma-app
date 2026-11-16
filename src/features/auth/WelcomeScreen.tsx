@@ -26,6 +26,7 @@ import type { Locale } from '@/domain/profile';
 import type { UnitId } from '@/domain/units';
 import { privacyUrl } from '@/lib/config';
 import { signOut } from '@/lib/authSession';
+import { requestEnablePushPrompt } from '@/lib/push';
 import { space, theme, unitOrder, units } from '@/theme/theme';
 
 import { completeWelcome } from './api';
@@ -93,6 +94,7 @@ export function WelcomeScreen() {
         locale: currentLocale,
       });
       await queryClient.invalidateQueries({ queryKey: ['viewer'] });
+      requestEnablePushPrompt();
       router.replace('/agenda');
     } catch {
       toast.show({ message: t('common.genericError') });

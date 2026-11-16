@@ -191,6 +191,10 @@ export function requestEnablePushPrompt(): void {
   setPromptPending(true);
 }
 
+function dismissEnablePushPrompt(): void {
+  setPromptPending(false);
+}
+
 export function useEnablePushPrompt(): { pending: boolean; dismiss: () => void } {
   const pending = useSyncExternalStore(
     (listener) => {
@@ -200,7 +204,7 @@ export function useEnablePushPrompt(): { pending: boolean; dismiss: () => void }
     () => promptPending,
     () => false,
   );
-  return { pending, dismiss: () => setPromptPending(false) };
+  return { pending, dismiss: dismissEnablePushPrompt };
 }
 
 /** RF-22: a system banner while the app is open, and the Android channel. Call once at startup. */

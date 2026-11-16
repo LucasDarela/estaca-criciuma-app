@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import { signOut } from '@/lib/authSession';
+import { requestEnablePushPrompt } from '@/lib/push';
 
 import { completeWelcome } from './api';
 import { WelcomeScreen } from './WelcomeScreen';
@@ -15,6 +16,7 @@ const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace }) }));
 jest.mock('./api', () => ({ completeWelcome: jest.fn() }));
 jest.mock('@/lib/authSession', () => ({ signOut: jest.fn() }));
+jest.mock('@/lib/push', () => ({ requestEnablePushPrompt: jest.fn() }));
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -93,6 +95,27 @@ describe('WelcomeScreen', () => {
       locale: 'pt-BR',
     });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['viewer'] });
+  });
+
+  it('CA-05: finishing the welcome asks to enable notices before going to the agenda', async () => {
+    await renderScreen();
+    await fireEvent.changeText(screen.getByLabelText('Como podemos chamar você?'), 'Ana Souza');
+    await fireEvent.press(screen.getByRole('checkbox', { name: new RegExp(CONSENT_START) }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Começar' }));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/agenda'));
+    expect(requestEnablePushPrompt).toHaveBeenCalledTimes(1);
+  });
+
+  it('CA-05: a failed welcome does not ask to enable notices', async () => {
+    (completeWelcome as jest.Mock).mockRejectedValue(new Error('x'));
+    await renderScreen();
+    await fireEvent.changeText(screen.getByLabelText('Como podemos chamar você?'), 'Ana Souza');
+    await fireEvent.press(screen.getByRole('checkbox', { name: new RegExp(CONSENT_START) }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Começar' }));
+
+    await waitFor(() => expect(screen.getByText('Algo deu errado. Tente de novo.')).toBeTruthy());
+    expect(requestEnablePushPrompt).not.toHaveBeenCalled();
   });
 
   it('keeps the default unit as none (null)', async () => {
