@@ -292,7 +292,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: base para CA-03 e CA-17 a CA-19
   - Verificar: `make test`
 
-- [ ] **T-06 — Aba Agenda: cabeçalho, filtros e período (RF-03 a RF-07, RF-17, RF-18)**
+- [x] **T-06 — Aba Agenda: cabeçalho, filtros e período (RF-03 a RF-07, RF-17, RF-18)**
   - Arquivos: `criar src/features/calendar/AgendaScreen.tsx` (+ teste) · `criar src/features/calendar/PeriodBar.tsx` · `alterar src/app/(tabs)/agenda.tsx` · `criar src/app/notifications.tsx` · `alterar src/features/placeholder/screens.tsx` · `alterar src/theme/theme.ts` (2.5) · `alterar src/i18n/locales/*.json` (2.6)
   - O que fazer:
     - Montar a tela conforme 2.4. O `now` vem de um `useNow()` local, que o teste controla com `jest.useFakeTimers` e `setSystemTime`.
@@ -310,7 +310,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-03, CA-08, CA-18, CA-19 (tela), CA-21, RNF-09
   - Verificar: `make test`
 
-- [ ] **T-07 — Visão Mês (RF-08, RNF-07, RNF-08)**
+- [x] **T-07 — Visão Mês (RF-08, RNF-07, RNF-08)**
   - Arquivos: `criar src/features/calendar/MonthView.tsx` (+ teste)
   - O que fazer:
     - Grade com células de `size.monthCell` e círculo de `size.dayCircle`:
@@ -330,7 +330,7 @@ O Maestro, usado no E2E do DoD, é uma ferramenta de linha de comando, não um p
   - Cobre: CA-05, CA-06, CA-09 e CA-12 (tela), RNF-07, RNF-08
   - Verificar: `make test`
 
-- [ ] **T-08 — Visões Semana e Dia (RF-09, RF-10, RNF-10)**
+- [x] **T-08 — Visões Semana e Dia (RF-09, RF-10, RNF-10)**
   - Arquivos: `criar src/features/calendar/WeekView.tsx` (+ teste) · `criar src/features/calendar/DayView.tsx` (+ teste)
   - O que fazer:
     - Semana: faixa de 7 dias e os grupos por dia, com a etiqueta `Hoje`.

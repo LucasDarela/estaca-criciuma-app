@@ -7,7 +7,11 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { space, theme } from '@/theme/theme';
 
 /** Stand-in for a tab whose feature has no spec implemented yet (RF-20). */
-export function ComingSoonScreen({ titleKey }: { titleKey: `tabs.${string}` }) {
+export function ComingSoonScreen({
+  titleKey,
+}: {
+  titleKey: `${'tabs' | 'notifications'}.${string}`;
+}) {
   const { t } = useTranslation();
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>

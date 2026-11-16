@@ -1,1 +1,1 @@
-export { AgendaPlaceholder as default } from '@/features/placeholder/screens';
+export { AgendaScreen as default } from '@/features/calendar/AgendaScreen';

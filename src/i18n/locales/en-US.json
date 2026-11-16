@@ -258,5 +258,81 @@
         "confirm": "Change"
       }
     }
+  },
+  "calendar": {
+    "overline": "ESTACA CRICIÚMA",
+    "title": "Calendar",
+    "notifications": "Notifications",
+    "search": "Search events",
+    "allUnits": "All",
+    "unitFilter": "Unit",
+    "allTypes": "All types",
+    "types": {
+      "activity": {
+        "one": "Activity",
+        "other": "Activities"
+      },
+      "meeting": {
+        "one": "Meeting",
+        "other": "Meetings"
+      },
+      "training": {
+        "one": "Training",
+        "other": "Trainings"
+      },
+      "conference": {
+        "one": "Conference",
+        "other": "Conferences"
+      },
+      "caravan": {
+        "one": "Caravan",
+        "other": "Caravans"
+      }
+    },
+    "views": {
+      "month": "Month",
+      "week": "Week",
+      "day": "Day",
+      "today": "Today",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "weekdaysShort": ["S", "M", "T", "W", "T", "F", "S"],
+    "month": {
+      "summary": "{{weekday}}, {{month}} {{day}}",
+      "count_one": "{{count}} event",
+      "count_other": "{{count}} events"
+    },
+    "empty": {
+      "day": "No events on this day with the current filters.",
+      "week": "No events this week with the current filters.",
+      "dayView": "No events on this day",
+      "error": "Could not load the calendar.",
+      "retry": "Try again"
+    },
+    "allDay": "All day",
+    "until": "until {{time}}",
+    "todayTag": "Today",
+    "a11y": {
+      "day_one": "{{date}}, {{count}} event",
+      "day_other": "{{date}}, {{count}} events",
+      "dayNone": "{{date}}, no events",
+      "todayPrefix": "Today, ",
+      "block": "{{title}}, {{start}} to {{end}}, {{unit}}"
+    },
+    "detail": {
+      "notes": "Notes",
+      "links": "Links",
+      "addToCalendar": "Add to calendar",
+      "share": "Share",
+      "openMap": "Open in maps",
+      "added": "Event added to your calendar.",
+      "calendarUnavailable": "Could not open the phone calendar.",
+      "gone": "This event is no longer available.",
+      "seeAgenda": "See calendar"
+    }
+  },
+  "notifications": {
+    "title": "Notifications"
   }
 }
