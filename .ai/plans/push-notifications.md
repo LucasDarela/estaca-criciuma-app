@@ -516,7 +516,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-20 (app), RF-21
   - Verificar: `make check`
 
-- [ ] **T-13 — Docs**
+- [x] **T-13 — Docs**
   - Arquivos: `alterar .ai/docs/SECURITY.md` · `alterar .ai/docs/ARCHITECTURE.md` · `alterar .ai/docs/O11Y.md`
   - O que fazer:
     - SECURITY:

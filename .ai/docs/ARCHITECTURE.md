@@ -2,7 +2,7 @@
 
 Estado atual: app Expo criado com a base (rotas, fontes, i18n, TanStack Query, tokens, lint e testes); nenhuma feature implementada. Versões exatas: `package.json` / `package-lock.json` — confirme lá.
 
-Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): `@shopify/react-native-skia` (anotações), `expo-notifications` (push/lembretes), `@sentry/react-native`.
+Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): `@shopify/react-native-skia` (anotações), `@sentry/react-native`. `expo-notifications` e `expo-device` entraram com `push-notifications`.
 
 ## Stack
 
@@ -61,7 +61,7 @@ src/
   theme/                  theme.ts (tokens)
 supabase/
   migrations/             SQL versionado: tabelas, RLS, funções (has_role)
-  functions/              Edge Functions (Deno): send-push
+  functions/              Edge Functions (Deno): register-device, send-push; _shared/ = núcleo puro testado no Jest
   seed.sql                Dados fictícios para dev local
 .maestro/                 Fluxos E2E (YAML)
 assets/                   Fontes, ícones, splash
@@ -97,6 +97,9 @@ lib        → domain, theme
 | Migration com RLS | `supabase/migrations/*_base_units_profiles_roles.sql` |
 | Teste de RLS | `supabase/tests/base_rls.test.sql` (pgTAP; `make test-db`) |
 | Acesso derivado de chamado | O banco soma o `access` dos chamados ativos da pessoa (`member_calls` → `calling_catalog`) em `my_accesses()`, e `has_role`, `can_publish` e `can_lead` derivam dele (`supabase/migrations/*_member_calls.sql`). O app só espelha a regra em `src/domain/callings.ts` (`membershipsFromCalls`) e `src/domain/permissions.ts`. Nova regra de acesso = novo valor de `calling_catalog.access`, nunca papel escrito à mão. |
+| Edge Function | ADR [0006](../adrs/0006-edge-functions-nucleo-puro.md). `supabase/functions/<nome>/index.ts` (Deno) só liga HTTP, `supabase-js` e `fetch`; a lógica fica em `supabase/functions/_shared/<nome>.ts`, TypeScript **sem imports**, com dependências injetadas e teste ao lado (roda no Jest). Regras de dados (permissão, destinatários, limites) ficam em funções SQL `security definer` executáveis só pela `service_role` (`push_prepare`, `push_recipients`...), testadas por pgTAP. Referência: `register-device` e `send-push` (+ `supabase/tests/push.test.sql`). |
+| Histórico de notificações e lidos | `src/lib/notificationInbox.ts`: `useInbox` junta `my_notifications` (servidor) e os lembretes do `reminderLog` (aparelho); a Agenda (ponto do sino) e a tela Notificações usam o mesmo dado, por isso fica em `lib`. Chave `['inbox', ...]`, nunca `public`. O estado de lido é por pessoa no servidor (`notification_reads`); de visitante e de lembretes, só ids no aparelho. |
+| Lembretes de anotações no histórico | `src/lib/reminderLog.ts` (cifrado). A spec `notes` grava com `addReminder`; `push-notifications` só lê. |
 | Cache público persistido | `src/lib/queryPersistence.ts`: o `PersistQueryClientProvider` (em `_layout.tsx`) grava no AsyncStorage só as queries cuja chave começa com `'public'` (RNF-01), por 7 dias. Query pública nova: chave `['public', ...]`, `gcTime` ≥ `PERSIST_MAX_AGE_MS` e dado serializável em JSON (`Date` vira texto no disco: guarde ISO e converta no `select`, como `src/features/calendar/api.ts`). Dado pessoal nunca usa esse prefixo. A conectividade vem de `src/lib/network.ts` (`useIsOnline`, `wireOnlineManager`). |
 | Datas | `src/domain/time.ts`: data civil e hora em Brasília com offset fixo UTC−3 (ADR 0005). Nunca use os getters locais de `Date`; rótulos por `formatCivil` / `formatTime`. A suíte roda com `TZ=Europe/Lisbon`. |
 | Teste e2e | `.maestro/agenda-publica.yaml` (primeiro fluxo; `make test-e2e`, local, com Expo Go) |
