@@ -63,6 +63,19 @@ describe('requestCode', () => {
     await expect(requestCode('a@b.co')).rejects.toMatchObject({ code: 'rate_limited' });
   });
 
+  it('CA-28: 400, 401 and 403 on requestCode are send_failed, while verifyCode 403 stays invalid_code', async () => {
+    for (const status of [400, 401, 403]) {
+      mockClient({
+        auth: { signInWithOtp: jest.fn().mockResolvedValue({ error: api(status) }) },
+      });
+      await expect(requestCode('a@b.co')).rejects.toMatchObject({ code: 'send_failed' });
+    }
+    mockClient({
+      auth: { verifyOtp: jest.fn().mockResolvedValue({ data: null, error: api(403) }) },
+    });
+    await expect(verifyCode('a@b.co', '123456')).rejects.toMatchObject({ code: 'invalid_code' });
+  });
+
   it('maps a rejected fetch to network', async () => {
     mockClient({
       auth: { signInWithOtp: jest.fn().mockRejectedValue(new TypeError('Failed to fetch')) },

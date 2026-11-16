@@ -61,6 +61,19 @@ describe('SignInScreen', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
+  it('CA-28: a refused request shows the send message, not the invalid code one', async () => {
+    const { AuthFlowError } = jest.requireActual('./api');
+    requestCodeMock.mockRejectedValue(new AuthFlowError('send_failed'));
+    await render(<SignInScreen />);
+    await fireEvent.changeText(screen.getByLabelText('E-mail'), 'ana@exemplo.org');
+    await fireEvent.press(screen.getByRole('button', { name: 'Receber código' }));
+    expect(
+      await screen.findByText('Não foi possível enviar o código. Tente de novo.'),
+    ).toBeTruthy();
+    expect(screen.queryByText(/Código inválido ou expirado/)).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it('CA-07: only the e-mail field and Receber código, with no Google or Apple', async () => {
     await render(<SignInScreen />);
     expect(screen.getByLabelText('E-mail')).toBeTruthy();

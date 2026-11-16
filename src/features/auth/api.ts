@@ -6,7 +6,7 @@ import type { UnitId } from '@/domain/units';
 import { getSupabase } from '@/lib/supabase';
 import { track } from '@/lib/telemetry';
 
-export type AuthErrorCode = 'invalid_code' | 'rate_limited' | 'network' | 'unknown';
+export type AuthErrorCode = 'invalid_code' | 'send_failed' | 'rate_limited' | 'network' | 'unknown';
 
 export class AuthFlowError extends Error {
   constructor(readonly code: AuthErrorCode) {
@@ -43,6 +43,15 @@ export function toAuthFlowError(error: unknown): AuthFlowError {
   return new AuthFlowError('unknown');
 }
 
+/**
+ * Same as `toAuthFlowError` for asking for a code (RF-05a): a server refusal that is neither a
+ * rate limit nor a network failure is `send_failed`, never `invalid_code` (there is no code yet).
+ */
+function toSendFlowError(error: unknown): AuthFlowError {
+  const mapped = toAuthFlowError(error);
+  return mapped.code === 'invalid_code' ? new AuthFlowError('send_failed') : mapped;
+}
+
 /** RNF-02: the same call and response for known and unknown e-mails (`shouldCreateUser`). */
 export async function requestCode(email: string): Promise<void> {
   const { error } = await getSupabase()
@@ -51,7 +60,7 @@ export async function requestCode(email: string): Promise<void> {
       options: { shouldCreateUser: true },
     })
     .catch((thrown: unknown) => ({ error: thrown }));
-  if (error) throw toAuthFlowError(error);
+  if (error) throw toSendFlowError(error);
 }
 
 /**
