@@ -42,7 +42,8 @@
         "emptyState": "Estado vazio",
         "offlineBanner": "Faixa sem conexão",
         "skeleton": "Carregando",
-        "icons": "Ícones"
+        "icons": "Ícones",
+        "audiencePicker": "Seletor de público"
       },
       "sample": {
         "label": "Rótulo de exemplo",
@@ -73,6 +74,13 @@
         "success": "Aprovado",
         "warning": "Pendente"
       }
+    },
+    "push": {
+      "title": "Teste de envio de push",
+      "eventId": "ID do evento",
+      "unit": "Unidade do evento",
+      "send": "Enviar",
+      "result": "Enviado para {{count}} aparelho(s)."
     }
   },
   "auth": {
@@ -134,7 +142,11 @@
       "delete": "Excluir conta",
       "updated": "Perfil atualizado",
       "save": "Salvar",
-      "unitLocked": "Para mudar de unidade, peça à liderança da estaca para remover seus acessos primeiro."
+      "unitLocked": "Para mudar de unidade, peça à liderança da estaca para remover seus acessos primeiro.",
+      "notices": "Avisos",
+      "noticesHistory": "Notificações",
+      "groups": "Grupos que acompanho",
+      "groupsHint": "Você recebe avisos enviados para os grupos marcados."
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -330,9 +342,81 @@
       "calendarUnavailable": "Não foi possível abrir a agenda do celular.",
       "gone": "Este evento não está mais disponível.",
       "seeAgenda": "Ver agenda"
-    }
+    },
+    "notificationsUnread": "Notificações, há não lidas"
   },
   "notifications": {
-    "title": "Notificações"
+    "title": "Notificações",
+    "readAll": "Ler todas",
+    "sections": {
+      "today": "HOJE",
+      "thisWeek": "ESTA SEMANA",
+      "earlier": "ANTERIORES"
+    },
+    "empty": "Nenhuma notificação nos últimos 90 dias.",
+    "unread": "Não lida",
+    "myNotes": "Minhas anotações",
+    "itemGone": "Este item não está mais disponível.",
+    "card": {
+      "enable": "Receba avisos da estaca e das unidades que escolher.",
+      "enableButton": "Ativar avisos",
+      "disabled": "As notificações estão desativadas nas configurações do celular.",
+      "openSettings": "Abrir configurações",
+      "deviceOnly": "Avisos só funcionam em um celular."
+    },
+    "prefs": {
+      "title": "Receber avisos de",
+      "stake": "Estaca",
+      "myWard": "Minha ala · {{unit}}",
+      "myBranch": "Meu ramo · {{unit}}",
+      "others": "Outras unidades",
+      "switchLabel": "Receber avisos da {{unit}}",
+      "switchLabelOthers": "Receber avisos de outras unidades"
+    }
+  },
+  "push": {
+    "channelName": "Avisos",
+    "audience": {
+      "title": "ENVIAR PARA · {{unit}}",
+      "stakeUpper": "ESTACA",
+      "all": {
+        "stake": "Toda a estaca",
+        "ward": "Todos da ala",
+        "branch": "Todos do ramo"
+      },
+      "leaders": {
+        "stake": "Líderes",
+        "unit": "Todos os líderes"
+      },
+      "organizations": {
+        "relief_society": "Sociedade de Socorro",
+        "elders_quorum": "Quórum de Élderes",
+        "young_women": "Moças",
+        "young_men": "Rapazes",
+        "primary": "Primária",
+        "temple_family_history": "Templo e História da Família"
+      },
+      "summary": {
+        "empty": "Selecione ao menos um grupo para enviar a notificação.",
+        "everyone": {
+          "stake": "Todos os membros da estaca com o app receberão o aviso.",
+          "ward": "Todos os membros da ala com o app receberão o aviso.",
+          "branch": "Todos os membros do ramo com o app receberão o aviso."
+        },
+        "groups": "Push para: {{groups}}."
+      }
+    },
+    "errors": {
+      "forbidden": "Você não tem permissão para avisar esta unidade.",
+      "rateLimited": "Aguarde 10 minutos para avisar de novo sobre este item.",
+      "unavailable": "O item foi salvo, mas o aviso não foi enviado. Tente avisar de novo em instantes.",
+      "network": "Sem conexão. Verifique a internet e tente de novo."
+    },
+    "enable": {
+      "title": "Receber avisos?",
+      "body": "Avisamos sobre eventos e comunicados da estaca e da sua ala. Você escolhe o que receber em Notificações.",
+      "confirm": "Ativar avisos",
+      "later": "Agora não"
+    }
   }
 }

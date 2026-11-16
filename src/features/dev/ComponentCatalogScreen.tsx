@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AudiencePicker } from '@/components/AudiencePicker';
 import { Avatar } from '@/components/Avatar';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
@@ -25,6 +26,7 @@ import { TabBar } from '@/components/TabBar';
 import { TextField } from '@/components/TextField';
 import { useToast } from '@/components/toast/ToastProvider';
 import { UnitTag } from '@/components/UnitTag';
+import type { AudienceKey } from '@/domain/audience';
 import { unitIds } from '@/domain/units';
 import { size, space, theme, type, units } from '@/theme/theme';
 
@@ -33,6 +35,8 @@ type SectionKey =
   | 'textField'
   | 'searchField'
   | 'filterChip'
+  | 'audiencePicker'
+  | 'audiencePicker'
   | 'unitTag'
   | 'statusTag'
   | 'badge'
@@ -73,6 +77,7 @@ export function ComponentCatalogScreen() {
   const sample = (key: string) => t(`dev.catalog.sample.${key}`);
   const [search, setSearch] = useState('');
   const [chip, setChip] = useState(true);
+  const [audience, setAudience] = useState<AudienceKey[]>(['primary']);
   const [view, setView] = useState<DemoView>('month');
   const [enabled, setEnabled] = useState(true);
   const [tab, setTab] = useState<DemoTab>('agenda');
@@ -151,6 +156,10 @@ export function ComponentCatalogScreen() {
             />
             <FilterChip label={sample('label')} selected={false} icon="event" onPress={noop} />
           </View>
+        </Section>
+
+        <Section section="audiencePicker">
+          <AudiencePicker unitId="icara" value={audience} onChange={setAudience} />
         </Section>
 
         <Section section="unitTag">

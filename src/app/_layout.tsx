@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import { SessionEffects } from '@/features/auth/SessionEffects';
+import { PushEffects } from '@/features/notifications/PushEffects';
 import { ViewerHeaderAvatar } from '@/features/navigation/ViewerHeaderAvatar';
 import { ViewerProvider } from '@/features/viewer/ViewerProvider';
 import { useAppStateFocus } from '@/lib/appFocus';
@@ -70,6 +71,7 @@ function AuthenticatedApp() {
     <ViewerProvider session={auth.status === 'signedIn' ? { userId: auth.userId } : null}>
       <ToastProvider>
         <SessionEffects />
+        <PushEffects />
         <ViewerHeaderAvatar>
           <StatusBar style="auto" />
           <Stack screenOptions={{ headerShown: false }} />

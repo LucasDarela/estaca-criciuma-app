@@ -172,6 +172,7 @@ export const size = {
   unitFilterMaxWidth: 142, // derived · unit filter button on the agenda
   dayHourHeight: 44, // derived · one hour of the day timeline
   nowLine: 2, // derived · current time line of the day view
+  notificationCircle: 40, // derived · icon circle of a notification row
 } as const;
 
 /** Border and ring widths. */

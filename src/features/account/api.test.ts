@@ -110,6 +110,17 @@ describe('updateProfile', () => {
   });
 });
 
+describe('updateProfile organizations', () => {
+  it('CA-20: sends the organizations to the own row', async () => {
+    const eq = jest.fn().mockResolvedValue({ error: null });
+    const update = jest.fn(() => ({ eq }));
+    (getSupabase as jest.Mock).mockReturnValue({ from: jest.fn(() => ({ update })) });
+    await updateProfile('u1', { organizations: ['primary', 'temple_family_history'] });
+    expect(update).toHaveBeenCalledWith({ organizations: ['primary', 'temple_family_history'] });
+    expect(eq).toHaveBeenCalledWith('id', 'u1');
+  });
+});
+
 describe('listAccess', () => {
   const row = (overrides: Record<string, unknown>) => ({
     entry_id: 'e1',

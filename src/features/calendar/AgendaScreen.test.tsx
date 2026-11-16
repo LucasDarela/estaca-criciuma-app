@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { CalendarEvent } from '@/domain/calendar';
 import { useIsOnline } from '@/lib/network';
+import { useHasUnread } from '@/lib/notificationInbox';
 import { makeEvent } from '@/test/factories';
 
 import { AgendaScreen } from './AgendaScreen';
@@ -15,6 +16,7 @@ const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock('./api');
 jest.mock('@/lib/network');
+jest.mock('@/lib/notificationInbox');
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -77,6 +79,7 @@ beforeEach(() => {
   jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   mockPush.mockClear();
   (useIsOnline as jest.Mock).mockReturnValue(true);
+  (useHasUnread as jest.Mock).mockReturnValue(false);
   mockAgenda([council, games, conference, otherDay]);
 });
 
@@ -188,6 +191,22 @@ describe('AgendaScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Notificações' }));
 
     expect(mockPush).toHaveBeenCalledWith('/notifications');
+  });
+
+  it('CA-16: with unread notifications the bell shows the dot and says so (RNF-12, CA-24)', async () => {
+    (useHasUnread as jest.Mock).mockReturnValue(true);
+    await render(<Screen />);
+
+    expect(screen.getByTestId('header-action-badge')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Notificações, há não lidas' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Notificações' })).not.toBeOnTheScreen();
+  });
+
+  it('CA-16: without unread notifications there is no dot and the label is plain', async () => {
+    await render(<Screen />);
+
+    expect(screen.queryByTestId('header-action-badge')).not.toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Notificações' })).toBeOnTheScreen();
   });
 
   it('opens the event detail from a card', async () => {

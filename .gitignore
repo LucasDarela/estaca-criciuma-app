@@ -35,6 +35,7 @@ expo-env.d.ts
 *.keystore
 *.mobileprovision
 *.orig.*
+google-services.json
 
 # Supabase local
 supabase/.branches/

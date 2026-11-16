@@ -22,6 +22,8 @@ const config: ExpoConfig = {
       monochromeImage: './assets/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
+    // Firebase file for FCM (Android push). A file variable on EAS; never committed (.gitignore).
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
   },
   plugins: [
     'expo-router',
@@ -30,6 +32,7 @@ const config: ExpoConfig = {
     'expo-localization',
     'expo-secure-store',
     'expo-sharing',
+    ['expo-notifications', { color: BRAND_BLUE }],
     ['expo-calendar', { calendarPermission: 'Permite adicionar eventos da estaca à sua agenda.' }],
     [
       'expo-splash-screen',

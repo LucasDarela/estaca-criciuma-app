@@ -5,7 +5,7 @@ import {
   type MemberCall,
 } from '@/domain/callings';
 import type { Membership } from '@/domain/permissions';
-import type { Locale, Organization, Profile } from '@/domain/profile';
+import { organizations, type Locale, type Organization, type Profile } from '@/domain/profile';
 import { isUnitId } from '@/domain/units';
 import { getSupabase } from '@/lib/supabase';
 
@@ -20,13 +20,6 @@ export type ViewerData = {
 export const viewerQueryKey = (userId: string) => ['viewer', userId] as const;
 
 const locales: readonly string[] = ['pt-BR', 'en-US', 'es-MX'];
-const organizations: readonly string[] = [
-  'relief_society',
-  'elders_quorum',
-  'young_women',
-  'young_men',
-  'primary',
-];
 
 const callSelect =
   'id, unit_id, org_chart_consent, calling_catalog(id, name_pt, name_en, name_es, level, access, notify_group, org_chart_section, sort_order, active)';
@@ -62,7 +55,7 @@ export async function fetchViewerData(userId: string): Promise<ViewerData> {
         homeUnitId: row.home_unit_id && isUnitId(row.home_unit_id) ? row.home_unit_id : null,
         locale: locales.includes(row.locale) ? (row.locale as Locale) : 'pt-BR',
         organizations: row.organizations.filter((o): o is Organization =>
-          organizations.includes(o),
+          (organizations as readonly string[]).includes(o),
         ),
         consentedAt: row.consented_at,
       }
