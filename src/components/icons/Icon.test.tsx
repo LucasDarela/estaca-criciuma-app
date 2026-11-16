@@ -58,6 +58,7 @@ const requiredNames: IconName[] = [
   'person',
   'image',
   'visibility',
+  'content_copy',
 ];
 
 type Node = { props?: { d?: string }; children?: Node[] | null };
@@ -86,8 +87,8 @@ describe('Icon', () => {
     expect(element).toBeDefined();
   });
 
-  it('CA-15: all 54 required names have outlined and filled glyphs', () => {
-    expect(requiredNames).toHaveLength(54);
+  it('CA-15: all 55 required names have outlined and filled glyphs', () => {
+    expect(requiredNames).toHaveLength(55);
     for (const name of requiredNames) {
       expect(glyphs[name].outlined.length).toBeGreaterThan(0);
       expect(glyphs[name].filled.length).toBeGreaterThan(0);

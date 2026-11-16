@@ -88,4 +88,19 @@ describe('ScreenHeader', () => {
     await user.press(screen.getByRole('button', { name: 'Ler todas' }));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
+
+  it('[leadership] a disabled action ignores presses and is announced as disabled', async () => {
+    const user = userEvent.setup();
+    const onPress = jest.fn();
+    await render(
+      <ScreenHeader
+        title="Liderança"
+        actions={[{ icon: 'edit', accessibilityLabel: 'Editar', onPress, disabled: true }]}
+      />,
+    );
+    const button = screen.getByRole('button', { name: 'Editar' });
+    expect(button).toBeDisabled();
+    await user.press(button);
+    expect(onPress).not.toHaveBeenCalled();
+  });
 });

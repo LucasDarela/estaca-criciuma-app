@@ -66,6 +66,7 @@ const names = [
   'person',
   'image',
   'visibility',
+  'content_copy',
 ];
 
 function readPaths(file) {
