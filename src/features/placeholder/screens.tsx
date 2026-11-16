@@ -8,3 +8,6 @@ export const NotesPlaceholder = () => <ComingSoonScreen titleKey="tabs.notes" />
 export const CallingsPlaceholder = () => <ComingSoonScreen titleKey="tabs.callings" />;
 export const ProfilePlaceholder = () => <ComingSoonScreen titleKey="tabs.profile" />;
 export const SignInPlaceholder = () => <ComingSoonScreen titleKey="tabs.signIn" />;
+
+// Provisional until push-notifications (calendar spec 6.1): the bell on the agenda opens it.
+export const NotificationsPlaceholder = () => <ComingSoonScreen titleKey="notifications.title" />;

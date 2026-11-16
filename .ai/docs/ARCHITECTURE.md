@@ -2,7 +2,7 @@
 
 Estado atual: app Expo criado com a base (rotas, fontes, i18n, TanStack Query, tokens, lint e testes); nenhuma feature implementada. Versões exatas: `package.json` / `package-lock.json` — confirme lá.
 
-Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): `@shopify/react-native-skia` (anotações), `expo-notifications` (push/lembretes), `@sentry/react-native`, persistência offline do TanStack Query.
+Pacotes previstos no ADR 0002 mas **ainda não instalados** (entram com a spec da feature que precisa deles): `@shopify/react-native-skia` (anotações), `expo-notifications` (push/lembretes), `@sentry/react-native`.
 
 ## Stack
 
@@ -44,6 +44,7 @@ src/
     dev/components.tsx    Catálogo de componentes, só em __DEV__
     _layout.tsx           Providers: Query, sessão (Auth), i18n, fontes, splash (Sentry entra com sua spec)
   features/<feature>/     Uma pasta por área: calendar, board, leadership, notes, callings, notifications
+    calendar/             Aba Agenda (mês, semana, dia), detalhe do evento e ações do sistema (mapa, calendário, compartilhar)
     auth/                 Entrar, código, Boas-vindas e SessionEffects (consentimento, idioma, sessão expirada)
     account/              Perfil, Acessos e os sheets (nome, idioma, exclusão, conceder acesso)
     navigation/           Layout das abas por perfil (TabsLayout), avatar do cabeçalho e redirecionamento da raiz
@@ -82,8 +83,6 @@ lib        → domain, theme
 
 ## Padrões de referência
 
-A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam os arquivos-modelo. Atualize esta tabela quando existirem.
-
 | Para criar... | Siga o padrão de |
 | ------------- | ---------------- |
 | Rota | `src/app/index.tsx` (re-export da tela) |
@@ -98,7 +97,9 @@ A definir: o scaffolding e a primeira feature (`/create-spec` da agenda) criam o
 | Migration com RLS | `supabase/migrations/*_base_units_profiles_roles.sql` |
 | Teste de RLS | `supabase/tests/base_rls.test.sql` (pgTAP; `make test-db`) |
 | Acesso derivado de chamado | O banco soma o `access` dos chamados ativos da pessoa (`member_calls` → `calling_catalog`) em `my_accesses()`, e `has_role`, `can_publish` e `can_lead` derivam dele (`supabase/migrations/*_member_calls.sql`). O app só espelha a regra em `src/domain/callings.ts` (`membershipsFromCalls`) e `src/domain/permissions.ts`. Nova regra de acesso = novo valor de `calling_catalog.access`, nunca papel escrito à mão. |
-| Teste e2e | A definir: `.maestro/agenda-publica.yaml` |
+| Cache público persistido | `src/lib/queryPersistence.ts`: o `PersistQueryClientProvider` (em `_layout.tsx`) grava no AsyncStorage só as queries cuja chave começa com `'public'` (RNF-01), por 7 dias. Query pública nova: chave `['public', ...]`, `gcTime` ≥ `PERSIST_MAX_AGE_MS` e dado serializável em JSON (`Date` vira texto no disco: guarde ISO e converta no `select`, como `src/features/calendar/api.ts`). Dado pessoal nunca usa esse prefixo. A conectividade vem de `src/lib/network.ts` (`useIsOnline`, `wireOnlineManager`). |
+| Datas | `src/domain/time.ts`: data civil e hora em Brasília com offset fixo UTC−3 (ADR 0005). Nunca use os getters locais de `Date`; rótulos por `formatCivil` / `formatTime`. A suíte roda com `TZ=Europe/Lisbon`. |
+| Teste e2e | `.maestro/agenda-publica.yaml` (primeiro fluxo; `make test-e2e`, local, com Expo Go) |
 
 ## Integrações externas
 

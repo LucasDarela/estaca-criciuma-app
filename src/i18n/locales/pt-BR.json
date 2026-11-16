@@ -258,5 +258,81 @@
         "confirm": "Mudar"
       }
     }
+  },
+  "calendar": {
+    "overline": "ESTACA CRICIÚMA",
+    "title": "Agenda",
+    "notifications": "Notificações",
+    "search": "Buscar evento",
+    "allUnits": "Todas",
+    "unitFilter": "Unidade",
+    "allTypes": "Todos os tipos",
+    "types": {
+      "activity": {
+        "one": "Atividade",
+        "other": "Atividades"
+      },
+      "meeting": {
+        "one": "Reunião",
+        "other": "Reuniões"
+      },
+      "training": {
+        "one": "Treinamento",
+        "other": "Treinamentos"
+      },
+      "conference": {
+        "one": "Conferência",
+        "other": "Conferências"
+      },
+      "caravan": {
+        "one": "Caravana",
+        "other": "Caravanas"
+      }
+    },
+    "views": {
+      "month": "Mês",
+      "week": "Semana",
+      "day": "Dia",
+      "today": "Hoje",
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
+    "weekdaysShort": ["D", "S", "T", "Q", "Q", "S", "S"],
+    "month": {
+      "summary": "{{weekday}}, {{day}} de {{month}}",
+      "count_one": "{{count}} evento",
+      "count_other": "{{count}} eventos"
+    },
+    "empty": {
+      "day": "Nenhum evento neste dia com os filtros atuais.",
+      "week": "Nenhum evento nesta semana com os filtros atuais.",
+      "dayView": "Nenhum evento neste dia",
+      "error": "Não foi possível carregar a agenda.",
+      "retry": "Tentar de novo"
+    },
+    "allDay": "Dia todo",
+    "until": "até {{time}}",
+    "todayTag": "Hoje",
+    "a11y": {
+      "day_one": "{{date}}, {{count}} evento",
+      "day_other": "{{date}}, {{count}} eventos",
+      "dayNone": "{{date}}, sem eventos",
+      "todayPrefix": "Hoje, ",
+      "block": "{{title}}, {{start}} a {{end}}, {{unit}}"
+    },
+    "detail": {
+      "notes": "Notas",
+      "links": "Links",
+      "addToCalendar": "Adicionar à agenda",
+      "share": "Compartilhar",
+      "openMap": "Abrir no mapa",
+      "added": "Evento adicionado à sua agenda.",
+      "calendarUnavailable": "Não foi possível abrir a agenda do celular.",
+      "gone": "Este evento não está mais disponível.",
+      "seeAgenda": "Ver agenda"
+    }
+  },
+  "notifications": {
+    "title": "Notificações"
   }
 }

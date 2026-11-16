@@ -30,6 +30,7 @@ const config: ExpoConfig = {
     'expo-localization',
     'expo-secure-store',
     'expo-sharing',
+    ['expo-calendar', { calendarPermission: 'Permite adicionar eventos da estaca à sua agenda.' }],
     [
       'expo-splash-screen',
       {

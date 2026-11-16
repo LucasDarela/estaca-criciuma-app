@@ -165,6 +165,13 @@ export const size = {
   codeBoxWidth: 48, // derived · one OTP digit box
   codeBoxHeight: 56, // derived
   checkbox: 24, // derived · consent checkbox
+  monthCell: 41, // derived · calendar month grid cell height
+  dayCircle: 30, // derived · day number circle in the month and week strips
+  periodArrow: 32, // derived · previous/next period buttons
+  typeChip: 32, // derived · event type filter chips
+  unitFilterMaxWidth: 142, // derived · unit filter button on the agenda
+  dayHourHeight: 44, // derived · one hour of the day timeline
+  nowLine: 2, // derived · current time line of the day view
 } as const;
 
 /** Border and ring widths. */

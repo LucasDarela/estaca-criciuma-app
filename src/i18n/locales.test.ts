@@ -1,11 +1,14 @@
 import { resources } from './index';
 import { defaultLanguage, supportedLanguages } from './resolveLanguage';
 
-type Tree = { [key: string]: string | Tree };
+// Arrays (e.g. calendar.weekdaysShort) are leaves, like strings.
+type Tree = { [key: string]: string | string[] | Tree };
 
 function keysOf(tree: Tree, prefix = ''): string[] {
   return Object.entries(tree).flatMap(([key, value]) =>
-    typeof value === 'string' ? [`${prefix}${key}`] : keysOf(value, `${prefix}${key}.`),
+    typeof value === 'string' || Array.isArray(value)
+      ? [`${prefix}${key}`]
+      : keysOf(value, `${prefix}${key}.`),
   );
 }
 
@@ -21,9 +24,14 @@ describe('locales', () => {
     const empty = keysOf(tree).filter((key) => {
       const value = key
         .split('.')
-        .reduce<string | Tree>((node, part) => (node as Tree)[part], tree);
+        .reduce<string | string[] | Tree>((node, part) => (node as Tree)[part], tree);
       return typeof value === 'string' && value.trim() === '';
     });
     expect(empty).toEqual([]);
+  });
+
+  it.each(supportedLanguages)('%s has seven weekday initials', (language) => {
+    const { calendar } = resources[language].translation;
+    expect(calendar.weekdaysShort).toHaveLength(7);
   });
 });

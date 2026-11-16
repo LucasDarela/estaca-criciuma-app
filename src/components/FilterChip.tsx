@@ -12,19 +12,30 @@ export type FilterChipProps = {
   onPress: () => void;
   dotColor?: string;
   icon?: IconName;
+  /** Smaller chip (`size.typeChip`), used by dense filter rows. */
+  compact?: boolean;
 };
 
-export function FilterChip({ label, selected, onPress, dotColor, icon }: FilterChipProps) {
+export function FilterChip({
+  label,
+  selected,
+  onPress,
+  dotColor,
+  icon,
+  compact = false,
+}: FilterChipProps) {
+  const height = compact ? size.typeChip : size.chip;
   const fg = selected ? theme.onPrimary : theme.text;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
-      hitSlop={minTouchSlop(size.chip)}
+      hitSlop={minTouchSlop(height)}
       onPress={onPress}
       style={(state) => [
         styles.chip,
+        { height },
         selected ? styles.selected : styles.unselected,
         pressedStyle(state),
       ]}
@@ -40,7 +51,6 @@ export function FilterChip({ label, selected, onPress, dotColor, icon }: FilterC
 
 const styles = StyleSheet.create({
   chip: {
-    height: size.chip,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,

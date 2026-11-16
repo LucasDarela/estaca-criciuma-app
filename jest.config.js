@@ -1,3 +1,7 @@
+// The suite runs in a zone that is not America/Sao_Paulo so nothing can depend on the machine's
+// zone (ADR 0005, RNF-04). Must be set before any test process reads the clock.
+process.env.TZ = 'Europe/Lisbon';
+
 const fs = require('node:fs');
 const path = require('node:path');
 
