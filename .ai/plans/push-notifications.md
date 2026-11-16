@@ -502,7 +502,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-03 (app), CA-05, CA-17 (banner), RF-05, RF-07, RF-22
   - Verificar: `make test`
 
-- [ ] **T-12 — Perfil › Avisos e tela de teste**
+- [x] **T-12 — Perfil › Avisos e tela de teste**
   - Arquivos: `alterar src/features/account/api.ts` (+ teste: `updateProfile` com `organizations`) · `criar src/features/account/NoticesSection.tsx` (+ teste) · `alterar src/features/account/ProfileScreen.tsx` (seção depois de `MyCallingsSection`) · `criar src/features/dev/DevPushScreen.tsx` · `criar src/app/dev/push.tsx` · `alterar src/i18n/locales/*.json` (`account.profile.notices*`, `account.profile.groups*`)
   - O que fazer:
     - `NoticesSection`: overline `Avisos`, `ListItem` `Notificações` → `/notifications`, `Grupos que acompanho` com os 6 `FilterChip` (multi) e o texto de RF-21.

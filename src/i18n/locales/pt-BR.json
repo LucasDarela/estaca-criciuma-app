@@ -74,6 +74,13 @@
         "success": "Aprovado",
         "warning": "Pendente"
       }
+    },
+    "push": {
+      "title": "Teste de envio de push",
+      "eventId": "ID do evento",
+      "unit": "Unidade do evento",
+      "send": "Enviar",
+      "result": "Enviado para {{count}} aparelho(s)."
     }
   },
   "auth": {

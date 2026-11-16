@@ -25,6 +25,7 @@ import { AccountError, exportMyData, updateProfile } from './api';
 import { DeleteAccountSheet } from './DeleteAccountSheet';
 import { EditNameSheet } from './EditNameSheet';
 import { MyCallingsSection } from './MyCallingsSection';
+import { NoticesSection } from './NoticesSection';
 import { OrgChartConsentCard } from './OrgChartConsentCard';
 
 const selectableUnits = unitOrder.filter((id) => id !== 'estaca');
@@ -133,6 +134,7 @@ export function ProfileScreen() {
           onPress={() => setOpen('language')}
         />
         <MyCallingsSection calls={viewer.calls} />
+        <NoticesSection userId={userId} organizations={profile?.organizations ?? []} />
         {canManageAccess(viewer.memberships) ? (
           <ListItem
             title={t('account.profile.access')}

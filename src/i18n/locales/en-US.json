@@ -74,6 +74,13 @@
         "success": "Approved",
         "warning": "Pending"
       }
+    },
+    "push": {
+      "title": "Push send test",
+      "eventId": "Event ID",
+      "unit": "Event unit",
+      "send": "Send",
+      "result": "Sent to {{count}} device(s)."
     }
   },
   "auth": {

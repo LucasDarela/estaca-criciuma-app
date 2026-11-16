@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 
 import { callingFromRow, type Calling } from '@/domain/callings';
 import { normalizeEmail } from '@/domain/email';
-import type { Locale } from '@/domain/profile';
+import type { Locale, Organization } from '@/domain/profile';
 import { isUnitId, type UnitId } from '@/domain/units';
 import { signOut } from '@/lib/authSession';
 import { getSupabase } from '@/lib/supabase';
@@ -69,12 +69,18 @@ function toAccountError(error: unknown): AccountError {
 /** Updates the caller's own profile row (policy profiles_update_own). */
 export async function updateProfile(
   userId: string,
-  patch: { displayName?: string; homeUnitId?: UnitId | null; locale?: Locale },
+  patch: {
+    displayName?: string;
+    homeUnitId?: UnitId | null;
+    locale?: Locale;
+    organizations?: Organization[];
+  },
 ): Promise<void> {
   const update = {
     ...(patch.displayName !== undefined ? { display_name: patch.displayName.trim() } : {}),
     ...(patch.homeUnitId !== undefined ? { home_unit_id: patch.homeUnitId } : {}),
     ...(patch.locale !== undefined ? { locale: patch.locale } : {}),
+    ...(patch.organizations !== undefined ? { organizations: patch.organizations } : {}),
   };
   const { error } = await getSupabase().from('profiles').update(update).eq('id', userId);
   if (error) throw toAccountError(error);

@@ -27,6 +27,7 @@ const sections = [
   'Campo de texto',
   'Campo de busca',
   'Chip de filtro',
+  'Seletor de público',
   'Etiqueta de unidade',
   'Etiqueta de status',
   'Contador',
