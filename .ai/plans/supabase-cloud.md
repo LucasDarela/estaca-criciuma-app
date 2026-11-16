@@ -331,7 +331,7 @@ As tarefas T-01 a T-08 são executadas pelo agent `implementer` e verificáveis 
   - Cobre: CA-14
   - Verificar: `make lint`; `grep -rn -i 'self-hosted' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist . | grep -v '^./.ai/\(specs\|adrs\|plans\|assessments\)/' | grep -v '^./supabase/config.toml'` → nenhuma linha; `grep -n 'A definir' .ai/docs/ARCHITECTURE.md .ai/docs/SECURITY.md .ai/docs/O11Y.md` não mostra ambientes, backup nem uptime
 
-- [x] **T-09 — Provisionar e executar o QA (sessão principal, com o usuário)** — feita em 2026-11-14, exceto CA-12 em produção (adiado para `auth-account`, decisão 11 da spec)
+- [x] **T-09 — Provisionar e executar o QA (sessão principal, com o usuário)** — feita em 2026-11-14, exceto CA-12 em produção (adiado para `auth-account`, decisão 11 da spec). CA-12 em produção executado em 2026-11-15 pelo admin técnico: `grant_admin.sql` retornou `granted` (passo 10 da `auth-account`)
   - Arquivos: `alterar infra/backup/age-recipients.txt` (chave pública real, item g)
   - O que fazer: seguir `provisioning.md` (a) a (k) e o roteiro de QA da spec (seção 12), anotando desvios no Registro de implementação.
   - Cobre: CA-01, CA-03 a CA-06, CA-08 a CA-13, CA-16

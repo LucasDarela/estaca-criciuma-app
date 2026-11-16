@@ -685,6 +685,14 @@ Se o `npx expo install` registrar plugins num `app.json`, mova-os para o `app.co
 - **T-16 (decisão 23, RF-05a):** `AuthErrorCode` ganhou `send_failed`; `requestCode` passa o erro por `toSendFlowError` (privada), que troca `invalid_code` por `send_failed`, e `toAuthFlowError`/`verifyCode` ficam intactos. `authErrorKey` cobre o código novo (usado por `SignInScreen` e `OtpScreen`, sem mudar o `OtpScreen`). Chave `auth.errors.sendFailed` nos 3 idiomas. Testes CA-28 em `api.test.ts`, `SignInScreen.test.tsx` e `OtpScreen.test.tsx`.
 - Nenhum ADR novo (as decisões seguem os ADRs 0002 e 0004 e as decisões 14 a 18 da spec).
 
+### Resultado parcial da T-13 (2026-11-15, produção)
+
+- Deploy das migrations `account_rpcs` e `role_home_unit` (run 43773020344, com `calling_catalog` e `member_calls`), com backup prévio.
+- Painel: templates `Magic Link` e `Confirm signup`, OTP de 6 dígitos (a produção vinha com 8) e rate limits, conforme item (e) do runbook.
+- Passo 10: o admin técnico entrou no app de produção com código por e-mail, concluiu `Boas-vindas` e o `grant_admin.sql` retornou `granted`. Fecha o passo 10 e o CA-12 de `supabase-cloud`.
+- Achados do QA corrigidos: escolha de idioma em `Boas-vindas` (T-15) e mensagem própria quando o envio do código falha, que antes aparecia como "código inválido" com a chave errada (T-16).
+- Pendentes: Android, VoiceOver/TalkBack (CA-22), inspeção do AsyncStorage no aparelho (CA-01), conferência de SPF/DKIM/DMARC e da pasta de entrega do e-mail na produção (CA-23), busca nos logs (CA-21).
+
 ### CA sem teste automatizado
 
 - **CA-01 (aparelho):** o teste unitário cobre a cifra (JWT não aparece no AsyncStorage, chave no SecureStore); inspecionar o AsyncStorage no aparelho fica na T-13.
