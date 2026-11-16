@@ -2,6 +2,9 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(82);
 
+-- The org chart demo seed (supabase/seeds/org_chart_demo.sql) is not part of these fixtures.
+delete from auth.users where email like 'organograma.%@exemplo.org';
+
 -- Seed users (see supabase/seed.sql):
 --   ...001 membro, ...002 publicador (icara), ...003 bispo (criciuma1), ...004 estaca, ...005 admin
 
