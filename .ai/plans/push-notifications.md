@@ -358,7 +358,7 @@ Nenhuma dependência npm além dessas. As Edge Functions importam `npm:@supabase
   - Cobre: CA-07, CA-08, CA-09, CA-10, CA-11, CA-15, CA-18 e CA-19 (regra)
   - Verificar: `make test` (≥ 80% em `src/domain`)
 
-- [ ] **T-04 — Núcleo das Edge Functions**
+- [x] **T-04 — Núcleo das Edge Functions**
   - Arquivos: `criar .ai/adrs/0006-edge-functions-nucleo-puro.md` (já criado com o plano) · `criar supabase/functions/_shared/pushContent.ts` (+ teste) · `criar supabase/functions/_shared/sendPush.ts` (+ teste) · `criar supabase/functions/_shared/registerDevice.ts` (+ teste) · `alterar tsconfig.json` (`exclude` + `"supabase/functions/*/index.ts"`) · `alterar eslint.config.js` (`ignores`: `'supabase/functions/*/index.ts'` no lugar de `'supabase/functions/*'`)
   - O que fazer:
     - Implementar 2.2 sem nenhum import. `eventPushBody` usa a mesma conta de `time.ts` (offset −180 min e `Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })`, com a 1ª letra maiúscula) e a hora `HH:mm`.
