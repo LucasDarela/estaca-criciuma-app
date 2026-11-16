@@ -1,8 +1,8 @@
 # Agenda pública
 
-> **Status:** Em implementação
+> **Status:** Concluída
 > **Área:** aba `agenda`, rota `/event/[id]`, `src/features/calendar/`, `src/lib/queryPersistence.ts`, `supabase/migrations/`
-> **Última atualização:** 2026-11-13
+> **Última atualização:** 2026-11-15
 
 ## 0. Skills obrigatórias
 
