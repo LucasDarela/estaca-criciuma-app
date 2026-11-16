@@ -435,7 +435,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
 
 ## 4. Tarefas
 
-- [ ] **T-01 — Banco: telefone, vínculos, RPCs e export**
+- [x] **T-01 — Banco: telefone, vínculos, RPCs e export**
   - Arquivos: `criar supabase/migrations/<ts>_leadership.sql` · `criar supabase/tests/leadership.test.sql` · `alterar src/lib/database.types.ts` (`make db-types`)
   - O que fazer:
     - Escrever tudo de 2.1, com grants e revokes no fim do arquivo, como em `push.sql:276-291`.
@@ -458,14 +458,14 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-01 a CA-10 (banco), RNF-01, RNF-02, RNF-03, RNF-04, RNF-05, RNF-07
   - Verificar: `supabase db reset && make test-db` · `make db-types` · `make lint`
 
-- [ ] **T-02 — Seed de demonstração e isolamento dos testes existentes**
+- [x] **T-02 — Seed de demonstração e isolamento dos testes existentes**
   - Arquivos: `criar supabase/seeds/org_chart_demo.sql` · `alterar supabase/config.toml` (`sql_paths`) · `alterar supabase/tests/account.test.sql`, `base_rls.test.sql`, `callings.test.sql`, `events_read.test.sql`, `push.test.sql` (uma linha cada)
   - O que fazer: seguir 2.2. Os ids de `member_calls` usados nos vínculos são resolvidos por `select id from member_calls where user_id = <conta> and calling_id = <chamado>` dentro do próprio `insert into <tabela> select`, sem uuid fixo.
   - Referência: `supabase/seed.sql:3-38`
   - Cobre: QA 1 a 9 (dados); mantém os testes existentes verdes
   - Verificar: `supabase db reset && make test-db` (as 5 suítes antigas e `leadership.test.sql` passam). Também `select count(*) from org_chart_members()` > 20 e `select * from org_chart_links()` com 6 linhas `high_council_counselor`, 6 `high_council_unit` e 4 `unit_org_counselor`.
 
-- [ ] **T-03 — Domínio: telefone**
+- [x] **T-03 — Domínio: telefone**
   - Arquivos: `criar src/domain/phone.ts` · `criar src/domain/phone.test.ts`
   - O que fazer: as funções de 2.3, todas puras. Testes:
     - `maskPhone` progressivo, com 10 e 11 dígitos;
@@ -477,7 +477,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-22 (regra do WhatsApp), CA-25 (regra de validação), RNF-04, RNF-12 (texto falado)
   - Verificar: `make test`
 
-- [ ] **T-04 — Domínio: montagem do organograma**
+- [x] **T-04 — Domínio: montagem do organograma**
   - Arquivos: `criar src/domain/orgChart.ts` · `criar src/domain/orgChart.test.ts` · `criar src/domain/orgChartFixtures.ts` (factory `makeMember(overrides)`, padrão de `src/test/factories.ts`)
   - O que fazer:
     - Implementar 2.3. `organizationOf` segue RF-10 à risca: `elders_quorum` só pelos 4 ids listados; os demais pelo prefixo; qualquer outro id de `unit_organizations` ou `stake_organizations` vira `other`; outras seções devolvem `null`.
@@ -496,7 +496,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-11, CA-12, CA-13, CA-14, CA-15, CA-18 (regras); RF-01, RF-09 a RF-13, RF-17
   - Verificar: `make test`
 
-- [ ] **T-05 — Infra: clipboard, ícone, ação desabilitada no cabeçalho, telemetria e textos**
+- [x] **T-05 — Infra: clipboard, ícone, ação desabilitada no cabeçalho, telemetria e textos**
   - Arquivos:
     - `alterar package.json` / `package-lock.json` (`npx expo install expo-clipboard`)
     - `alterar scripts/generate-icons.mjs`, `src/components/icons/glyphs.ts` (`npm run icons`), `src/components/icons/Icon.test.tsx`
@@ -511,7 +511,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: suporte a RF-19, RF-23, RNF-06
   - Verificar: `make check`
 
-- [ ] **T-06 — API: organograma, telefones, vínculos e telefone próprio**
+- [x] **T-06 — API: organograma, telefones, vínculos e telefone próprio**
   - Arquivos: `criar src/features/leadership/api.ts` · `criar src/features/leadership/api.test.ts` · `alterar src/features/account/api.ts` · `alterar src/features/account/api.test.ts`
   - O que fazer:
     - 2.5. `useOrgChart` usa `useQueries` com as 2 chaves públicas. Regra de `status`, igual a `combineMonths` (`calendar/api.ts:92`):
@@ -531,7 +531,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-23 (chaves), CA-31; RNF-02, RNF-06, RNF-08
   - Verificar: `make test`
 
-- [ ] **T-07 — Árvores (componentes)**
+- [x] **T-07 — Árvores (componentes)**
   - Arquivos: `criar src/features/leadership/TreeSlot.tsx`, `TreeLines.tsx`, `OrgBlockView.tsx`, `PersonRow.tsx`, `StakeTree.tsx`, `UnitTree.tsx`, `TreeSkeleton.tsx`, `useStackedColumns.ts` · `criar src/features/leadership/StakeTree.test.tsx`, `UnitTree.test.tsx`
   - O que fazer:
     - 2.6 e a seção 8 da spec. Ordem dos filhos no JSX = ordem de leitura de RNF-10. Overlines e títulos com `accessibilityRole="header"`. Duas colunas em `flexDirection: 'row'` com `flex: 1` cada; com `useStackedColumns()`, uma embaixo da outra, cada uma com `ColumnRail`.
@@ -548,7 +548,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-11, CA-13, CA-14, CA-15 (tela); RNF-09, RNF-10, RNF-11, RNF-14
   - Verificar: `make test`
 
-- [ ] **T-08 — Ficha da pessoa**
+- [x] **T-08 — Ficha da pessoa**
   - Arquivos: `criar src/features/leadership/PersonSheet.tsx` · `criar src/features/leadership/PersonSheet.test.tsx`
   - O que fazer:
     - RF-18 e RF-19. O chamado vem de `callingName(person.calling, useLocale())` e a unidade de `units[unitId].label`. `Acompanha:`:
@@ -570,7 +570,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-19, CA-20, CA-21, CA-22, CA-23 (ficha); RNF-08, RNF-12
   - Verificar: `make test`
 
-- [ ] **T-09 — Aba Liderança**
+- [x] **T-09 — Aba Liderança**
   - Arquivos:
     - `criar src/features/leadership/LeadershipScreen.tsx` e `LeadershipScreen.test.tsx`
     - `alterar src/app/(tabs)/leadership.tsx`
@@ -592,7 +592,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-16, CA-18, CA-20 (chamadas), CA-23, CA-30; RNF-08
   - Verificar: `make test` · `make build`
 
-- [ ] **T-10 — Tela da unidade**
+- [x] **T-10 — Tela da unidade**
   - Arquivos: `criar src/features/leadership/UnitLeadershipScreen.tsx` e `UnitLeadershipScreen.test.tsx` · `criar src/app/leadership/unit/[id].tsx`
   - O que fazer:
     - RF-16. `useLocalSearchParams<{ id: string }>()`. Com `!isUnitId(id) || unitKind(id) === 'stake'`, mostra `EmptyState` `leadership.unit.notFound` com a ação `leadership.unit.back` → `router.replace('/leadership')`.
@@ -603,7 +603,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-14, CA-15, CA-17
   - Verificar: `make test` · `make build`
 
-- [ ] **T-11 — Modo de edição e sheets de acompanhamento**
+- [x] **T-11 — Modo de edição e sheets de acompanhamento**
   - Arquivos:
     - `criar src/features/leadership/HighCouncilorLinkSheet.tsx`, `OrgCounselorSheet.tsx` e os 2 testes
     - `alterar LeadershipScreen.tsx`, `UnitLeadershipScreen.tsx` e os testes deles
@@ -630,7 +630,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-26, CA-27, CA-28, CA-29; RNF-05 (no app), RNF-13
   - Verificar: `make test`
 
-- [ ] **T-12 — Telefone no Perfil**
+- [x] **T-12 — Telefone no Perfil**
   - Arquivos: `criar src/features/account/PhoneSheet.tsx` e `PhoneSheet.test.tsx` · `alterar src/features/account/ProfileScreen.tsx` e `ProfileScreen.test.tsx`
   - O que fazer:
     - `ProfileScreen`: `useQuery({ queryKey: myPhoneQueryKey(userId), queryFn: () => fetchMyPhone(userId) })`. `ListItem` `account.profile.phone` logo depois de `Idioma`, com o subtítulo `formatPhone` ou `account.profile.phoneNone`, e um `Open` novo, `'phone'`.
@@ -651,7 +651,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: CA-24, CA-25; RNF-13
   - Verificar: `make check`
 
-- [ ] **T-13 — Docs**
+- [x] **T-13 — Docs**
   - Arquivos: `alterar .ai/docs/BUSINESS.md`, `.ai/docs/SECURITY.md`, `.ai/docs/ARCHITECTURE.md`
   - O que fazer:
     - Os 3 itens do DoD da spec, seção 13.
@@ -665,7 +665,7 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
   - Cobre: DoD (docs)
   - Verificar: leitura; `make lint`
 
-- [ ] **T-14 — QA em aparelho (sessão principal, com o usuário)**
+- [ ] **T-14 — QA em aparelho (sessão principal, com o usuário)** (pendente: não executada pelo implementer)
   - O que fazer: `supabase db reset`, `make dev` num build de desenvolvimento. Rodar os passos 1 a 11 do roteiro de QA em iOS e Android, incluindo VoiceOver, TalkBack e fonte em 1.6×. Registrar o resultado no Registro de implementação.
   - Cobre: CA-32 (manual) e confirmação visual dos demais
   - Verificar: roteiro sem divergências
@@ -723,8 +723,38 @@ account.phone.title | label | placeholder | show | help | save | remove | saved 
 
 ### Arquivos criados e alterados
 
+- **Banco:** `supabase/migrations/20261116202618_leadership.sql` (novo) · `supabase/tests/leadership.test.sql` (novo, 59 asserções) · `supabase/seeds/org_chart_demo.sql` (novo) · `supabase/config.toml` (`sql_paths`) · `supabase/tests/account|base_rls|callings|events_read|push.test.sql` (uma linha de isolamento cada) · `src/lib/database.types.ts` (`make db-types`).
+- **Domínio:** `src/domain/phone.ts`, `phone.test.ts`, `orgChart.ts`, `orgChart.test.ts`, `orgChartFixtures.ts` (novos).
+- **Infra:** `package.json`/`package-lock.json` (`expo-clipboard ~58.0.4`, por `npx expo install`) · `jest.setup.ts` (mock do clipboard) · `scripts/generate-icons.mjs`, `src/components/icons/glyphs.ts`, `Icon.test.tsx` (ícone `content_copy`) · `src/components/ScreenHeader.tsx` e teste (`disabled`) · `src/components/TextField.tsx` e teste (`placeholder`) · `src/lib/telemetry.ts` e teste · `src/i18n/locales/{pt-BR,en-US,es-MX}.json`.
+- **Leadership (`src/features/leadership/`, tudo novo):** `api.ts`, `api.test.ts`, `PersonRow.tsx`, `TreeSlot.tsx`, `TreeLines.tsx`, `OrgBlockView.tsx`, `Section.tsx`, `StakeTree.tsx`, `UnitTree.tsx`, `TreeSkeleton.tsx`, `useStackedColumns.ts`, `PersonSheet.tsx`, `HighCouncilorLinkSheet.tsx`, `OrgCounselorSheet.tsx`, `ChipGroup.tsx`, `EditBanner.tsx`, `useLinkSave.ts`, `LeadershipScreen.tsx`, `UnitLeadershipScreen.tsx`, `testSupport.tsx` e os testes `StakeTree`, `UnitTree`, `PersonSheet`, `LeadershipScreen`, `UnitLeadershipScreen`, `HighCouncilorLinkSheet`, `OrgCounselorSheet`.
+- **Rotas:** `src/app/(tabs)/leadership.tsx` (alterado), `src/app/leadership/unit/[id].tsx` (novo) · `src/features/placeholder/screens.tsx` (remove `LeadershipPlaceholder`) · `src/features/navigation/TabsLayout.test.tsx`.
+- **Perfil:** `src/features/account/PhoneSheet.tsx` e teste (novos) · `ProfileScreen.tsx` e teste · `api.ts` e teste (`fetchMyPhone`, `setMyPhone`, `invalid_phone`).
+- **Docs:** `.ai/docs/BUSINESS.md`, `SECURITY.md`, `ARCHITECTURE.md`.
+
 ### Desvios do plano
+
+- **`TextField` ganhou `placeholder`** (e `placeholderTextColor`): a spec (RF-21) pede o placeholder `(48) 99999-0000` no campo do telefone e o componente não o expunha. Mudança mínima, com teste em `TextField.test.tsx`.
+- **`PersonRow` não usa `ListItem`:** o plano diz `ListItem` compacto, mas `ListItem` não tem versão compacta (avatar de 44 pt e o botão de edição não cabe na mesma linha pressionável). `PersonRow` é um `Pressable` próprio com `Avatar small`, alvo mínimo de 44 pt e botão `edit` irmão (não aninhado).
+- **Cartão do patriarca** (`otherPresidency`) usa `Card` + `PersonRow`, e não `TreeSlot`, porque `TreeSlot` mostra o rótulo curto (`leadership.slot.*`) e o patriarca precisa do nome do chamado.
+- **Arquivos extras não listados no plano:** `Section.tsx`, `ChipGroup.tsx`, `EditBanner.tsx`, `useLinkSave.ts` e `testSupport.tsx`, para não duplicar código entre as telas e os sheets. Nenhum muda comportamento visível.
+- **Seed em um bloco `do $seed$`:** `supabase db reset` envia cada statement separado, então a tabela temporária do seed sumia entre eles. O arquivo inteiro virou um bloco `do`.
+- **`leadership.test.sql` cria uma 4ª conta extra** (`...204`) para o caso de exportação e exclusão (o plano previa 3), porque as contas dos demais casos têm chamados.
+- **`FilterChip` não foi alterado:** já expõe `accessibilityState.selected` (verificado nos testes dos sheets), então não foi preciso mexer em `Selection.test.tsx`.
+- **`Icon.test.tsx`:** a contagem de ícones passou de 54 para 55.
 
 ### Decisões durante a implementação
 
+- Em `set_unit_org_counselor`, a validação `invalid_organization` aceita `null` como inválido (organização nula não é um valor válido).
+- `org_chart_links()` junta `member_calls` do conselheiro só para ler `calling_id`; o `member_call_id` dele nunca sai da função.
+- `organizationOf` devolve `other` quando a organização encontrada não existe na ordem de blocos da seção (ex.: `young_men` numa unidade).
+- Ao trocar de segmento (`Estaca` / `Unidades`) com o modo de edição ligado, o modo de edição é desligado.
+- O botão `Editar` só aparece com a árvore carregada (`status === 'success'`).
+- Testes das telas usam o cliente real do TanStack Query e um `rpc` falso (`testSupport.tsx`), para checar de verdade as chamadas ao servidor (CA-20) e os estados offline e de erro (CA-23, CA-30).
+- Fonte do Jest: `Dimensions` padrão já tem `fontScale` 2, então os testes de colunas lado a lado fixam `fontScale` 1.
+
 ### CA sem teste automatizado
+
+- **CA-32** (VoiceOver, TalkBack e fonte 1.6× em aparelho): parte automatizada (rótulos `{nome}, {chamado}`, posição vazia anunciada, linhas ocultas, papéis `header`/`radiogroup`/`list`, colunas empilhadas, `Switch` com rótulo); o percurso com leitor de tela real e a checagem de texto cortado ficam para a **T-14** (QA em aparelho, sessão principal).
+- **CA-23** (cache em disco sem chave de telefone): o teste cobre a chave (`isPublicQueryKey`) e as telas em cache com banner e sem telefone; a inspeção do `AsyncStorage` no aparelho é do roteiro de QA, passo 10.
+- **CA-20 e CA-21** usam `Linking` e clipboard simulados, como previsto na spec.
+- **T-14** não foi executada (QA em aparelho, é da sessão principal com o usuário).
