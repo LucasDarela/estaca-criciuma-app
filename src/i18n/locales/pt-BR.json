@@ -524,5 +524,108 @@
         "generic": "Não foi possível salvar. Tente de novo."
       }
     }
+  },
+  "events": {
+    "fab": "Novo evento",
+    "form": {
+      "newTitle": "Novo evento",
+      "editTitle": "Editar evento",
+      "save": "Salvar",
+      "saving": "Salvando...",
+      "name": {
+        "label": "Nome do evento",
+        "placeholder": "Ex.: Noite cultural da ala",
+        "required": "Informe o nome do evento.",
+        "tooLong": "Use até 80 caracteres."
+      },
+      "singleDay": "Somente nesta data",
+      "start": "Início",
+      "end": "Fim",
+      "endBeforeStart": "O fim precisa ser depois do início.",
+      "type": "Tipo",
+      "unit": "Unidade",
+      "location": {
+        "label": "Local",
+        "placeholder": "Capela, endereço ou link",
+        "tooLong": "Use até 160 caracteres."
+      },
+      "notes": {
+        "label": "Notas",
+        "placeholder": "Informações para os participantes",
+        "tooLong": "Use até 1000 caracteres."
+      },
+      "links": {
+        "label": "Links",
+        "placeholder": "https://",
+        "add": "Adicionar",
+        "remove": "Remover {{link}}",
+        "notHttps": "Informe um link que comece com https://.",
+        "tooMany": "Use até 5 links."
+      },
+      "notify": {
+        "label": "Notificar",
+        "hint": "Envia push ao salvar o evento"
+      },
+      "saved": "Evento salvo",
+      "savedAndNotified": "Evento salvo e aviso enviado",
+      "discard": {
+        "title": "Descartar alterações?",
+        "message": "Você tem alterações não salvas.",
+        "confirm": "Descartar",
+        "keep": "Continuar editando"
+      },
+      "removeAgenda": {
+        "title": "Remover a pauta?",
+        "message": "Os itens da pauta, decisões e pendências serão apagados.",
+        "confirm": "Remover"
+      }
+    },
+    "errors": {
+      "forbidden": "Você não tem mais permissão para publicar nesta unidade."
+    },
+    "detail": {
+      "edit": "Editar",
+      "delete": "Excluir"
+    },
+    "delete": {
+      "title": "Excluir evento?",
+      "message": "\"{{title}}\" será removido da agenda. Não dá para desfazer.",
+      "confirm": "Excluir",
+      "done": "Evento excluído."
+    },
+    "meeting": {
+      "card": "Pauta da reunião",
+      "summary": {
+        "agenda_one": "{{count}} na pauta",
+        "agenda_other": "{{count}} na pauta",
+        "decisions_one": "{{count}} decisão",
+        "decisions_other": "{{count}} decisões",
+        "pending_one": "{{count}} pendente",
+        "pending_other": "{{count}} pendentes"
+      },
+      "overline": "REUNIÃO",
+      "fallbackTitle": "Reunião",
+      "done": "Concluir",
+      "tabs": {
+        "agenda": "Pauta",
+        "decisions": "Decisões",
+        "pending": "Pendências"
+      },
+      "hint": {
+        "agenda": "Assuntos a tratar. Pendências da reunião anterior entram aqui automaticamente.",
+        "decisions": "O que foi decidido. Preencha durante ou depois da reunião.",
+        "pending": "O que fica para a próxima reunião — será levado para a pauta dela."
+      },
+      "placeholder": {
+        "agenda": "Novo assunto da pauta",
+        "decisions": "Registrar decisão",
+        "pending": "Nova pendência"
+      },
+      "add": "Adicionar",
+      "nextMeeting": "Vai para a próxima reunião",
+      "carried": "Pendente da reunião de {{date}}",
+      "remove": "Remover \"{{text}}\"",
+      "itemLabel": "{{text}}, {{tag}}"
+    }
   }
 }

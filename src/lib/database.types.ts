@@ -246,6 +246,64 @@ export type Database = {
           },
         ];
       };
+      meeting_items: {
+        Row: {
+          carried_from_date: string | null;
+          carried_from_event_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          event_id: string;
+          id: string;
+          kind: string;
+          position: number;
+          text: string;
+        };
+        Insert: {
+          carried_from_date?: string | null;
+          carried_from_event_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          event_id: string;
+          id?: string;
+          kind: string;
+          position?: number;
+          text: string;
+        };
+        Update: {
+          carried_from_date?: string | null;
+          carried_from_event_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          event_id?: string;
+          id?: string;
+          kind?: string;
+          position?: number;
+          text?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'meeting_items_carried_from_event_id_fkey';
+            columns: ['carried_from_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'meeting_items_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'meeting_items_event_id_fkey';
+            columns: ['event_id'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       member_calls: {
         Row: {
           calling_id: string;
@@ -717,6 +775,7 @@ export type Database = {
       calling_holder_count: { Args: { p_id: string }; Returns: number };
       can_lead: { Args: { p_unit: string }; Returns: boolean };
       can_publish: { Args: { p_unit: string }; Returns: boolean };
+      carry_pending_items: { Args: { p_event_id: string }; Returns: number };
       complete_welcome: {
         Args: {
           p_display_name: string;
@@ -725,7 +784,43 @@ export type Database = {
         };
         Returns: undefined;
       };
+      create_event: {
+        Args: {
+          p_ends_at: string;
+          p_id: string;
+          p_items: Json;
+          p_links: string[];
+          p_location: string;
+          p_notes: string;
+          p_starts_at: string;
+          p_title: string;
+          p_type: string;
+          p_unit_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string | null;
+          ends_at: string;
+          id: string;
+          links: string[];
+          location: string;
+          notes: string;
+          starts_at: string;
+          title: string;
+          type: string;
+          unit_id: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'events';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      delete_event: { Args: { p_id: string }; Returns: undefined };
       delete_my_account: { Args: never; Returns: undefined };
+      event_series_key: { Args: { p_title: string }; Returns: string };
       export_my_data: { Args: never; Returns: Json };
       grant_admin: { Args: { p_email: string }; Returns: undefined };
       grant_calling: {
@@ -762,6 +857,7 @@ export type Database = {
         Args: { p_ids?: string[] };
         Returns: undefined;
       };
+      meeting_event_leadable: { Args: { p_event_id: string }; Returns: boolean };
       my_accesses: {
         Args: never;
         Returns: {
@@ -909,6 +1005,39 @@ export type Database = {
           p_unit_id: string;
         };
         Returns: undefined;
+      };
+      update_event: {
+        Args: {
+          p_ends_at: string;
+          p_id: string;
+          p_links: string[];
+          p_location: string;
+          p_notes: string;
+          p_starts_at: string;
+          p_title: string;
+          p_type: string;
+          p_unit_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string | null;
+          ends_at: string;
+          id: string;
+          links: string[];
+          location: string;
+          notes: string;
+          starts_at: string;
+          title: string;
+          type: string;
+          unit_id: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'events';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       valid_event_links: { Args: { p_links: string[] }; Returns: boolean };
     };

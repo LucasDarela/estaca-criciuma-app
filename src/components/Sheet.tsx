@@ -10,6 +10,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +22,8 @@ export type SheetProps = {
   onClose: () => void;
   children: ReactNode;
   accessibilityLabel: string;
+  /** Fixed height as a share of the window (0-1). Without it, the sheet fits its content. */
+  heightRatio?: number;
 };
 
 // Gesture thresholds for dragging the sheet down to dismiss it.
@@ -29,8 +32,9 @@ const closeDragVelocity = 0.5;
 
 // No accessibilityViewIsModal: the native Modal already confines screen reader focus, and the
 // flag would hide the backdrop (the "Close" target) from assistive tech and from tests.
-export function Sheet({ visible, onClose, children, accessibilityLabel }: SheetProps) {
+export function Sheet({ visible, onClose, children, accessibilityLabel, heightRatio }: SheetProps) {
   const { t } = useTranslation();
+  const windowHeight = useWindowDimensions().height;
   const insets = useSafeAreaInsets();
   const [translateY] = useState(() => new Animated.Value(Dimensions.get('window').height));
   const [opacity] = useState(() => new Animated.Value(1));
@@ -103,6 +107,7 @@ export function Sheet({ visible, onClose, children, accessibilityLabel }: SheetP
           style={[
             styles.sheet,
             { paddingBottom: insets.bottom + space.lg, opacity, transform: [{ translateY }] },
+            heightRatio === undefined ? null : { height: windowHeight * heightRatio },
           ]}
         >
           <View {...pan.panHandlers} style={styles.grab}>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { ChipGroup } from '@/components/ChipGroup';
 import { Button } from '@/components/Button';
 import { FilterChip } from '@/components/FilterChip';
 import { Sheet } from '@/components/Sheet';
@@ -16,7 +17,6 @@ import { unitKind, type UnitId } from '@/domain/units';
 import { space, theme, type } from '@/theme/theme';
 
 import { setUnitOrgCounselor } from './api';
-import { ChipGroup } from './ChipGroup';
 import { useLinkSave } from './useLinkSave';
 
 export type OrgCounselorSheetProps = {

@@ -44,7 +44,7 @@ src/
     dev/components.tsx    Catálogo de componentes, só em __DEV__
     _layout.tsx           Providers: Query, sessão (Auth), i18n, fontes, splash (Sentry entra com sua spec)
   features/<feature>/     Uma pasta por área: calendar, board, leadership, notes, callings, notifications
-    calendar/             Aba Agenda (mês, semana, dia), detalhe do evento e ações do sistema (mapa, calendário, compartilhar)
+    calendar/             Aba Agenda (mês, semana, dia), detalhe do evento, ações do sistema (mapa, calendário, compartilhar), formulário de evento (novo e edição) e pauta da reunião
     auth/                 Entrar, código, Boas-vindas e SessionEffects (consentimento, idioma, sessão expirada)
     account/              Perfil, Acessos e os sheets (nome, idioma, exclusão, conceder acesso)
     navigation/           Layout das abas por perfil (TabsLayout), avatar do cabeçalho e redirecionamento da raiz
@@ -104,6 +104,7 @@ lib        → domain, theme
 | Organograma | `src/domain/orgChart.ts` monta as árvores da estaca e das unidades (função pura, com teste) a partir de duas listas públicas, `['public','leadership','members']` e `['public','leadership','links']`, buscadas por `useOrgChart` (2 chamadas por abertura da aba, `src/features/leadership/api.ts`). Telefones são outra query, `['leadership','phones',userId]`, **fora** do prefixo `public`: só com sessão, só quando uma ficha abre, e nunca vão para o disco. As linhas da árvore são `View`s ocultas do leitor de tela; com `fontScale ≥ 1.3` as colunas empilham. Máscara, validação e links de telefone: `src/domain/phone.ts`. |
 | Seed de demonstração | `supabase/seeds/org_chart_demo.sql` (depois de `supabase/seed.sql`, por `sql_paths` em `config.toml`): organograma fictício com contas `organograma.NN@exemplo.org`. Os testes pgTAP apagam essas contas na primeira linha, dentro da transação, para não mudar as contagens das 5 contas base. |
 | Datas | `src/domain/time.ts`: data civil e hora em Brasília com offset fixo UTC−3 (ADR 0005). Nunca use os getters locais de `Date`; rótulos por `formatCivil` / `formatTime`. A suíte roda com `TZ=Europe/Lisbon`. |
+| Escrita de evento e pauta | `supabase/migrations/*_events_write_meeting_items.sql`: RPCs `create_event`/`update_event`/`delete_event` (o id vem do aparelho, `Crypto.randomUUID()`, e torna a criação idempotente); gatilho `events_carry_pending` copia as pendências para a próxima reunião da série. No app, `src/features/calendar/api.ts` (RPCs) e `meetingApi.ts` (itens da pauta, chave `['meeting', id]` fora de `public`); formulário em `EventFormScreen.tsx` |
 | Teste e2e | `.maestro/agenda-publica.yaml` (primeiro fluxo; `make test-e2e`, local, com Expo Go) |
 
 ## Integrações externas

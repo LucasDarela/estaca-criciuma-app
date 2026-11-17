@@ -21,13 +21,14 @@ import { unitIds } from '@/domain/units';
 import { useLocale } from '@/i18n/useLocale';
 import { useIsOnline } from '@/lib/network';
 import { useHasUnread } from '@/lib/notificationInbox';
-import { radius, size, space, stroke, theme, type, units } from '@/theme/theme';
+import { elevation, radius, size, space, stroke, theme, type, units } from '@/theme/theme';
 
 import { useEventsAround } from './api';
 import { DayView } from './DayView';
 import { dayLabel, monthLabel, weekLabel } from './labels';
 import { MonthView } from './MonthView';
 import { PeriodBar } from './PeriodBar';
+import { useViewer } from '../viewer/ViewerProvider';
 import { useNow } from './useNow';
 import { WeekView } from './WeekView';
 
@@ -43,6 +44,7 @@ export function AgendaScreen() {
   const online = useIsOnline();
   const hasUnread = useHasUnread();
   const now = useNow();
+  const viewer = useViewer();
   const today = civilDateOf(now);
 
   const [view, setView] = useState<AgendaView>('month');
@@ -217,6 +219,17 @@ export function AgendaScreen() {
         )}
       </ScrollView>
 
+      {viewer.publishableUnits.length > 0 ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('events.fab')}
+          onPress={() => router.push('/event/new')}
+          style={(state) => [styles.fab, pressedStyle(state)]}
+        >
+          <Icon name="add" size={size.icon} color={theme.onPrimary} />
+        </Pressable>
+      ) : null}
+
       <UnitPickerSheet
         visible={pickingUnit}
         title={t('calendar.unitFilter')}
@@ -261,7 +274,19 @@ const styles = StyleSheet.create({
   unitName: { ...type.listTitle, color: theme.text, flexShrink: 1 },
   chips: { gap: space.sm },
   body: { flex: 1, backgroundColor: theme.bg },
-  bodyContent: { paddingTop: space.md },
+  bodyContent: { paddingTop: space.md, paddingBottom: size.fab + space.xl },
+  fab: {
+    position: 'absolute',
+    right: space.lg,
+    bottom: space.lg,
+    width: size.fab,
+    height: size.fab,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.fab,
+    backgroundColor: theme.primary,
+    ...elevation[2],
+  },
   skeletons: { gap: space.md, padding: space.lg },
   message: { padding: space.lg },
 });

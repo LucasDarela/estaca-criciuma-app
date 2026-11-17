@@ -1,0 +1,48 @@
+# Fluxo E2E: o líder publica e exclui um evento (spec event-form, CA-09 e CA-13 de ponta a ponta,
+# sem push).
+#
+# Como rodar:
+#   1. Maestro instalado (https://docs.maestro.dev) e um simulador/emulador aberto com o Expo Go.
+#   2. Supabase local com o seed: `supabase start` e `supabase db reset`.
+#   3. App apontado para o Supabase local, com `make dev` rodando (Metro em 127.0.0.1:8081).
+#   4. `maestro test .maestro/lider-publica-evento.yaml`
+#
+# O código de 6 dígitos do login sai do Mailpit local (porta 54324) pelo script read-otp.js.
+appId: host.exp.Exponent
+---
+- launchApp
+- openLink: exp://127.0.0.1:8081
+- extendedWaitUntil:
+    visible: 'Agenda'
+    timeout: 60000
+# 1. Entra como o bispo de Criciúma 1.
+- tapOn: 'Entrar'
+- tapOn: 'E-mail'
+- inputText: 'bispo.criciuma1@exemplo.org'
+- tapOn: 'Receber código'
+- extendedWaitUntil:
+    visible: 'Digite o código'
+    timeout: 20000
+- runScript: scripts/read-otp.js
+- tapOn: 'Código de 6 dígitos'
+- inputText: ${output.code}
+- tapOn: 'Entrar'
+- extendedWaitUntil:
+    visible: 'Agenda'
+    timeout: 30000
+# 2. Cria uma reunião sem notificar.
+- tapOn: 'Novo evento'
+- tapOn: 'Nome do evento'
+- inputText: 'Conselho da ala Maestro'
+- tapOn: 'Reunião'
+- tapOn: 'Notificar'
+- tapOn: 'Salvar'
+# 3. Volta ao detalhe com o aviso de sucesso e o card da pauta.
+- assertVisible: 'Evento salvo'
+- assertVisible: 'Pauta da reunião.*'
+# 4. Exclui.
+- tapOn: 'Excluir'
+- tapOn:
+    text: 'Excluir'
+    index: 1
+- assertVisible: 'Evento excluído.'

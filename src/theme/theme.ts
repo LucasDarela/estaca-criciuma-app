@@ -127,6 +127,8 @@ export const radius = {
   button: 14,
   buttonCompact: 12, // derived
   segmentedThumb: 9, // derived
+  checkbox: 6, // derived · form checkbox
+  fab: 18, // derived · new-event button
   toast: 14, // derived
   emptyState: 14, // derived
   card: 16,
@@ -165,6 +167,8 @@ export const size = {
   codeBoxWidth: 48, // derived · one OTP digit box
   codeBoxHeight: 56, // derived
   checkbox: 24, // derived · consent checkbox
+  checkboxForm: 22, // derived · form checkbox
+  fab: 56, // derived · agenda new-event button
   monthCell: 41, // derived · calendar month grid cell height
   dayCircle: 30, // derived · day number circle in the month and week strips
   periodArrow: 32, // derived · previous/next period buttons

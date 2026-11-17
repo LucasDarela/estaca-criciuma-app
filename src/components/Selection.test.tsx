@@ -1,5 +1,7 @@
 import { render, screen, userEvent } from '@testing-library/react-native';
 
+import { Checkbox } from './Checkbox';
+import { ChipGroup } from './ChipGroup';
 import { FilterChip } from './FilterChip';
 import { Segmented } from './Segmented';
 import { Switch } from './Switch';
@@ -60,5 +62,44 @@ describe('selection controls', () => {
     await render(<Switch label="Lembretes" value={false} onValueChange={onValueChange} disabled />);
     await user.press(screen.getByRole('switch', { name: 'Lembretes' }));
     expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it('RNF-07: FilterChip with role radio exposes checked instead of selected', async () => {
+    const user = userEvent.setup();
+    const onPress = jest.fn();
+    await render(
+      <ChipGroup label="Unidade" role="radiogroup">
+        <FilterChip role="radio" label="Içara" selected onPress={onPress} />
+        <FilterChip role="radio" label="Criciúma 1" selected={false} onPress={onPress} />
+      </ChipGroup>,
+    );
+    expect(screen.getByLabelText('Unidade', { exact: true, hidden: false })).toBeOnTheScreen();
+    expect(screen.getByRole('radio', { name: 'Içara' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Criciúma 1' })).not.toBeChecked();
+    await user.press(screen.getByRole('radio', { name: 'Criciúma 1' }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('RNF-06: Checkbox has the checkbox role, the hint, and toggles to the opposite value', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    await render(
+      <Checkbox label="Notificar" hint="Envia push" checked={false} onChange={onChange} />,
+    );
+    const box = screen.getByRole('checkbox', { name: 'Notificar' });
+    expect(box).not.toBeChecked();
+    expect(box.props.accessibilityHint).toBe('Envia push');
+    await user.press(box);
+    expect(onChange).toHaveBeenCalledWith(true);
+    await screen.rerender(<Checkbox label="Notificar" checked onChange={onChange} />);
+    expect(screen.getByRole('checkbox', { name: 'Notificar' })).toBeChecked();
+  });
+
+  it('RNF-06: a disabled Checkbox does not call onChange', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    await render(<Checkbox label="Notificar" checked={false} disabled onChange={onChange} />);
+    await user.press(screen.getByRole('checkbox', { name: 'Notificar' }));
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

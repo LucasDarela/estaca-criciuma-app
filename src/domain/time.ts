@@ -93,3 +93,12 @@ export function formatCivil(
 ): string {
   return new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utcNoon(date));
 }
+
+export type ClockTime = { hour: number; minute: number };
+
+/** The instant of a Sao Paulo wall time (inverse of `toSaoPauloWallTime`). */
+export function instantOf({ year, month, day, hour, minute }: WallTime): Date {
+  return new Date(
+    Date.UTC(year, month - 1, day, hour, minute) - SAO_PAULO_OFFSET_MINUTES * MS_PER_MINUTE,
+  );
+}

@@ -10,6 +10,7 @@ import { Button } from '@/components/Button';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { EmptyState } from '@/components/EmptyState';
 import { EventCard } from '@/components/EventCard';
+import { Checkbox } from '@/components/Checkbox';
 import { FilterChip } from '@/components/FilterChip';
 import { glyphs, type IconName } from '@/components/icons/glyphs';
 import { Icon } from '@/components/icons/Icon';
@@ -270,6 +271,7 @@ export function ComponentCatalogScreen() {
             <Switch label={sample('label')} size="compact" value={!enabled} onValueChange={noop} />
             <Switch label={sample('disabled')} value disabled onValueChange={noop} />
           </View>
+          <Checkbox label={sample('label')} checked={enabled} onChange={setEnabled} />
         </Section>
 
         <Section section="toast">

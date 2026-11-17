@@ -524,5 +524,108 @@
         "generic": "Could not save. Try again."
       }
     }
+  },
+  "events": {
+    "fab": "New event",
+    "form": {
+      "newTitle": "New event",
+      "editTitle": "Edit event",
+      "save": "Save",
+      "saving": "Saving...",
+      "name": {
+        "label": "Event name",
+        "placeholder": "E.g.: Ward cultural night",
+        "required": "Enter the event name.",
+        "tooLong": "Use up to 80 characters."
+      },
+      "singleDay": "Only on this date",
+      "start": "Start",
+      "end": "End",
+      "endBeforeStart": "The end must be after the start.",
+      "type": "Type",
+      "unit": "Unit",
+      "location": {
+        "label": "Location",
+        "placeholder": "Chapel, address or link",
+        "tooLong": "Use up to 160 characters."
+      },
+      "notes": {
+        "label": "Notes",
+        "placeholder": "Information for attendees",
+        "tooLong": "Use up to 1000 characters."
+      },
+      "links": {
+        "label": "Links",
+        "placeholder": "https://",
+        "add": "Add",
+        "remove": "Remove {{link}}",
+        "notHttps": "Enter a link that starts with https://.",
+        "tooMany": "Use up to 5 links."
+      },
+      "notify": {
+        "label": "Notify",
+        "hint": "Sends a push when the event is saved"
+      },
+      "saved": "Event saved",
+      "savedAndNotified": "Event saved and notice sent",
+      "discard": {
+        "title": "Discard changes?",
+        "message": "You have unsaved changes.",
+        "confirm": "Discard",
+        "keep": "Keep editing"
+      },
+      "removeAgenda": {
+        "title": "Remove the agenda?",
+        "message": "The agenda items, decisions and pending items will be deleted.",
+        "confirm": "Remove"
+      }
+    },
+    "errors": {
+      "forbidden": "You no longer have permission to publish in this unit."
+    },
+    "detail": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "delete": {
+      "title": "Delete event?",
+      "message": "\"{{title}}\" will be removed from the agenda. This can't be undone.",
+      "confirm": "Delete",
+      "done": "Event deleted."
+    },
+    "meeting": {
+      "card": "Meeting agenda",
+      "summary": {
+        "agenda_one": "{{count}} on the agenda",
+        "agenda_other": "{{count}} on the agenda",
+        "decisions_one": "{{count}} decision",
+        "decisions_other": "{{count}} decisions",
+        "pending_one": "{{count}} pending",
+        "pending_other": "{{count}} pending"
+      },
+      "overline": "MEETING",
+      "fallbackTitle": "Meeting",
+      "done": "Done",
+      "tabs": {
+        "agenda": "Agenda",
+        "decisions": "Decisions",
+        "pending": "Pending"
+      },
+      "hint": {
+        "agenda": "Topics to cover. Pending items from the previous meeting are added here automatically.",
+        "decisions": "What was decided. Fill in during or after the meeting.",
+        "pending": "What is left for the next meeting. It will be carried to its agenda."
+      },
+      "placeholder": {
+        "agenda": "New agenda topic",
+        "decisions": "Record a decision",
+        "pending": "New pending item"
+      },
+      "add": "Add",
+      "nextMeeting": "Goes to the next meeting",
+      "carried": "Pending from the meeting of {{date}}",
+      "remove": "Remove \"{{text}}\"",
+      "itemLabel": "{{text}}, {{tag}}"
+    }
   }
 }
