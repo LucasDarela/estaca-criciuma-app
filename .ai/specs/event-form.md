@@ -1,8 +1,8 @@
 # Criar, editar e excluir eventos, com pauta de reunião
 
-> **Status:** Pronta para planejamento
-> **Área:** rotas `/event/new`, `/event/[id]/edit`, botão `+` da Agenda, detalhe do evento, `src/features/events/`, `supabase/migrations/`
-> **Última atualização:** 2026-11-13
+> **Status:** Concluída
+> **Área:** rotas `/event/new`, `/event/[id]/edit`, botão `+` da Agenda, detalhe do evento, `src/features/calendar/`, `supabase/migrations/`
+> **Última atualização:** 2026-11-17
 
 ## 0. Skills obrigatórias
 
@@ -108,7 +108,7 @@ Cabeçalho: `Cancelar` · `Novo evento` (ou `Editar evento`) · `Salvar` (`prima
 | ID | Requisito |
 | -- | --------- |
 | RF-16 | `meeting_items`: `id`, `event_id` → `events on delete cascade`, `kind` (`agenda` \| `decision` \| `pending`), `text` (1–300), `position int`, `carried_from_event_id uuid null`, `carried_from_date date null`, `created_by`, `created_at`. |
-| RF-17 | Com tipo `Reunião` e `canLead(unidade)`: card `Pauta da reunião` (fundo `primary`, ícone `checklist`, resumo `{n} na pauta · {n} decisões · {n} pendentes`) no formulário e no detalhe; abre o `Sheet` da pauta (82% da altura). `unit_publisher` não vê o card. |
+| RF-17 | Com tipo `Reunião` e `canLead(unidade)`: card `Pauta da reunião` (fundo `primary`, ícone `checklist`, resumo `{n} na pauta · {n} decisões · {n} pendentes`) no formulário e no detalhe; abre o `Sheet` da pauta (82% da altura). `unit_publisher` não vê o card. Na edição, o card só aparece quando o evento já está salvo como `Reunião`: quem troca outro tipo por `Reunião` salva primeiro e então registra a pauta (decisão B1). |
 | RF-18 | Sheet: overline `REUNIÃO`, título = nome do evento (ou `Reunião`), botão `Concluir`; `Segmented` `Pauta` / `Decisões` / `Pendências` com contagem; dica por aba: `Assuntos a tratar. Pendências da reunião anterior entram aqui automaticamente.` / `O que foi decidido. Preencha durante ou depois da reunião.` / `O que fica para a próxima reunião — será levado para a pauta dela.` |
 | RF-19 | Lista: Pauta numerada (`1`, `2`...); Decisões com ícone `check` (`successSubtle`); Pendências com `arrow_forward` (`warningSubtle`) e etiqueta `Vai para a próxima reunião`; itens trazidos com etiqueta `Pendente da reunião de {dd/mm}`. Cada item tem `close` para remover. Campo no rodapé com placeholder `Novo assunto da pauta` / `Registrar decisão` / `Nova pendência` e botão `+`; `Enter` também adiciona; texto vazio não adiciona. |
 | RF-20 | Em evento novo, os itens ficam no formulário e são gravados ao salvar; em evento existente, cada item adicionado ou removido é gravado na hora. |
@@ -130,7 +130,7 @@ Cabeçalho: `Cancelar` · `Novo evento` (ou `Editar evento`) · `Salvar` (`prima
 
 - Formulário como `EventFormScreen.dc.html`: blocos brancos raio 16 sobre `bg`; campos com fundo `surfaceMuted`, raio 10; checkbox 22 raio 6; chips de tipo 34 com ícone; chips de unidade 32 roláveis com ponto de cor.
 - Detalhe do evento: `Editar` (ícone `edit`) e `Excluir` (ícone `delete`) como botões circulares no cabeçalho.
-- Seletores de data e hora nativos (modal no iOS, diálogo no Android).
+- Seletores de data e hora nativos (modal no iOS, diálogo no Android), sempre no fuso `America/Sao_Paulo`.
 
 ## 9. Acessibilidade
 
@@ -145,11 +145,12 @@ Cabeçalho: `Cancelar` · `Novo evento` (ou `Editar evento`) · `Salvar` (`prima
 ## 10. Estrutura de arquivos esperada
 
 ```
-supabase/migrations/<ts>_events_write_meeting_items.sql   # RLS de escrita, meeting_items, carry_pending_items
+supabase/migrations/<ts>_events_write_meeting_items.sql   # RLS de escrita, meeting_items, carry_pending_items, RPCs create/update/delete_event
 supabase/tests/events_write.test.sql
-src/domain/eventForm.ts (+ test)                           # validação, padrões de data, normalização do nome da série
-src/features/events/EventFormScreen.tsx, MeetingAgendaSheet.tsx, MeetingAgendaCard.tsx (+ testes)
-src/features/events/api.ts                                 # create/update/delete, itens de pauta
+src/domain/eventForm.ts (+ test)                           # validação, padrões de data (a série é normalizada só no banco, RNF-03)
+src/domain/meetingItems.ts (+ test)                        # contagens e etiqueta dd/mm
+src/features/calendar/EventFormScreen.tsx, MeetingAgendaSheet.tsx, MeetingAgendaCard.tsx (+ testes)
+src/features/calendar/api.ts, meetingApi.ts                # create/update/delete, itens de pauta
 src/features/calendar/AgendaScreen.tsx                     # alterar: botão +
 src/features/calendar/EventDetailScreen.tsx                # alterar: Editar, Excluir, card da pauta
 src/app/event/new.tsx, src/app/event/[id]/edit.tsx
@@ -165,7 +166,7 @@ src/i18n/locales/*.json                                    # events.*
 | CA-03 | RF-03, RF-11 | formulário novo | deixo o nome vazio e saio do campo | `Informe o nome do evento.` e `Salvar` desabilitado |
 | CA-04 | RF-04 | início 19:30 | escolho fim 19:00 | `O fim precisa ser depois do início.` |
 | CA-05 | RF-04 | `Somente nesta data` desmarcado | escolho fim em outro dia | o campo de data do fim aparece e o evento é salvo cobrindo os dias |
-| CA-06 | RF-06, RNF-01 | `publicador.icara` | abro o seletor de unidade | só `Ala Içara`; uma chamada direta à API com `criciuma1` é negada |
+| CA-06 | RF-06, RNF-01 | `publicador.icara` | abro o seletor de unidade | só `Içara`; uma chamada direta à API com `criciuma1` é negada |
 | CA-07 | RF-09 | o campo de link | adiciono `http://x.org` | `Informe um link que comece com https://.` |
 | CA-08 | RF-10 | `Notificar` marcado | desmarco todos os públicos | `Selecione ao menos um grupo para enviar a notificação.` e `Salvar` desabilitado |
 | CA-09 | RF-12 | formulário válido com `Notificar` | salvo | volto ao detalhe, toast `Evento salvo e aviso enviado` e `sendPush` chamado com o público escolhido |
@@ -177,7 +178,7 @@ src/i18n/locales/*.json                                    # events.*
 | CA-15 | RF-17, RF-18 | `bispo.criciuma1` em Reunião de Criciúma 1 | abro `Pauta da reunião` | sheet com as 3 abas, contagens e dicas de RF-18 |
 | CA-16 | RF-19, RF-20 | o sheet de evento existente | adiciono `Oração` em Pauta e removo um item | gravados na hora; a pauta mostra `1 Oração` |
 | CA-17 | RF-21, RNF-03 | `Conselho da ala` (Criciúma 1, 15/10) com a pendência `Definir recepção` | crio `conselho da  ALA` em 12/11 para Criciúma 1 | a nova pauta começa com `Definir recepção` e a etiqueta `Pendente da reunião de 15/10` |
-| CA-18 | RF-21 | o mesmo cenário em `Ala Içara` | crio a reunião | nada é copiado (unidade diferente) |
+| CA-18 | RF-21 | o mesmo cenário em `Içara` | crio a reunião | nada é copiado (unidade diferente) |
 | CA-19 | 7.5 | Reunião com itens | mudo o tipo para `Atividade` | `Remover a pauta?`; confirmando, os itens são apagados ao salvar |
 | CA-20 | RNF-05 | aparelho em outro fuso | crio evento às 19:30 | gravado como 22:30 UTC e exibido como 19:30 |
 | CA-21 | 7.5 | toque duplo em `Salvar` | aguardo | um único evento |
@@ -188,7 +189,7 @@ src/i18n/locales/*.json                                    # events.*
 
 | Passo | Ação | Resultado esperado |
 | ----- | ---- | ------------------ |
-| 1 | Entre como `bispo.criciuma1`, toque em `+` | Formulário com unidade `Ala Criciúma 1` |
+| 1 | Entre como `bispo.criciuma1`, toque em `+` | Formulário com unidade `Criciúma 1` |
 | 2 | Crie `Conselho da ala` (Reunião), adicione 2 pendências na pauta, salve sem notificar | `Evento salvo`; card da pauta no detalhe |
 | 3 | Crie outro `Conselho da ala` uma semana depois | Pauta já traz as 2 pendências com a etiqueta |
 | 4 | Crie uma `Atividade` com `Notificar` para `Todos da ala` | Push chega num aparelho que assina Criciúma 1 |
@@ -220,6 +221,8 @@ Nenhuma decisão em aberto.
 | A1 | `Notificar` padrão | Marcado ao criar; desmarcado ao editar | padrão do projeto |
 | A2 | Gravação dos itens de pauta | Na hora em evento existente; ao salvar em evento novo | padrão do projeto |
 | A3 | Limites | Nome 80, local 160, notas 1000, até 5 links, item de pauta 300 | padrão do projeto |
+| B1 | Card da pauta ao trocar o tipo para `Reunião` na edição | Só aparece depois de salvar como `Reunião` (os itens de evento existente são gravados na hora e o banco exige que o evento já seja Reunião). Assessment rodada 1, lacuna 4, opção A | usuário |
+| B2 | Pasta e rótulos | Código em `src/features/calendar/` (uma feature não importa outra); chips de unidade com o rótulo do app (`Içara`, `Criciúma 1`) | padrão do projeto |
 
 ## 15. Próximos passos (fora desta entrega)
 

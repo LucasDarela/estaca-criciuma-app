@@ -1,6 +1,7 @@
 import '@/i18n';
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, userEvent, waitFor } from '@testing-library/react-native';
 import { AccessibilityInfo, Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -8,18 +9,38 @@ import { ToastProvider } from '@/components/toast/ToastProvider';
 import type { CalendarEvent } from '@/domain/calendar';
 import { makeEvent } from '@/test/factories';
 
-import { useEvent } from './api';
+import { EventWriteError, deleteEvent, useEvent, useEventCache } from './api';
 import { addToDeviceCalendar, openInMaps, shareEvent } from './eventActions';
 import { EventDetailScreen } from './EventDetailScreen';
+import { addMeetingItem, removeMeetingItem, useMeetingItems } from './meetingApi';
 
 const mockBack = jest.fn();
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 let mockCanGoBack = true;
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack, replace: mockReplace, canGoBack: () => mockCanGoBack }),
+  useRouter: () => ({
+    back: mockBack,
+    replace: mockReplace,
+    push: mockPush,
+    canGoBack: () => mockCanGoBack,
+  }),
   useLocalSearchParams: () => ({ id: 'conference' }),
 }));
-jest.mock('./api');
+let mockPublish: string[] = [];
+let mockLead: string[] = [];
+jest.mock('../viewer/ViewerProvider', () => ({
+  useViewer: () => ({
+    canPublish: (u: string) => mockPublish.includes(u),
+    canLead: (u: string) => mockLead.includes(u),
+  }),
+}));
+jest.mock('./api', () => ({
+  ...jest.createMockFromModule<object>('./api'),
+  // The real class, so `instanceof` works in the screen.
+  EventWriteError: jest.requireActual('./api').EventWriteError,
+}));
+jest.mock('./meetingApi');
 jest.mock('./eventActions');
 
 const metrics = {
@@ -46,18 +67,26 @@ function mockQuery(data: CalendarEvent | null | undefined, extra: object = {}) {
 async function setup() {
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
-      <ToastProvider>
-        <EventDetailScreen />
-      </ToastProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <ToastProvider>
+          <EventDetailScreen />
+        </ToastProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>,
   );
 }
 
 beforeEach(() => {
+  jest.clearAllMocks();
   jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   mockCanGoBack = true;
   mockBack.mockClear();
   mockReplace.mockClear();
+  mockPush.mockClear();
+  mockPublish = [];
+  mockLead = [];
+  (useEventCache as jest.Mock).mockReturnValue({ saved: jest.fn(), deleted: jest.fn() });
+  (useMeetingItems as jest.Mock).mockReturnValue({ data: [] });
   (openInMaps as jest.Mock).mockResolvedValue(undefined);
   (shareEvent as jest.Mock).mockResolvedValue(undefined);
   (addToDeviceCalendar as jest.Mock).mockResolvedValue('saved');
@@ -212,5 +241,115 @@ describe('EventDetailScreen', () => {
     mockCanGoBack = false;
     await fireEvent.press(screen.getByRole('button', { name: 'Voltar' }));
     expect(mockReplace).toHaveBeenCalledWith('/agenda');
+  });
+
+  const icaraEvent = makeEvent({
+    id: 'icara-1',
+    title: 'Noite cultural',
+    unitId: 'icara',
+    type: 'activity',
+    startsAt: new Date('2026-11-15T22:00:00Z'),
+    endsAt: new Date('2026-11-16T00:00:00Z'),
+  });
+  const criciumaEvent = makeEvent({ ...icaraEvent, id: 'c1-1', unitId: 'criciuma1' });
+
+  it('[event-form] CA-02: Editar and Excluir only on an event of a unit the person publishes in', async () => {
+    mockPublish = ['icara'];
+    mockQuery(icaraEvent);
+    await setup();
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Excluir' })).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Editar' }));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/event/[id]/edit',
+      params: { id: 'icara-1' },
+    });
+    await screen.unmount();
+
+    mockQuery(criciumaEvent);
+    await setup();
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Excluir' })).not.toBeOnTheScreen();
+  });
+
+  it('[event-form] CA-13: confirming the deletion deletes, shows the toast and goes to the Agenda', async () => {
+    const user = userEvent.setup();
+    mockPublish = ['icara'];
+    mockQuery(icaraEvent);
+    (deleteEvent as jest.Mock).mockResolvedValue(undefined);
+    await setup();
+    await user.press(screen.getByRole('button', { name: 'Excluir' }));
+    expect(screen.getByText('Excluir evento?')).toBeOnTheScreen();
+    expect(
+      screen.getByText('"Noite cultural" será removido da agenda. Não dá para desfazer.'),
+    ).toBeOnTheScreen();
+    await user.press(screen.getAllByRole('button', { name: 'Excluir' }).at(-1)!);
+    await waitFor(() => expect(deleteEvent).toHaveBeenCalledWith('icara-1'));
+    expect(await screen.findByText('Evento excluído.')).toBeOnTheScreen();
+    expect(mockReplace).toHaveBeenCalledWith('/agenda');
+  });
+
+  it('[event-form] CA-13: Cancelar does not delete', async () => {
+    const user = userEvent.setup();
+    mockPublish = ['icara'];
+    mockQuery(icaraEvent);
+    await setup();
+    await user.press(screen.getByRole('button', { name: 'Excluir' }));
+    await user.press(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(deleteEvent).not.toHaveBeenCalled();
+  });
+
+  it('[event-form] 7.5: a deletion that finds the event gone goes to the Agenda', async () => {
+    const user = userEvent.setup();
+    mockPublish = ['icara'];
+    mockQuery(icaraEvent);
+    (deleteEvent as jest.Mock).mockRejectedValue(new EventWriteError('not_found'));
+    await setup();
+    await user.press(screen.getByRole('button', { name: 'Excluir' }));
+    await user.press(screen.getAllByRole('button', { name: 'Excluir' }).at(-1)!);
+    expect(await screen.findByText('Este evento não está mais disponível.')).toBeOnTheScreen();
+    expect(mockReplace).toHaveBeenCalledWith('/agenda');
+  });
+
+  const meetingIcara = makeEvent({ ...icaraEvent, id: 'm-icara', type: 'meeting' });
+  const meetingC1 = makeEvent({ ...icaraEvent, id: 'm-c1', unitId: 'criciuma1', type: 'meeting' });
+
+  it('[event-form] CA-14: the Icara publisher does not see the agenda card', async () => {
+    mockPublish = ['icara'];
+    mockLead = [];
+    mockQuery(meetingIcara);
+    await setup();
+    expect(screen.queryByRole('button', { name: /^Pauta da reunião/ })).not.toBeOnTheScreen();
+  });
+
+  it('[event-form] CA-15: the unit leader opens the agenda sheet with the 3 tabs', async () => {
+    const user = userEvent.setup();
+    mockPublish = ['criciuma1'];
+    mockLead = ['criciuma1'];
+    mockQuery(meetingC1);
+    await setup();
+    await user.press(screen.getByRole('button', { name: /^Pauta da reunião/ }));
+    expect(screen.getByRole('tab', { name: 'Pauta, 0' })).toBeOnTheScreen();
+    expect(screen.getByRole('tab', { name: 'Decisões, 0' })).toBeOnTheScreen();
+    expect(screen.getByRole('tab', { name: 'Pendências, 0' })).toBeOnTheScreen();
+  });
+
+  it('[event-form] CA-16: adding and removing an item writes right away', async () => {
+    const user = userEvent.setup();
+    mockPublish = ['criciuma1'];
+    mockLead = ['criciuma1'];
+    mockQuery(meetingC1);
+    (useMeetingItems as jest.Mock).mockReturnValue({
+      data: [{ id: 'i1', kind: 'agenda', text: 'Abertura', carriedFromDate: null }],
+    });
+    (addMeetingItem as jest.Mock).mockResolvedValue(undefined);
+    (removeMeetingItem as jest.Mock).mockResolvedValue(undefined);
+    await setup();
+    await user.press(screen.getByRole('button', { name: /^Pauta da reunião/ }));
+    await user.type(screen.getByLabelText('Novo assunto da pauta'), 'Oração');
+    await user.press(screen.getByRole('button', { name: 'Adicionar' }));
+    await waitFor(() => expect(addMeetingItem).toHaveBeenCalledWith('m-c1', 'agenda', 'Oração'));
+    await user.press(screen.getByRole('button', { name: 'Remover "Abertura"' }));
+    await waitFor(() => expect(removeMeetingItem).toHaveBeenCalledWith('i1'));
   });
 });

@@ -14,6 +14,8 @@ export type FilterChipProps = {
   icon?: IconName;
   /** Smaller chip (`size.typeChip`), used by dense filter rows. */
   compact?: boolean;
+  /** `radio` for a single choice inside a labelled `ChipGroup` (RNF-07). */
+  role?: 'button' | 'radio';
 };
 
 export function FilterChip({
@@ -23,14 +25,15 @@ export function FilterChip({
   dotColor,
   icon,
   compact = false,
+  role = 'button',
 }: FilterChipProps) {
   const height = compact ? size.typeChip : size.chip;
   const fg = selected ? theme.onPrimary : theme.text;
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={role}
       accessibilityLabel={label}
-      accessibilityState={{ selected }}
+      accessibilityState={role === 'radio' ? { checked: selected } : { selected }}
       hitSlop={minTouchSlop(height)}
       onPress={onPress}
       style={(state) => [

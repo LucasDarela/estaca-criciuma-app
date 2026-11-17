@@ -1,11 +1,15 @@
 import { useQueries, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 
 import type { CalendarEvent } from '@/domain/calendar';
+import type { EventInput } from '@/domain/eventForm';
+import type { MeetingItemKind } from '@/domain/meetingItems';
 import { isEventType, type EventType } from '@/domain/eventTypes';
 import { addMonthsClamped, monthKey, monthRange, type CivilDate } from '@/domain/time';
 import { isUnitId, type UnitId } from '@/domain/units';
 import { PERSIST_MAX_AGE_MS, PUBLIC_STALE_TIME_MS } from '@/lib/queryPersistence';
+import { rpcErrorCode } from '@/lib/rpcError';
 import { getSupabase } from '@/lib/supabase';
+import { track } from '@/lib/telemetry';
 
 /**
  * An event as kept in the query cache. The persisted cache is JSON, so dates stay ISO strings
@@ -34,7 +38,7 @@ type EventRow = {
 };
 
 /** Rows with an unknown unit or type are dropped (never render unexpected data). */
-function storedFromRow(row: EventRow): StoredEvent | null {
+export function storedFromRow(row: EventRow): StoredEvent | null {
   if (!isUnitId(row.unit_id) || !isEventType(row.type)) return null;
   return {
     id: row.id,
@@ -147,4 +151,111 @@ export function useEvent(id: string): UseQueryResult<CalendarEvent | null> {
     },
     select: (stored) => (stored ? toCalendarEvent(stored) : null),
   });
+}
+
+export type EventWriteErrorCode =
+  'forbidden' | 'not_found' | 'invalid_items' | 'network' | 'unknown';
+
+export class EventWriteError extends Error {
+  constructor(readonly code: EventWriteErrorCode) {
+    super(code);
+    this.name = 'EventWriteError';
+  }
+}
+
+const eventWriteCodes = ['forbidden', 'not_found', 'invalid_items'] as const;
+
+/** RPCs return a short code in `message`; a failed fetch is `network`; anything else is `unknown`. */
+export function toEventWriteError(error: unknown): EventWriteError {
+  if (error instanceof EventWriteError) return error;
+  return new EventWriteError(rpcErrorCode(error, eventWriteCodes));
+}
+
+export type NewMeetingItem = { kind: MeetingItemKind; text: string };
+
+function eventArgs(id: string, input: EventInput) {
+  return {
+    p_id: id,
+    p_unit_id: input.unitId,
+    p_type: input.type,
+    p_title: input.title,
+    p_starts_at: input.startsAt.toISOString(),
+    p_ends_at: input.endsAt.toISOString(),
+    p_location: input.location,
+    p_notes: input.notes,
+    p_links: input.links,
+  };
+}
+
+function storedOrThrow(row: EventRow): StoredEvent {
+  const stored = storedFromRow(row);
+  if (!stored) throw new EventWriteError('unknown');
+  return stored;
+}
+
+/**
+ * RF-20, RF-21. Creates the event and its first agenda items in one transaction. `id` comes
+ * from `Crypto.randomUUID()`, made once per form opening, so a retry never duplicates (CA-21).
+ */
+export async function createEvent(
+  id: string,
+  input: EventInput,
+  items: readonly NewMeetingItem[],
+): Promise<StoredEvent> {
+  try {
+    const { data, error } = await getSupabase()
+      .rpc('create_event', { ...eventArgs(id, input), p_items: [...items] })
+      .single();
+    if (error) throw error;
+    const stored = storedOrThrow(data);
+    track('event_created', { event_id: stored.id, unit_id: stored.unitId });
+    return stored;
+  } catch (error) {
+    throw toEventWriteError(error);
+  }
+}
+
+export async function updateEvent(id: string, input: EventInput): Promise<StoredEvent> {
+  try {
+    const { data, error } = await getSupabase().rpc('update_event', eventArgs(id, input)).single();
+    if (error) throw error;
+    const stored = storedOrThrow(data);
+    track('event_updated', { event_id: stored.id, unit_id: stored.unitId });
+    return stored;
+  } catch (error) {
+    throw toEventWriteError(error);
+  }
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  try {
+    const { error } = await getSupabase().rpc('delete_event', { p_id: id });
+    if (error) throw error;
+    track('event_deleted', { event_id: id });
+  } catch (error) {
+    throw toEventWriteError(error);
+  }
+}
+
+/**
+ * After a save: writes the event query and refetches every month query. After a delete: removes
+ * the event query and refetches the months.
+ */
+export function useEventCache(): {
+  saved: (stored: StoredEvent) => void;
+  deleted: (id: string) => void;
+} {
+  const client = useQueryClient();
+  const refetchMonths = () =>
+    void client.invalidateQueries({ queryKey: ['public', 'events', 'month'] });
+  return {
+    saved: (stored) => {
+      client.setQueryData(eventQueryKey(stored.id), stored);
+      refetchMonths();
+    },
+    deleted: (id) => {
+      client.removeQueries({ queryKey: eventQueryKey(id) });
+      refetchMonths();
+    },
+  };
 }

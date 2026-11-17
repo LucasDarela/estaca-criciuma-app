@@ -70,7 +70,7 @@ Valores em `src/theme/theme.ts`. "Derivado" = criado para UI digital; validar co
 | `border` / `borderStrong` / `divider` | `#E3E5E5` / Neutro 10 / `#EEF0F0` | Borda de card / botão secundário e chip / separador de lista |
 | `toastBg` / `toastAccent` | Neutro 50 / Azul 10 | Toast in-app |
 
-Tokens de `size` e `type` adicionados por `auth-account` (todos derivados): `size.codeBoxWidth` 48 e `size.codeBoxHeight` 56 (caixa de um dígito do código), `size.checkbox` 24 (caixa de consentimento), `type.signatureName` (serifa 26/32) e `type.signatureTagline` (sans 12/16, espaçamento 2.4) da assinatura tipográfica da tela Entrar.
+Tokens de `size` e `type` adicionados por `auth-account` (todos derivados): `size.codeBoxWidth` 48 e `size.codeBoxHeight` 56 (caixa de um dígito do código), `size.checkbox` 24 (caixa de consentimento), `size.checkboxForm` 22 e `radius.checkbox` 6 (checkbox de formulário), `size.fab` 56 e `radius.fab` 18 (botão flutuante `+` da Agenda), `type.signatureName` (serifa 26/32) e `type.signatureTagline` (sans 12/16, espaçamento 2.4) da assinatura tipográfica da tela Entrar.
 
 ### Cores das unidades (`units`)
 
@@ -118,7 +118,7 @@ Medidas vêm de `size`, `radius`, `space`, `stroke` e `motion`. Valores que o de
 | `Button` | `src/components/Button.tsx` | `primary` (fundo `primary`, pressionado `primaryPressed`), `secondary` (`primarySubtle` + texto `primary`), `outline` (borda 1.5 `borderStrong`), `ghost` (texto `primary`), `danger`, `disabled` (`surfaceDisabled` + `textDisabled`); tamanhos `default` 52 e `compact` 44 | Raio 14 (compact 12). Rótulo `type.button` (compact 15) |
 | `TextField` | `src/components/TextField.tsx` | `default`, `focused` (borda 1.5 `primary` + anel 4 `focusRing`), `error` (borda `danger` + mensagem 12.5 `danger` abaixo) | Altura 52, raio 12, padding 14. Rótulo 13/600 acima, gap 6 |
 | `SearchField` | `src/components/SearchField.tsx` | `default` 44, `compact` 40 | Fundo `surfaceMuted`, sem borda, ícone `search` 20, placeholder `textSubtle` |
-| `FilterChip` | `src/components/FilterChip.tsx` | `selected` (fundo `primary`, texto branco), `unselected` (borda 1 `borderStrong`) | Altura 36, pill, ponto 8 da cor da unidade |
+| `FilterChip` | `src/components/FilterChip.tsx` | `selected` (fundo `primary`, texto branco), `unselected` (borda 1 `borderStrong`) | Altura 36, pill, ponto 8 da cor da unidade. `role="radio"` para escolha única dentro de um `ChipGroup` (RNF-07) |
 | `UnitTag` | `src/components/UnitTag.tsx` | uma por `UnitId` | Padding 3×8, raio 6, 12/700, `units[id].tint` + `units[id].text` |
 | `StatusTag` | `src/components/StatusTag.tsx` | `neutral`, `info`, `success`, `warning` | Mesma forma da `UnitTag` |
 | `Badge` | `src/components/Badge.tsx` | contagem | Mín. 20×20, pill, `danger` + branco, 11.5/700 |
@@ -127,6 +127,8 @@ Medidas vêm de `size`, `radius`, `space`, `stroke` e `motion`. Valores que o de
 | `ListItem` | `src/components/ListItem.tsx` | com avatar, ícone ou ponto de unidade; com chevron, `check`, carregando, contagem ou `Switch`; `selected` marca a opção escolhida de uma lista | Padding vertical 10–12, separador `divider`; título 15/600, subtítulo 13 `textMuted`; chevron `iconMuted` |
 | `Avatar` | `src/components/Avatar.tsx` | `small` 36 (cabeçalho, mesmas cores do `default`), `default` 44 (`primarySubtle` + iniciais `primary`), `large` 64 (`primary` + iniciais em serifa branca) | Iniciais, sem foto no v1.0 |
 | `Switch` | `src/components/Switch.tsx` | on (`primary`), off (`borderStrong`) | 51×31 (compacto 46×28), polegar branco |
+| `Checkbox` | `src/components/Checkbox.tsx` | marcado (`primary` + `check` branco), desmarcado (borda 1.5 `borderStrong`), `disabled` | Caixa 22, raio 6; rótulo `listTitle` e dica `caption` `textMuted`; papel `checkbox` |
+| `ChipGroup` | `src/components/ChipGroup.tsx` | `radiogroup` (escolha única) ou `list` | Rótulo de campo acima dos chips, gap 8 |
 | `Toast` | `src/components/toast/ToastProvider.tsx` (`ToastProvider`, `useToast`) | sucesso com ação | Fundo `toastBg`, raio 14, ícone e ação em `toastAccent`. Ex.: "Anotação salva · Desfazer" |
 | `TabBar` | `src/components/TabBar.tsx` | por perfil (abaixo) | Altura 84 com área segura, fundo `surface`, borda superior `border`. Ativo: `primary`, ícone preenchido, rótulo 700. Inativo: `textSubtle`, contornado, 500. Máx. 5 destinos, ícone + rótulo sempre visíveis |
 | `ScreenHeader` | `src/components/ScreenHeader.tsx` | título grande + ação circular 44 (`primary` com `add`, ou `surfaceMuted`); com voltar | Fundo `surface`, borda inferior `border`, título serif 28/600. Com `showAvatar`, mostra `Avatar` `small` do viewer (via `HeaderAvatarProvider`) que abre `/profile` |
@@ -135,7 +137,7 @@ Medidas vêm de `size`, `radius`, `space`, `stroke` e `motion`. Valores que o de
 | `OfflineBanner` | `src/components/OfflineBanner.tsx` | — | Faixa `warningSubtle` com `common.offline`, `accessibilityRole="alert"` |
 | `Skeleton` | `src/components/Skeleton.tsx` | largura, altura e raio | Bloco `surfaceDisabled` |
 | `UnitPickerSheet` | `src/components/UnitPickerSheet.tsx` | escolha única de unidade, com opção "nenhuma" no topo | `Sheet` com `ListItem` (ponto de cor da unidade, `check` na escolhida). Não importa `features/` nem `lib/` |
-| `Sheet` / `ConfirmSheet` | `src/components/Sheet.tsx`, `src/components/ConfirmSheet.tsx` | `Sheet` livre; `ConfirmSheet` com `primary` ou `danger` | Modal com alça, sobe acima do teclado no iOS, raio 24 no topo, fundo `scrim`; fecha ao tocar no fundo ou arrastar para baixo. Entra em 250 ms; com "Reduzir movimento", fade de 150 ms |
+| `Sheet` / `ConfirmSheet` | `src/components/Sheet.tsx`, `src/components/ConfirmSheet.tsx` | `Sheet` livre; `ConfirmSheet` com `primary` ou `danger` | Modal com alça, sobe acima do teclado no iOS, raio 24 no topo, fundo `scrim`; fecha ao tocar no fundo ou arrastar para baixo; `heightRatio` fixa a altura como fração da janela (ex.: 0,82 na pauta da reunião). Entra em 250 ms; com "Reduzir movimento", fade de 150 ms |
 
 ### TabBar por perfil
 

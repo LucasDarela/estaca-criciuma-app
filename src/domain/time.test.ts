@@ -4,6 +4,7 @@ import {
   civilDateOf,
   formatCivil,
   formatTime,
+  instantOf,
   monthKey,
   monthRange,
   sameDate,
@@ -109,5 +110,12 @@ describe('time (Sao Paulo, fixed UTC-3, ADR 0005)', () => {
     const date = { year: 2026, month: 11, day: 13 };
     expect(formatCivil(date, 'pt-BR', { weekday: 'short' }).toLowerCase()).toContain('sex');
     expect(formatCivil(date, 'en-US', { day: 'numeric' })).toBe('13');
+  });
+
+  it('CA-20: instantOf turns 19:30 in Sao Paulo into 22:30Z and round-trips', () => {
+    const wall = { year: 2026, month: 11, day: 12, hour: 19, minute: 30 };
+    const instant = instantOf(wall);
+    expect(instant.toISOString()).toBe('2026-11-12T22:30:00.000Z');
+    expect(toSaoPauloWallTime(instant)).toEqual(wall);
   });
 });

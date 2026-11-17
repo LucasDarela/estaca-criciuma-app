@@ -1,7 +1,7 @@
 import '@/i18n';
 
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Dimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ConfirmSheet } from './ConfirmSheet';
@@ -77,5 +77,18 @@ describe('Sheet and ConfirmSheet', () => {
       ),
     );
     expect(screen.getByLabelText('Filtros')).toBeOnTheScreen();
+  });
+
+  it('RF-17: heightRatio fixes the sheet height as a share of the window', async () => {
+    await render(
+      withProvider(
+        <Sheet visible onClose={jest.fn()} accessibilityLabel="Pauta" heightRatio={0.82}>
+          <></>
+        </Sheet>,
+      ),
+    );
+    expect(screen.getByLabelText('Pauta')).toHaveStyle({
+      height: Dimensions.get('window').height * 0.82,
+    });
   });
 });

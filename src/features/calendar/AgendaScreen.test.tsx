@@ -14,6 +14,10 @@ import { useEventsAround } from './api';
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
+let mockPublishable: string[] = [];
+jest.mock('../viewer/ViewerProvider', () => ({
+  useViewer: () => ({ publishableUnits: mockPublishable }),
+}));
 jest.mock('./api');
 jest.mock('@/lib/network');
 jest.mock('@/lib/notificationInbox');
@@ -78,6 +82,7 @@ beforeEach(() => {
   jest.useFakeTimers({ now: NOW });
   jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   mockPush.mockClear();
+  mockPublishable = [];
   (useIsOnline as jest.Mock).mockReturnValue(true);
   (useHasUnread as jest.Mock).mockReturnValue(false);
   mockAgenda([council, games, conference, otherDay]);
@@ -267,5 +272,19 @@ describe('AgendaScreen', () => {
     });
 
     expect(screen.getByRole('button', { name: /^Hoje, 14 de novembro/ })).toBeOnTheScreen();
+  });
+
+  it('[event-form] CA-01: only a person who can publish sees the + button', async () => {
+    // visitor and member: no publishable unit
+    mockPublishable = [];
+    await render(<Screen />);
+    expect(screen.queryByRole('button', { name: 'Novo evento' })).not.toBeOnTheScreen();
+    await screen.unmount();
+
+    mockPublishable = ['icara'];
+    await render(<Screen />);
+    const fab = screen.getByRole('button', { name: 'Novo evento' });
+    await fireEvent.press(fab);
+    expect(mockPush).toHaveBeenCalledWith('/event/new');
   });
 });

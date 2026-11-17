@@ -46,4 +46,15 @@ describe('track', () => {
     }
     expect(info).not.toHaveBeenCalled();
   });
+
+  it('[event-form] RNF-04: logs the event events with only ids', () => {
+    const info = jest.spyOn(console, 'info').mockImplementation(() => {});
+    track('event_created', { event_id: 'e1', unit_id: 'icara' });
+    track('event_deleted', { event_id: 'e1' });
+    expect(info).toHaveBeenNthCalledWith(
+      1,
+      '{"event":"event_created","event_id":"e1","unit_id":"icara"}',
+    );
+    expect(info).toHaveBeenNthCalledWith(2, '{"event":"event_deleted","event_id":"e1"}');
+  });
 });
