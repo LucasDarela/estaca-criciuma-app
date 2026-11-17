@@ -90,3 +90,59 @@ O agent assessor devolve exatamente a seção abaixo, preenchida.
 ### Rodadas anteriores
 
 Primeira rodada, sem lacunas anteriores.
+
+## Rodada 2 — 2026-11-17
+
+**Veredito:** PASS_WITH_GAPS
+**Resumo:** `make check` passou: exit 0, 91 suítes, 817 testes e 0 falhas, com lint e build. O commit 354cae2 mexeu só em `src/` e no plano, e nenhum CA automatizável quebrou. `make test-db` não rodou porque o Docker está desligado. A migration e `supabase/tests` não mudaram desde a rodada 1, então vale o resultado dela (354 asserções, PASS). O CA-32 e a T-14 continuam ⚠️. O relato do usuário em 2026-11-16 é a única evidência, sem divergências nem passos registrados, e o código mudou depois dele. Na dúvida escolhi o veredito mais rigoroso. A lacuna é pequena e se fecha com uma linha de confirmação do usuário.
+
+### Verificações objetivas
+
+| Comando | Resultado | Observação |
+| ------- | --------- | ---------- |
+| `make lint` | ✅ | Roda dentro de `make check` (exit 0). |
+| `make test` | ✅ | 91 suítes, 817 testes, 0 falhas. Eram 90 suítes e 809 testes na rodada 1. O aumento vem de `rpcError.test.ts` e dos testes novos de PhoneSheet, ProfileScreen, HighCouncilorLinkSheet e LeadershipScreen. |
+| `make build` | ✅ | Bundles iOS e Android exportados. O aviso "Could not parse Expo config: android.googleServicesFile" é de ambiente. |
+| `make check` | ✅ | exit 0, rodado duas vezes. |
+| `make test-db` | ⏭️ não executado | O Docker está indisponível (`docker info` falha). `git diff 843c02c HEAD --stat` mostra que nada em `supabase/` mudou desde a rodada 1. O resultado da rodada 1 (6 arquivos, 354 asserções, PASS) continua valendo para o servidor (CA-01 a CA-10). |
+
+### Critérios de aceitação
+
+| CA | Status | Evidência |
+| -- | ------ | --------- |
+| CA-01 a CA-10 | ✅ | A evidência é a da rodada 1. A migration e o pgTAP não foram alterados no commit 354cae2. |
+| CA-11 a CA-15 | ✅ | `src/domain/orgChart.ts` foi refatorado (montagem sem varreduras repetidas e helpers de conselheiro). `orgChart.test.ts`, `StakeTree.test.tsx`, `UnitTree.test.tsx` e `UnitLeadershipScreen.test.tsx` seguem passando. |
+| CA-16 a CA-18, CA-30 | ✅ | `LeadershipScreen.test.tsx` e `UnitLeadershipScreen.test.tsx` passam depois da extração de `useEditMode.tsx` e `OrgChartBody.tsx`. |
+| CA-19 a CA-23 | ✅ | `PersonSheet.test.tsx`, `LeadershipScreen.test.tsx`, `api.test.ts` e `phone.test.ts` passam. A chave de telefone continua fora do cache em disco. |
+| CA-24, CA-25 | ✅ | `PhoneSheet.test.tsx` e `ProfileScreen.test.tsx` passam, com testes novos de carga, erro e retry. Isso está em linha com RF-21 e RF-22. |
+| CA-26 | ✅ | O modo de edição agora também sai ao ficar offline, o que reforça o comportamento. |
+| CA-27 a CA-29 | ✅ | `HighCouncilorLinkSheet.test.tsx` e `OrgCounselorSheet.test.tsx` passam. O `onGone` recarrega membros e vínculos, em linha com RF-26. |
+| CA-31 | ✅ | `api.test.ts` e `account/api.test.ts` passam. `api.ts` continua enviando só `kind` e `unit_id` ao `track`. |
+| CA-32 | ⚠️ | A parte automatizada passa (rótulos, papéis, empilhamento e `Switch` com rótulo). Para o percurso com VoiceOver e TalkBack, a fonte 1.6× e o roteiro 1 a 11 (incluindo o passo 10), só existe o relato do usuário, registrado no plano em T-14 e no Registro de implementação. Não há passos nem plataformas detalhados e não há divergências registradas. Não sei se o QA foi feito antes ou depois do 354cae2, que alterou PhoneSheet, ProfileScreen e as telas de árvore. |
+
+**Como tratei o CA-32.** Aceito o relato do usuário como a execução da T-14, porque o QA em aparelho é dele. Por isso a T-14 não é mais uma pendência bloqueante, e a lacuna deixa de ser "não feito". Também não marco ✅, porque é um relato sem registro verificável (exigência de evidência concreta). Mantenho ⚠️ e PASS_WITH_GAPS. A lacuna 1 abaixo descreve o que falta para a spec fechar como PASS.
+
+### Requisitos, escopo e restrições
+
+| Item | Status | Evidência |
+| ---- | ------ | --------- |
+| RF-01 a RF-08 (servidor) | ✅ | Sem mudança desde a rodada 1. |
+| RF-09 a RF-20 (árvore e telas) | ✅ | Testes passando. A copy literal em `pt-BR.json` não foi alterada pelo commit de correções. |
+| RF-21, RF-22 (Perfil) | ✅ | O erro de carga agora aparece em vez de "Não informado". O PhoneSheet só monta o formulário depois de carregar o telefone. `PhoneSheet.test.tsx` e `ProfileScreen.test.tsx` passam. |
+| RF-23 a RF-26 (edição) | ✅ | `HighCouncilorLinkSheet.test.tsx` passa. |
+| Escopo: nada fora da spec | ✅ | O commit 354cae2 só refatora e corrige em `src/`. Não há dependência nova. `rpcError.ts`, `useEditMode.tsx` e `OrgChartBody.tsx` são extrações internas, sem funcionalidade nova. |
+| Restrições e RULES.md | ✅ | Código em inglês, textos via `t()`, sem arquivos de rota novos em `src/app`. `rpcError.ts` tem 100% de cobertura. |
+| Plano: tarefas e desvios | ✅ | T-01 a T-14 marcadas. O Registro de implementação anota o relato da T-14. |
+| Segurança | ✅ | Sem segredos nem dados pessoais em log. As correções não ampliam o acesso ao telefone. |
+| DoD: roteiro de QA em iOS e Android sem divergências | ⚠️ | Só o relato do usuário, sem detalhe (lacuna 1). |
+
+### Lacunas
+
+| # | ID | Bloqueante | O que está errado | Evidência | O que precisa acontecer |
+| - | -- | ---------- | ----------------- | --------- | ----------------------- |
+| 1 | CA-32 / T-14 | não | O QA em aparelho não deixou registro verificável, e o código mudou (354cae2). | Plano, T-14 `[x]` e Registro de implementação ("não há registro de divergências"). Spec, seção 13, item "Roteiro de QA executado sem divergências em iOS e Android". | O usuário confirma em uma linha no Registro de implementação do plano: as plataformas e os aparelhos testados, se o passo 11 (VoiceOver, TalkBack e 1.6×) e o passo 10 (modo avião) foram feitos, e se foi antes ou depois do 354cae2. Se foi antes, repete só o que as correções tocam: abrir o Perfil e o PhoneSheet, e sair do modo de edição ao ficar offline. Com isso a rodada 3 pode fechar como PASS. |
+| 2 | `make test-db` | não | O Docker estava desligado nesta rodada. | `docker info` falha. | Opcional: rodar `make test-db` com `supabase start` antes de fechar a spec. Nada em `supabase/` mudou desde a rodada 1, então o risco é baixo. |
+
+### Rodadas anteriores
+
+- Rodada 1 (PASS_WITH_GAPS), lacuna: CA-32 / T-14, QA em aparelho. **Situação:** parcialmente resolvida. O usuário relatou a execução em 2026-11-16, mas sem registro verificável. Continua como a lacuna 1 acima, agora não bloqueante.
