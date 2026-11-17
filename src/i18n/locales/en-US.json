@@ -146,7 +146,9 @@
       "notices": "Notices",
       "noticesHistory": "Notifications",
       "groups": "Groups I follow",
-      "groupsHint": "You receive notices sent to the groups you check."
+      "groupsHint": "You receive notices sent to the groups you check.",
+      "phone": "Phone",
+      "phoneNone": "Not provided"
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -183,6 +185,19 @@
       "admin": "Administration",
       "revoked": "Calling removed",
       "itemA11y": "{{name}}, {{calling}}, {{unit}}"
+    },
+    "phone": {
+      "title": "Phone",
+      "label": "Phone",
+      "placeholder": "(48) 99999-0000",
+      "show": "Show my phone in the org chart",
+      "help": "Only people with an account see it, and only in the callings where you appear in the org chart.",
+      "save": "Save",
+      "remove": "Remove phone",
+      "saved": "Phone saved",
+      "removed": "Phone removed",
+      "invalid": "Enter a phone number with area code.",
+      "required": "Enter the phone to show it in the org chart."
     }
   },
   "callings": {
@@ -417,6 +432,97 @@
       "body": "We notify you about stake and ward events and announcements. You choose what to receive in Notifications.",
       "confirm": "Turn on notices",
       "later": "Not now"
+    }
+  },
+  "leadership": {
+    "title": "Leadership",
+    "search": {
+      "placeholder": "Search name or calling",
+      "empty": "No one found for \"{{term}}\"."
+    },
+    "segment": {
+      "stake": "Stake",
+      "units": "Units"
+    },
+    "slot": {
+      "stakePresident": "President",
+      "bishop": "Bishop",
+      "branchPresident": "Branch President",
+      "firstCounselor": "1st Counselor",
+      "secondCounselor": "2nd Counselor",
+      "empty": "{{label}}, no name in the org chart"
+    },
+    "section": {
+      "stakeClerks": "STAKE CLERKS",
+      "clerks": "CLERKS",
+      "stakeOrganizations": "STAKE ORGANIZATIONS",
+      "others": "OTHERS",
+      "unassigned": "NO COUNSELOR ASSIGNED",
+      "supervisedBy": "SUPERVISED BY"
+    },
+    "org": {
+      "elders_quorum": "Elders Quorum",
+      "relief_society": "Relief Society",
+      "young_women": "Young Women",
+      "young_men": "Young Men",
+      "primary": "Primary",
+      "sunday_school": "Sunday School",
+      "other": "Others"
+    },
+    "units": {
+      "main": {
+        "ward": "Bishopric",
+        "branch": "Branch presidency"
+      },
+      "subtitle": "{{group}} · {{count}}"
+    },
+    "supervisedBy": "{{name}} (High Councilor)",
+    "empty": {
+      "unit": "There are no people in this unit's org chart yet.",
+      "org": "No one in the org chart."
+    },
+    "unit": {
+      "notFound": "Unit not found.",
+      "back": "Back to Leadership"
+    },
+    "person": {
+      "label": "{{name}}, {{calling}}",
+      "subtitle": "{{calling}} · {{unit}}",
+      "supervises": "Supervises: {{list}}"
+    },
+    "contact": {
+      "signIn": "Sign in to see contacts.",
+      "signInButton": "Sign in",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "copy": "Copy",
+      "copied": "Phone copied",
+      "offline": "Phone available when online.",
+      "error": "Could not load the phone.",
+      "callLabel": "Call {{name}}",
+      "whatsappLabel": "Message {{name}} on WhatsApp",
+      "copyLabel": "Copy {{name}}'s phone"
+    },
+    "error": "Could not load the leadership.",
+    "offlineEmpty": "No connection. Connect to see the leadership.",
+    "edit": {
+      "button": "Edit",
+      "offline": "Editing unavailable offline",
+      "banner": "Edit mode",
+      "done": "Done",
+      "personLabel": "Edit supervision of {{name}}",
+      "sheetTitle": "Supervision",
+      "counselor": "Counselor",
+      "none": "None",
+      "units": "Units they supervise",
+      "save": "Save",
+      "saved": "Supervision saved",
+      "error": {
+        "noCounselor": "No one holds this calling right now. Grant the calling in Access first.",
+        "forbidden": "You don't have permission to edit this org chart.",
+        "notFound": "This person is no longer on the high council.",
+        "generic": "Could not save. Try again."
+      }
     }
   }
 }

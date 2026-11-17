@@ -6,6 +6,7 @@ import { normalizeEmail } from '@/domain/email';
 import type { Locale, Organization } from '@/domain/profile';
 import { isUnitId, type UnitId } from '@/domain/units';
 import { signOut } from '@/lib/authSession';
+import { rpcErrorCode } from '@/lib/rpcError';
 import { getSupabase } from '@/lib/supabase';
 import { track } from '@/lib/telemetry';
 
@@ -25,6 +26,7 @@ export type AccountErrorCode =
   | 'in_use'
   | 'invalid_access'
   | 'invalid_section'
+  | 'invalid_phone'
   | 'network'
   | 'unknown';
 
@@ -51,19 +53,13 @@ const knownCodes: readonly AccountErrorCode[] = [
   'in_use',
   'invalid_access',
   'invalid_section',
+  'invalid_phone',
 ];
 
 /** RPCs return a short code in `message`; a failed fetch is `network`; anything else is `unknown`. */
 function toAccountError(error: unknown): AccountError {
   if (error instanceof AccountError) return error;
-  if (error instanceof TypeError) return new AccountError('network');
-  const message =
-    typeof error === 'object' && error !== null && 'message' in error
-      ? String((error as { message: unknown }).message)
-      : '';
-  const known = knownCodes.find((code) => code === message);
-  if (known) return new AccountError(known);
-  return new AccountError(/fetch|network/i.test(message) ? 'network' : 'unknown');
+  return new AccountError(rpcErrorCode(error, knownCodes));
 }
 
 /** Updates the caller's own profile row (policy profiles_update_own). */
@@ -244,4 +240,30 @@ export async function setOrgChartConsent(memberCallId: string, accepted: boolean
   });
   if (error) throw toAccountError(error);
   track('org_chart_consent_changed', { membership_id: memberCallId });
+}
+
+export type MyPhone = { phoneE164: string; showOnOrgChart: boolean };
+
+export const myPhoneQueryKey = (userId: string) => ['myPhone', userId] as const;
+
+/** RF-21: the person's own phone (RLS gives only their row); null without a phone. */
+export async function fetchMyPhone(userId: string): Promise<MyPhone | null> {
+  const { data, error } = await getSupabase()
+    .from('profile_phones')
+    .select('phone_e164, show_on_org_chart')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw toAccountError(error);
+  return data ? { phoneE164: data.phone_e164, showOnOrgChart: data.show_on_org_chart } : null;
+}
+
+/** RF-22: `null` removes the phone. The database revalidates the number. */
+export async function setMyPhone(phoneE164: string | null, show: boolean): Promise<void> {
+  // The generated types say `string`, but the SQL function accepts null.
+  const { error } = await getSupabase().rpc('set_my_phone', {
+    p_phone_e164: phoneE164 as string,
+    p_show: show,
+  });
+  if (error) throw toAccountError(error);
+  track('profile_phone_saved', { shown: phoneE164 !== null && show });
 }

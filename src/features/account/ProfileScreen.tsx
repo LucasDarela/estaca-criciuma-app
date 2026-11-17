@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,7 @@ import { pressedStyle } from '@/components/pressable';
 import { useToast } from '@/components/toast/ToastProvider';
 import { canManageAccess } from '@/domain/access';
 import { isAdmin } from '@/domain/permissions';
+import { formatPhone } from '@/domain/phone';
 import type { Locale } from '@/domain/profile';
 import type { UnitId } from '@/domain/units';
 import { signOut, useAuthSession } from '@/lib/authSession';
@@ -21,18 +22,19 @@ import { privacyUrl } from '@/lib/config';
 import { size, space, theme, type, unitOrder, units } from '@/theme/theme';
 
 import { useViewer } from '../viewer/ViewerProvider';
-import { AccountError, exportMyData, updateProfile } from './api';
+import { AccountError, exportMyData, fetchMyPhone, myPhoneQueryKey, updateProfile } from './api';
 import { DeleteAccountSheet } from './DeleteAccountSheet';
 import { EditNameSheet } from './EditNameSheet';
 import { MyCallingsSection } from './MyCallingsSection';
 import { NoticesSection } from './NoticesSection';
 import { OrgChartConsentCard } from './OrgChartConsentCard';
+import { PhoneSheet } from './PhoneSheet';
 
 const selectableUnits = unitOrder.filter((id) => id !== 'estaca');
 
 const localeOptions: readonly Locale[] = ['pt-BR', 'en-US', 'es-MX'];
 
-type Open = 'name' | 'unit' | 'language' | 'delete' | null;
+type Open = 'name' | 'unit' | 'language' | 'phone' | 'delete' | null;
 
 export function ProfileScreen() {
   const { t, i18n } = useTranslation();
@@ -48,6 +50,11 @@ export function ProfileScreen() {
   const privacy = privacyUrl();
 
   const userId = viewer.userId;
+  const phone = useQuery({
+    queryKey: myPhoneQueryKey(userId ?? ''),
+    queryFn: () => fetchMyPhone(userId as string),
+    enabled: userId !== null,
+  });
   const profile = viewer.profile;
   if (userId === null) return null;
 
@@ -133,6 +140,22 @@ export function ProfileScreen() {
           trailing={{ kind: 'chevron' }}
           onPress={() => setOpen('language')}
         />
+        <ListItem
+          title={t('account.profile.phone')}
+          subtitle={
+            phone.data === undefined
+              ? phone.isError
+                ? t('common.genericError')
+                : undefined
+              : phone.data
+                ? formatPhone(phone.data.phoneE164)
+                : t('account.profile.phoneNone')
+          }
+          trailing={
+            phone.data === undefined && phone.isPending ? { kind: 'loading' } : { kind: 'chevron' }
+          }
+          onPress={() => setOpen('phone')}
+        />
         <MyCallingsSection calls={viewer.calls} />
         <NoticesSection userId={userId} organizations={profile?.organizations ?? []} />
         {canManageAccess(viewer.memberships) ? (
@@ -203,6 +226,14 @@ export function ProfileScreen() {
         }))}
         value={locale}
         onSelect={(next) => void chooseLocale(next)}
+        onClose={() => setOpen(null)}
+      />
+      <PhoneSheet
+        visible={open === 'phone'}
+        current={phone.data}
+        loadError={phone.isError}
+        onRetry={() => void phone.refetch()}
+        userId={userId}
         onClose={() => setOpen(null)}
       />
       <DeleteAccountSheet visible={open === 'delete'} onClose={() => setOpen(null)} />

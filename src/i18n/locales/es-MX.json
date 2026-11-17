@@ -146,7 +146,9 @@
       "notices": "Avisos",
       "noticesHistory": "Notificaciones",
       "groups": "Grupos que sigo",
-      "groupsHint": "Recibes los avisos enviados a los grupos marcados."
+      "groupsHint": "Recibes los avisos enviados a los grupos marcados.",
+      "phone": "Teléfono",
+      "phoneNone": "No informado"
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -183,6 +185,19 @@
       "admin": "Administración",
       "revoked": "Llamamiento quitado",
       "itemA11y": "{{name}}, {{calling}}, {{unit}}"
+    },
+    "phone": {
+      "title": "Teléfono",
+      "label": "Teléfono",
+      "placeholder": "(48) 99999-0000",
+      "show": "Mostrar mi teléfono en el organigrama",
+      "help": "Solo las personas con cuenta lo ven, y solo en los llamamientos en los que apareces en el organigrama.",
+      "save": "Guardar",
+      "remove": "Quitar teléfono",
+      "saved": "Teléfono guardado",
+      "removed": "Teléfono quitado",
+      "invalid": "Ingresa un teléfono con código de área.",
+      "required": "Ingresa el teléfono para mostrarlo en el organigrama."
     }
   },
   "callings": {
@@ -417,6 +432,97 @@
       "body": "Te avisamos de eventos y comunicados de la estaca y de tu barrio. Tú eliges qué recibir en Notificaciones.",
       "confirm": "Activar avisos",
       "later": "Ahora no"
+    }
+  },
+  "leadership": {
+    "title": "Liderazgo",
+    "search": {
+      "placeholder": "Buscar nombre o llamamiento",
+      "empty": "No se encontró a nadie para \"{{term}}\"."
+    },
+    "segment": {
+      "stake": "Estaca",
+      "units": "Unidades"
+    },
+    "slot": {
+      "stakePresident": "Presidente",
+      "bishop": "Obispo",
+      "branchPresident": "Presidente de Rama",
+      "firstCounselor": "1.er Consejero",
+      "secondCounselor": "2.º Consejero",
+      "empty": "{{label}}, sin nombre en el organigrama"
+    },
+    "section": {
+      "stakeClerks": "SECRETARIOS DE LA ESTACA",
+      "clerks": "SECRETARIOS",
+      "stakeOrganizations": "ORGANIZACIONES DE LA ESTACA",
+      "others": "OTROS",
+      "unassigned": "SIN CONSEJERO DEFINIDO",
+      "supervisedBy": "ACOMPAÑADA POR"
+    },
+    "org": {
+      "elders_quorum": "Cuórum de Élderes",
+      "relief_society": "Sociedad de Socorro",
+      "young_women": "Mujeres Jóvenes",
+      "young_men": "Hombres Jóvenes",
+      "primary": "Primaria",
+      "sunday_school": "Escuela Dominical",
+      "other": "Otros"
+    },
+    "units": {
+      "main": {
+        "ward": "Obispado",
+        "branch": "Presidencia de rama"
+      },
+      "subtitle": "{{group}} · {{count}}"
+    },
+    "supervisedBy": "{{name}} (Sumo consejero)",
+    "empty": {
+      "unit": "Aún no hay personas en el organigrama de esta unidad.",
+      "org": "Nadie en el organigrama."
+    },
+    "unit": {
+      "notFound": "Unidad no encontrada.",
+      "back": "Volver a Liderazgo"
+    },
+    "person": {
+      "label": "{{name}}, {{calling}}",
+      "subtitle": "{{calling}} · {{unit}}",
+      "supervises": "Acompaña: {{list}}"
+    },
+    "contact": {
+      "signIn": "Inicia sesión para ver los contactos.",
+      "signInButton": "Iniciar sesión",
+      "call": "Llamar",
+      "whatsapp": "WhatsApp",
+      "copy": "Copiar",
+      "copied": "Teléfono copiado",
+      "offline": "Teléfono disponible con conexión.",
+      "error": "No se pudo cargar el teléfono.",
+      "callLabel": "Llamar a {{name}}",
+      "whatsappLabel": "Escribir a {{name}} por WhatsApp",
+      "copyLabel": "Copiar teléfono de {{name}}"
+    },
+    "error": "No se pudo cargar el liderazgo.",
+    "offlineEmpty": "Sin conexión. Conéctate para ver el liderazgo.",
+    "edit": {
+      "button": "Editar",
+      "offline": "Editar no disponible sin conexión",
+      "banner": "Modo de edición",
+      "done": "Listo",
+      "personLabel": "Editar acompañamiento de {{name}}",
+      "sheetTitle": "Acompañamiento",
+      "counselor": "Consejero",
+      "none": "Ninguno",
+      "units": "Unidades que acompaña",
+      "save": "Guardar",
+      "saved": "Acompañamiento guardado",
+      "error": {
+        "noCounselor": "Nadie tiene este llamamiento ahora. Otorga el llamamiento en Accesos primero.",
+        "forbidden": "No tienes permiso para editar este organigrama.",
+        "notFound": "Esta persona ya no está en el sumo consejo.",
+        "generic": "No se pudo guardar. Inténtalo de nuevo."
+      }
     }
   }
 }

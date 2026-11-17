@@ -11,12 +11,14 @@ import {
   callingHolderCount,
   exportMyData,
   fetchCallingCatalog,
+  fetchMyPhone,
   grantAdmin,
   grantCalling,
   listAccess,
   revokeAdmin,
   revokeCalling,
   saveCalling,
+  setMyPhone,
   setOrgChartConsent,
   updateProfile,
 } from './api';
@@ -370,5 +372,58 @@ describe('setOrgChartConsent', () => {
   it('[roles] a network failure is network', async () => {
     mockRpc({ error: new TypeError('Network request failed') });
     await expect(setOrgChartConsent('mc1', false)).rejects.toMatchObject({ code: 'network' });
+  });
+});
+
+describe('my phone', () => {
+  it('[leadership] CA-24: reads the own row and maps it', async () => {
+    const maybeSingle = jest.fn().mockResolvedValue({
+      data: { phone_e164: '+5548999990000', show_on_org_chart: true },
+      error: null,
+    });
+    const eq = jest.fn(() => ({ maybeSingle }));
+    const select = jest.fn(() => ({ eq }));
+    const from = jest.fn(() => ({ select }));
+    (getSupabase as jest.Mock).mockReturnValue({ from });
+    await expect(fetchMyPhone('u1')).resolves.toEqual({
+      phoneE164: '+5548999990000',
+      showOnOrgChart: true,
+    });
+    expect(from).toHaveBeenCalledWith('profile_phones');
+    expect(eq).toHaveBeenCalledWith('user_id', 'u1');
+  });
+
+  it('[leadership] CA-24: no row means no phone', async () => {
+    const maybeSingle = jest.fn().mockResolvedValue({ data: null, error: null });
+    (getSupabase as jest.Mock).mockReturnValue({
+      from: () => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }),
+    });
+    await expect(fetchMyPhone('u1')).resolves.toBeNull();
+  });
+
+  it('[leadership] CA-31: the event carries only whether it is shown', async () => {
+    const rpc = mockRpc({});
+    await setMyPhone('+5548999990000', true);
+    expect(rpc).toHaveBeenCalledWith('set_my_phone', {
+      p_phone_e164: '+5548999990000',
+      p_show: true,
+    });
+    expect(track).toHaveBeenCalledWith('profile_phone_saved', { shown: true });
+    const [, props] = (track as jest.Mock).mock.calls[0];
+    expect(JSON.stringify(props)).not.toMatch(/\d{4,}/);
+    expect(Object.keys(props)).toEqual(['shown']);
+  });
+
+  it('[leadership] removing the phone tracks shown=false', async () => {
+    const rpc = mockRpc({});
+    await setMyPhone(null, true);
+    expect(rpc).toHaveBeenCalledWith('set_my_phone', { p_phone_e164: null, p_show: true });
+    expect(track).toHaveBeenCalledWith('profile_phone_saved', { shown: false });
+  });
+
+  it('[leadership] invalid_phone is a typed error and nothing is tracked', async () => {
+    mockRpc({ error: { message: 'invalid_phone' } });
+    await expect(setMyPhone('+55489', true)).rejects.toMatchObject({ code: 'invalid_phone' });
+    expect(track).not.toHaveBeenCalled();
   });
 });

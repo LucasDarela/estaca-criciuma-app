@@ -160,6 +160,92 @@ export type Database = {
           },
         ];
       };
+      high_council_links: {
+        Row: {
+          counselor_call_id: string;
+          high_councilor_call_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          counselor_call_id: string;
+          high_councilor_call_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          counselor_call_id?: string;
+          high_councilor_call_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'high_council_links_counselor_call_id_fkey';
+            columns: ['counselor_call_id'];
+            isOneToOne: false;
+            referencedRelation: 'member_calls';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'high_council_links_high_councilor_call_id_fkey';
+            columns: ['high_councilor_call_id'];
+            isOneToOne: true;
+            referencedRelation: 'member_calls';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'high_council_links_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      high_council_units: {
+        Row: {
+          high_councilor_call_id: string;
+          unit_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          high_councilor_call_id: string;
+          unit_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          high_councilor_call_id?: string;
+          unit_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'high_council_units_high_councilor_call_id_fkey';
+            columns: ['high_councilor_call_id'];
+            isOneToOne: false;
+            referencedRelation: 'member_calls';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'high_council_units_unit_id_fkey';
+            columns: ['unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'high_council_units_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       member_calls: {
         Row: {
           calling_id: string;
@@ -394,6 +480,35 @@ export type Database = {
           },
         ];
       };
+      profile_phones: {
+        Row: {
+          phone_e164: string;
+          show_on_org_chart: boolean;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          phone_e164: string;
+          show_on_org_chart?: boolean;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          phone_e164?: string;
+          show_on_org_chart?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'profile_phones_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           consented_at: string | null;
@@ -527,6 +642,52 @@ export type Database = {
         };
         Relationships: [];
       };
+      unit_org_links: {
+        Row: {
+          counselor_call_id: string;
+          organization: string;
+          unit_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          counselor_call_id: string;
+          organization: string;
+          unit_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          counselor_call_id?: string;
+          organization?: string;
+          unit_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'unit_org_links_counselor_call_id_fkey';
+            columns: ['counselor_call_id'];
+            isOneToOne: false;
+            referencedRelation: 'member_calls';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'unit_org_links_unit_id_fkey';
+            columns: ['unit_id'];
+            isOneToOne: false;
+            referencedRelation: 'units';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'unit_org_links_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       units: {
         Row: {
           id: string;
@@ -624,6 +785,21 @@ export type Database = {
           unit_id: string;
         }[];
       };
+      org_chart_counselor_call: {
+        Args: { p_calling_id: string; p_unit_id: string };
+        Returns: string;
+      };
+      org_chart_links: {
+        Args: never;
+        Returns: {
+          counselor_calling_id: string;
+          kind: string;
+          member_call_id: string;
+          organization: string;
+          target_unit_id: string;
+          unit_id: string;
+        }[];
+      };
       org_chart_members: {
         Args: never;
         Returns: {
@@ -636,6 +812,13 @@ export type Database = {
           section: string;
           sort_order: number;
           unit_id: string;
+        }[];
+      };
+      org_chart_phones: {
+        Args: never;
+        Returns: {
+          member_call_id: string;
+          phone_e164: string;
         }[];
       };
       push_audience_options: { Args: { p_unit: string }; Returns: string[] };
@@ -703,8 +886,28 @@ export type Database = {
         Args: { p_device_token: string; p_units: string[] };
         Returns: undefined;
       };
+      set_high_councilor_links: {
+        Args: {
+          p_counselor_calling_id: string;
+          p_high_councilor_call_id: string;
+          p_unit_ids: string[];
+        };
+        Returns: undefined;
+      };
+      set_my_phone: {
+        Args: { p_phone_e164: string; p_show: boolean };
+        Returns: undefined;
+      };
       set_org_chart_consent: {
         Args: { p_accepted: boolean; p_member_call_id: string };
+        Returns: undefined;
+      };
+      set_unit_org_counselor: {
+        Args: {
+          p_counselor_calling_id: string;
+          p_organization: string;
+          p_unit_id: string;
+        };
         Returns: undefined;
       };
       valid_event_links: { Args: { p_links: string[] }; Returns: boolean };

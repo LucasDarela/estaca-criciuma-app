@@ -17,6 +17,17 @@ describe('track', () => {
     );
   });
 
+  it('[leadership] logs the link and phone events without numbers or names', () => {
+    const info = jest.spyOn(console, 'info').mockImplementation(() => {});
+    track('org_chart_link_saved', { kind: 'unit_org', unit_id: 'criciuma1' });
+    track('profile_phone_saved', { shown: true });
+    expect(info).toHaveBeenNthCalledWith(
+      1,
+      '{"event":"org_chart_link_saved","kind":"unit_org","unit_id":"criciuma1"}',
+    );
+    expect(info).toHaveBeenNthCalledWith(2, '{"event":"profile_phone_saved","shown":true}');
+  });
+
   it('logs only the event name without props', () => {
     const info = jest.spyOn(console, 'info').mockImplementation(() => {});
     track('data_exported');

@@ -146,7 +146,9 @@
       "notices": "Avisos",
       "noticesHistory": "Notificações",
       "groups": "Grupos que acompanho",
-      "groupsHint": "Você recebe avisos enviados para os grupos marcados."
+      "groupsHint": "Você recebe avisos enviados para os grupos marcados.",
+      "phone": "Telefone",
+      "phoneNone": "Não informado"
     },
     "languages": {
       "pt-BR": "Português (Brasil)",
@@ -183,6 +185,19 @@
       "admin": "Administração",
       "revoked": "Chamado removido",
       "itemA11y": "{{name}}, {{calling}}, {{unit}}"
+    },
+    "phone": {
+      "title": "Telefone",
+      "label": "Telefone",
+      "placeholder": "(48) 99999-0000",
+      "show": "Mostrar meu telefone no organograma",
+      "help": "Só pessoas com conta veem, e só nos chamados em que você aparece no organograma.",
+      "save": "Salvar",
+      "remove": "Remover telefone",
+      "saved": "Telefone salvo",
+      "removed": "Telefone removido",
+      "invalid": "Informe um telefone com DDD.",
+      "required": "Informe o telefone para mostrá-lo no organograma."
     }
   },
   "callings": {
@@ -417,6 +432,97 @@
       "body": "Avisamos sobre eventos e comunicados da estaca e da sua ala. Você escolhe o que receber em Notificações.",
       "confirm": "Ativar avisos",
       "later": "Agora não"
+    }
+  },
+  "leadership": {
+    "title": "Liderança",
+    "search": {
+      "placeholder": "Buscar nome ou chamado",
+      "empty": "Ninguém encontrado para \"{{term}}\"."
+    },
+    "segment": {
+      "stake": "Estaca",
+      "units": "Unidades"
+    },
+    "slot": {
+      "stakePresident": "Presidente",
+      "bishop": "Bispo",
+      "branchPresident": "Presidente do Ramo",
+      "firstCounselor": "1º Conselheiro",
+      "secondCounselor": "2º Conselheiro",
+      "empty": "{{label}}, sem nome no organograma"
+    },
+    "section": {
+      "stakeClerks": "SECRETÁRIOS DA ESTACA",
+      "clerks": "SECRETÁRIOS",
+      "stakeOrganizations": "ORGANIZAÇÕES DA ESTACA",
+      "others": "OUTROS",
+      "unassigned": "SEM CONSELHEIRO DEFINIDO",
+      "supervisedBy": "ACOMPANHADA POR"
+    },
+    "org": {
+      "elders_quorum": "Quórum de Élderes",
+      "relief_society": "Sociedade de Socorro",
+      "young_women": "Moças",
+      "young_men": "Rapazes",
+      "primary": "Primária",
+      "sunday_school": "Escola Dominical",
+      "other": "Outros"
+    },
+    "units": {
+      "main": {
+        "ward": "Bispado",
+        "branch": "Presidência do ramo"
+      },
+      "subtitle": "{{group}} · {{count}}"
+    },
+    "supervisedBy": "{{name}} (Sumo Conselheiro)",
+    "empty": {
+      "unit": "Ainda não há pessoas no organograma desta unidade.",
+      "org": "Nenhuma pessoa no organograma."
+    },
+    "unit": {
+      "notFound": "Unidade não encontrada.",
+      "back": "Voltar para Liderança"
+    },
+    "person": {
+      "label": "{{name}}, {{calling}}",
+      "subtitle": "{{calling}} · {{unit}}",
+      "supervises": "Acompanha: {{list}}"
+    },
+    "contact": {
+      "signIn": "Entre para ver os contatos.",
+      "signInButton": "Entrar",
+      "call": "Ligar",
+      "whatsapp": "WhatsApp",
+      "copy": "Copiar",
+      "copied": "Telefone copiado",
+      "offline": "Telefone disponível com conexão.",
+      "error": "Não foi possível carregar o telefone.",
+      "callLabel": "Ligar para {{name}}",
+      "whatsappLabel": "Chamar {{name}} no WhatsApp",
+      "copyLabel": "Copiar telefone de {{name}}"
+    },
+    "error": "Não foi possível carregar a liderança.",
+    "offlineEmpty": "Sem conexão. Conecte-se para ver a liderança.",
+    "edit": {
+      "button": "Editar",
+      "offline": "Editar indisponível sem conexão",
+      "banner": "Modo de edição",
+      "done": "Concluir",
+      "personLabel": "Editar acompanhamento de {{name}}",
+      "sheetTitle": "Acompanhamento",
+      "counselor": "Conselheiro",
+      "none": "Nenhum",
+      "units": "Unidades que acompanha",
+      "save": "Salvar",
+      "saved": "Acompanhamento salvo",
+      "error": {
+        "noCounselor": "Ninguém tem este chamado agora. Conceda o chamado em Acessos primeiro.",
+        "forbidden": "Você não tem permissão para editar este organograma.",
+        "notFound": "Esta pessoa não está mais no sumo conselho.",
+        "generic": "Não foi possível salvar. Tente de novo."
+      }
     }
   }
 }

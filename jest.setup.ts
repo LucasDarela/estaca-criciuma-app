@@ -21,6 +21,10 @@ jest.mock('expo-secure-store', () => {
   };
 });
 
+jest.mock('expo-clipboard', () => ({
+  setStringAsync: jest.fn().mockResolvedValue(true),
+}));
+
 jest.mock('@react-native-community/netinfo', () =>
   jest.requireActual('@react-native-community/netinfo/jest/netinfo-mock'),
 );

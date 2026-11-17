@@ -2,6 +2,9 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(10);
 
+-- The org chart demo seed (supabase/seeds/org_chart_demo.sql) is not part of these fixtures.
+delete from auth.users where email like 'organograma.%@exemplo.org';
+
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.events'::regclass),
   'RNF-01: RLS enabled on events');

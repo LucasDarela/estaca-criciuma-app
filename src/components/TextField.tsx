@@ -15,6 +15,7 @@ export type TextFieldProps = {
 } & Pick<
   TextInputProps,
   | 'keyboardType'
+  | 'placeholder'
   | 'autoCapitalize'
   | 'autoComplete'
   | 'textContentType'
@@ -45,6 +46,7 @@ export const TextField = forwardRef<ComponentRef<typeof TextInput>, TextFieldPro
         <View style={[styles.ring, focused && !error && styles.ringFocused]}>
           <TextInput
             {...inputProps}
+            placeholderTextColor={theme.textSubtle}
             ref={ref}
             value={value}
             onChangeText={onChangeText}
