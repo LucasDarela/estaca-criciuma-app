@@ -1,7 +1,10 @@
 import { useQuery, useQueries, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
 
 import { isOrgChartSection } from '@/domain/callings';
 import {
+  isStakeCounselorCalling,
+  isUnitCounselorCalling,
   linkOrganizations,
   type LinkOrganization,
   type OrgChartLink,
@@ -11,6 +14,7 @@ import {
 } from '@/domain/orgChart';
 import { isUnitId, type UnitId } from '@/domain/units';
 import { PERSIST_MAX_AGE_MS, PUBLIC_STALE_TIME_MS } from '@/lib/queryPersistence';
+import { rpcErrorCode } from '@/lib/rpcError';
 import { getSupabase } from '@/lib/supabase';
 import { track } from '@/lib/telemetry';
 
@@ -49,14 +53,7 @@ const knownCodes: readonly LeadershipErrorCode[] = [
 /** RPCs return a short code in `message`; a failed fetch is `network`; anything else is `unknown`. */
 export function toLeadershipError(error: unknown): LeadershipError {
   if (error instanceof LeadershipError) return error;
-  if (error instanceof TypeError) return new LeadershipError('network');
-  const message =
-    typeof error === 'object' && error !== null && 'message' in error
-      ? String((error as { message: unknown }).message)
-      : '';
-  const known = knownCodes.find((code) => code === message);
-  if (known) return new LeadershipError(known);
-  return new LeadershipError(/fetch|network/i.test(message) ? 'network' : 'unknown');
+  return new LeadershipError(rpcErrorCode(error, knownCodes));
 }
 
 /** Drops rows with an unknown unit or section (never render unexpected data). */
@@ -83,14 +80,6 @@ export async function fetchOrgChartMembers(): Promise<OrgChartMember[]> {
   return members;
 }
 
-const stakeCounselors: readonly string[] = ['stake_first_counselor', 'stake_second_counselor'];
-const unitCounselors: readonly string[] = [
-  'bishopric_first_counselor',
-  'bishopric_second_counselor',
-  'branch_first_counselor',
-  'branch_second_counselor',
-];
-
 function isLinkOrganization(value: string | null): value is LinkOrganization {
   return (linkOrganizations as readonly (string | null)[]).includes(value);
 }
@@ -108,14 +97,9 @@ export async function fetchOrgChartLinks(): Promise<OrgChartLink[]> {
     if (
       row.kind === 'high_council_counselor' &&
       memberCallId !== null &&
-      counselor !== null &&
-      stakeCounselors.includes(counselor)
+      isStakeCounselorCalling(counselor)
     ) {
-      links.push({
-        kind: 'high_council_counselor',
-        memberCallId,
-        counselorCallingId: counselor as StakeCounselorCallingId,
-      });
+      links.push({ kind: 'high_council_counselor', memberCallId, counselorCallingId: counselor });
     } else if (
       row.kind === 'high_council_unit' &&
       memberCallId !== null &&
@@ -127,14 +111,13 @@ export async function fetchOrgChartLinks(): Promise<OrgChartLink[]> {
       row.kind === 'unit_org_counselor' &&
       isUnitId(row.unit_id) &&
       isLinkOrganization(organization) &&
-      counselor !== null &&
-      unitCounselors.includes(counselor)
+      isUnitCounselorCalling(counselor)
     ) {
       links.push({
         kind: 'unit_org_counselor',
         unitId: row.unit_id,
         organization,
-        counselorCallingId: counselor as UnitCounselorCallingId,
+        counselorCallingId: counselor,
       });
     }
   }
@@ -155,15 +138,19 @@ export type OrgChartData = {
   links: OrgChartLink[];
   /** 'offline' = no data and cannot fetch (paused); 'error' = no data and the fetch failed. */
   status: 'loading' | 'error' | 'offline' | 'success';
-  refetch: () => void;
+  /** Reloads members and links (retry, or a person left the tree: RF-26). */
+  refetch: () => Promise<void>;
   refetchLinks: () => Promise<void>;
 };
 
-type Combined = Omit<OrgChartData, 'refetchLinks'>;
+type Combined = Pick<OrgChartData, 'members' | 'links' | 'status'>;
 
 const noMembers: OrgChartMember[] = [];
 const noLinks: OrgChartLink[] = [];
+/** Prefix of both public org chart keys (not the phones key, which is not public). */
+const leadershipPublicPrefix = ['public', 'leadership'] as const;
 
+/** Module scope, so useQueries only re-runs it when a result changes. */
 function combine(
   results: [UseQueryResult<OrgChartMember[]>, UseQueryResult<OrgChartLink[]>],
 ): Combined {
@@ -175,14 +162,7 @@ function combine(
     else if (results.some((r) => r.data === undefined && r.isError)) status = 'error';
     else status = 'loading';
   }
-  return {
-    members: members.data ?? noMembers,
-    links: links.data ?? noLinks,
-    status,
-    refetch: () => {
-      for (const result of results) void result.refetch();
-    },
-  };
+  return { members: members.data ?? noMembers, links: links.data ?? noLinks, status };
 }
 
 /** Both public queries: staleTime PUBLIC_STALE_TIME_MS, gcTime PERSIST_MAX_AGE_MS (RNF-08). */
@@ -203,13 +183,17 @@ export function useOrgChart(): OrgChartData {
         gcTime: PERSIST_MAX_AGE_MS,
       },
     ],
-    combine: (results) =>
-      combine(results as [UseQueryResult<OrgChartMember[]>, UseQueryResult<OrgChartLink[]>]),
+    combine,
   });
-  return {
-    ...combined,
-    refetchLinks: () => client.refetchQueries({ queryKey: leadershipLinksQueryKey }),
-  };
+  const refetch = useCallback(
+    () => client.refetchQueries({ queryKey: leadershipPublicPrefix }),
+    [client],
+  );
+  const refetchLinks = useCallback(
+    () => client.refetchQueries({ queryKey: leadershipLinksQueryKey }),
+    [client],
+  );
+  return useMemo(() => ({ ...combined, refetch, refetchLinks }), [combined, refetch, refetchLinks]);
 }
 
 /** RF-19, RNF-08: enabled only with a session and once a sheet is opened; staleTime 5 min. */

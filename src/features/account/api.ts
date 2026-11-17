@@ -6,6 +6,7 @@ import { normalizeEmail } from '@/domain/email';
 import type { Locale, Organization } from '@/domain/profile';
 import { isUnitId, type UnitId } from '@/domain/units';
 import { signOut } from '@/lib/authSession';
+import { rpcErrorCode } from '@/lib/rpcError';
 import { getSupabase } from '@/lib/supabase';
 import { track } from '@/lib/telemetry';
 
@@ -58,14 +59,7 @@ const knownCodes: readonly AccountErrorCode[] = [
 /** RPCs return a short code in `message`; a failed fetch is `network`; anything else is `unknown`. */
 function toAccountError(error: unknown): AccountError {
   if (error instanceof AccountError) return error;
-  if (error instanceof TypeError) return new AccountError('network');
-  const message =
-    typeof error === 'object' && error !== null && 'message' in error
-      ? String((error as { message: unknown }).message)
-      : '';
-  const known = knownCodes.find((code) => code === message);
-  if (known) return new AccountError(known);
-  return new AccountError(/fetch|network/i.test(message) ? 'network' : 'unknown');
+  return new AccountError(rpcErrorCode(error, knownCodes));
 }
 
 /** Updates the caller's own profile row (policy profiles_update_own). */

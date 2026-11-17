@@ -1,9 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { EmptyState } from '@/components/EmptyState';
 import { ListItem } from '@/components/ListItem';
 import { Sheet } from '@/components/Sheet';
 import { TextField } from '@/components/TextField';
@@ -15,18 +16,45 @@ import { AccountError, myPhoneQueryKey, setMyPhone, type MyPhone } from './api';
 
 export type PhoneSheetProps = {
   visible: boolean;
-  current: MyPhone | null;
+  /** `undefined` while the saved phone has not loaded; `null` when there is none. */
+  current: MyPhone | null | undefined;
+  /** The saved phone failed to load (shown only when there is no data). */
+  loadError?: boolean;
+  onRetry?: () => void;
   userId: string;
   onClose: () => void;
 };
 
 /** RF-21, RF-22: the person's own phone and whether it shows in the org chart. */
-export function PhoneSheet({ visible, onClose, ...form }: PhoneSheetProps) {
+export function PhoneSheet({
+  visible,
+  onClose,
+  current,
+  loadError = false,
+  onRetry,
+  userId,
+}: PhoneSheetProps) {
   const { t } = useTranslation();
+  let body = null;
+  if (visible) {
+    if (current !== undefined) {
+      // Mounted only once the saved phone is known, so the form never starts empty over a saved
+      // number (an empty Salvar would remove it).
+      body = <PhoneForm current={current} userId={userId} onClose={onClose} />;
+    } else if (loadError) {
+      body = (
+        <EmptyState
+          message={t('common.genericError')}
+          action={onRetry ? { label: t('common.retry'), onPress: onRetry } : undefined}
+        />
+      );
+    } else {
+      body = <ActivityIndicator testID="phone-loading" color={theme.primary} />;
+    }
+  }
   return (
     <Sheet visible={visible} onClose={onClose} accessibilityLabel={t('account.phone.title')}>
-      {/* Mounted only while open, so the field restarts from the saved phone each time. */}
-      {visible ? <PhoneForm {...form} onClose={onClose} /> : null}
+      {body}
     </Sheet>
   );
 }
@@ -35,7 +63,11 @@ function PhoneForm({
   current,
   userId,
   onClose,
-}: Pick<PhoneSheetProps, 'current' | 'userId' | 'onClose'>) {
+}: {
+  current: MyPhone | null;
+  userId: string;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
   const queryClient = useQueryClient();

@@ -46,7 +46,9 @@ const metrics = {
 async function setup() {
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
-      <QueryClientProvider client={new QueryClient()}>
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
         <ToastProvider>
           <ProfileScreen />
         </ToastProvider>
@@ -209,11 +211,21 @@ describe('ProfileScreen', () => {
     expect(signOut).toHaveBeenCalled();
   });
 
+  it('[leadership] a failed phone load is not shown as "Não informado"', async () => {
+    (fetchMyPhone as jest.Mock).mockRejectedValue(new Error('boom'));
+    await setup();
+    expect(
+      await screen.findByRole('button', { name: 'Telefone, Algo deu errado. Tente de novo.' }),
+    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Telefone, Não informado' })).toBeNull();
+  });
+
   it('[leadership] CA-24: the Telefone row follows Idioma and saving it updates the subtitle', async () => {
     (fetchMyPhone as jest.Mock)
       .mockResolvedValueOnce(null)
       .mockResolvedValue({ phoneE164: '+5548999990000', showOnOrgChart: true });
     await setup();
+    await screen.findByRole('button', { name: 'Telefone, Não informado' });
     const labels = screen.getAllByRole('button').map((b) => b.props.accessibilityLabel as string);
     expect(labels.slice(2, 4)).toEqual(['Idioma, Português (Brasil)', 'Telefone, Não informado']);
     await fireEvent.press(screen.getByRole('button', { name: 'Telefone, Não informado' }));

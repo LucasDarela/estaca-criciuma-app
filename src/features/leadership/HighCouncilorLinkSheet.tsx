@@ -22,7 +22,10 @@ import { useLinkSave } from './useLinkSave';
 export type HighCouncilorLinkSheetProps = {
   person: OrgChartMember | null;
   links: readonly OrgChartLink[];
+  /** After a save: reload the links. */
   onSaved: () => void;
+  /** RF-26: the person left the high council; reload the whole tree (members and links). */
+  onGone: () => void;
   onClose: () => void;
 };
 
@@ -33,6 +36,7 @@ export function HighCouncilorLinkSheet({
   person,
   links,
   onSaved,
+  onGone,
   onClose,
 }: HighCouncilorLinkSheetProps) {
   const { t } = useTranslation();
@@ -44,7 +48,13 @@ export function HighCouncilorLinkSheet({
     >
       {/* Mounted only while open, so every opening starts from the saved links. */}
       {person ? (
-        <HighCouncilorForm person={person} links={links} onSaved={onSaved} onClose={onClose} />
+        <HighCouncilorForm
+          person={person}
+          links={links}
+          onSaved={onSaved}
+          onGone={onGone}
+          onClose={onClose}
+        />
       ) : null}
     </Sheet>
   );
@@ -54,13 +64,9 @@ function HighCouncilorForm({
   person,
   links,
   onSaved,
+  onGone,
   onClose,
-}: {
-  person: OrgChartMember;
-  links: readonly OrgChartLink[];
-  onSaved: () => void;
-  onClose: () => void;
-}) {
+}: Omit<HighCouncilorLinkSheetProps, 'person'> & { person: OrgChartMember }) {
   const { t } = useTranslation();
   const [counselor, setCounselor] = useState<StakeCounselorCallingId | null>(
     counselorOf(person.memberCallId, links),
@@ -74,7 +80,7 @@ function HighCouncilorForm({
       onClose();
     },
     onGone: () => {
-      onSaved();
+      onGone();
       onClose();
     },
   });

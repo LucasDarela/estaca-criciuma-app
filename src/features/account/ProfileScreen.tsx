@@ -142,8 +142,18 @@ export function ProfileScreen() {
         />
         <ListItem
           title={t('account.profile.phone')}
-          subtitle={phone.data ? formatPhone(phone.data.phoneE164) : t('account.profile.phoneNone')}
-          trailing={{ kind: 'chevron' }}
+          subtitle={
+            phone.data === undefined
+              ? phone.isError
+                ? t('common.genericError')
+                : undefined
+              : phone.data
+                ? formatPhone(phone.data.phoneE164)
+                : t('account.profile.phoneNone')
+          }
+          trailing={
+            phone.data === undefined && phone.isPending ? { kind: 'loading' } : { kind: 'chevron' }
+          }
           onPress={() => setOpen('phone')}
         />
         <MyCallingsSection calls={viewer.calls} />
@@ -220,7 +230,9 @@ export function ProfileScreen() {
       />
       <PhoneSheet
         visible={open === 'phone'}
-        current={phone.data ?? null}
+        current={phone.data}
+        loadError={phone.isError}
+        onRetry={() => void phone.refetch()}
         userId={userId}
         onClose={() => setOpen(null)}
       />

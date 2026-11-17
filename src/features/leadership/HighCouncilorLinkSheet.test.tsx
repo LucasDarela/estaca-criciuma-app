@@ -30,13 +30,20 @@ const links: OrgChartLink[] = [
 
 async function setup() {
   const onSaved = jest.fn();
+  const onGone = jest.fn();
   const onClose = jest.fn();
   await render(
     <Providers client={newClient()}>
-      <HighCouncilorLinkSheet person={person} links={links} onSaved={onSaved} onClose={onClose} />
+      <HighCouncilorLinkSheet
+        person={person}
+        links={links}
+        onSaved={onSaved}
+        onGone={onGone}
+        onClose={onClose}
+      />
     </Providers>,
   );
-  return { onSaved, onClose };
+  return { onSaved, onGone, onClose };
 }
 
 const selected = (name: string) =>
@@ -124,16 +131,17 @@ describe('HighCouncilorLinkSheet', () => {
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeOnTheScreen();
   });
 
-  it('[leadership] RF-26: not_found shows the message, closes and reloads', async () => {
+  it('[leadership] RF-26: not_found shows the message, closes and reloads the whole tree', async () => {
     const user = userEvent.setup();
-    const { onClose, onSaved } = await setup();
+    const { onClose, onSaved, onGone } = await setup();
     (setHighCouncilorLinks as jest.Mock).mockRejectedValueOnce(new LeadershipError('not_found'));
     await user.press(screen.getByRole('button', { name: 'Salvar' }));
     expect(
       await screen.findByText('Esta pessoa não está mais no sumo conselho.'),
     ).toBeOnTheScreen();
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(onSaved).toHaveBeenCalledTimes(1);
+    expect(onGone).toHaveBeenCalledTimes(1);
+    expect(onSaved).not.toHaveBeenCalled();
   });
 
   it('[leadership] RF-26: no_counselor and any other error keep the sheet open', async () => {

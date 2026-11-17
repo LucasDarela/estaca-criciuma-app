@@ -140,11 +140,36 @@ export function compareMembers(a: OrgChartMember, b: OrgChartMember): number {
   return a.memberCallId < b.memberCallId ? -1 : a.memberCallId > b.memberCallId ? 1 : 0;
 }
 
+const stakeCounselorPair: readonly [StakeCounselorCallingId, StakeCounselorCallingId] = [
+  'stake_first_counselor',
+  'stake_second_counselor',
+];
+const unitCounselorPairs = {
+  ward: ['bishopric_first_counselor', 'bishopric_second_counselor'],
+  branch: ['branch_first_counselor', 'branch_second_counselor'],
+} as const satisfies Record<
+  'ward' | 'branch',
+  readonly [UnitCounselorCallingId, UnitCounselorCallingId]
+>;
+
 /** The two counselor calling ids of a unit kind, 1st then 2nd. */
-export function counselorCallings(kind: 'stake' | 'ward' | 'branch'): [string, string] {
-  if (kind === 'stake') return ['stake_first_counselor', 'stake_second_counselor'];
-  if (kind === 'ward') return ['bishopric_first_counselor', 'bishopric_second_counselor'];
-  return ['branch_first_counselor', 'branch_second_counselor'];
+export function counselorCallings(
+  kind: 'stake',
+): readonly [StakeCounselorCallingId, StakeCounselorCallingId];
+export function counselorCallings(
+  kind: 'ward' | 'branch',
+): readonly [UnitCounselorCallingId, UnitCounselorCallingId];
+export function counselorCallings(kind: 'stake' | 'ward' | 'branch'): readonly [string, string];
+export function counselorCallings(kind: 'stake' | 'ward' | 'branch'): readonly [string, string] {
+  return kind === 'stake' ? stakeCounselorPair : unitCounselorPairs[kind];
+}
+
+export function isStakeCounselorCalling(value: string | null): value is StakeCounselorCallingId {
+  return stakeCounselorPair.some((id) => id === value);
+}
+
+export function isUnitCounselorCalling(value: string | null): value is UnitCounselorCallingId {
+  return [...unitCounselorPairs.ward, ...unitCounselorPairs.branch].some((id) => id === value);
 }
 
 const topCalling = {
@@ -235,7 +260,9 @@ function groupByOrganization(
   for (const person of people) {
     const organization = organizationOf(person.calling.id, section);
     if (organization === null) continue;
-    groups.set(organization, [...(groups.get(organization) ?? []), person]);
+    const group = groups.get(organization);
+    if (group) group.push(person);
+    else groups.set(organization, [person]);
   }
   return groups;
 }
@@ -247,13 +274,19 @@ export function buildStakeTree(
 ): StakeTree {
   const stake = members.filter((m) => m.unitId === STAKE_UNIT_ID);
   const [firstId, secondId] = counselorCallings('stake');
-  const fixed = [topCalling.stake, firstId, secondId];
+  const fixed: readonly string[] = [topCalling.stake, firstId, secondId];
   const highCouncil = stake.filter((m) => m.section === 'high_council');
+  // memberCallId -> counselor, built once instead of one links scan per high councilor.
+  const counselorByCall = new Map<string, StakeCounselorCallingId>();
+  for (const link of links) {
+    if (link.kind === 'high_council_counselor') {
+      counselorByCall.set(link.memberCallId, link.counselorCallingId);
+    }
+  }
+  const counselorFor = (m: OrgChartMember) => counselorByCall.get(m.memberCallId) ?? null;
   const column = (callingId: string, label: SlotLabel): StakeColumn => ({
     slot: makeSlot(stake, callingId, label),
-    highCouncilors: sorted(
-      highCouncil.filter((m) => counselorOf(m.memberCallId, links) === callingId),
-    ),
+    highCouncilors: sorted(highCouncil.filter((m) => counselorFor(m) === callingId)),
   });
   const groups = groupByOrganization(
     stake.filter((m) => m.section === 'stake_organizations'),
@@ -262,7 +295,7 @@ export function buildStakeTree(
   return {
     president: makeSlot(stake, topCalling.stake, topLabel.stake),
     columns: [column(firstId, 'firstCounselor'), column(secondId, 'secondCounselor')],
-    unassigned: sorted(highCouncil.filter((m) => counselorOf(m.memberCallId, links) === null)),
+    unassigned: sorted(highCouncil.filter((m) => counselorFor(m) === null)),
     clerks: sorted(stake.filter((m) => m.section === 'stake_clerks')),
     otherPresidency: sorted(
       stake.filter((m) => m.section === 'stake_presidency' && !fixed.includes(m.calling.id)),
@@ -284,7 +317,7 @@ export function buildUnitTree(
   const editing = options.editing === true;
   const unitMembers = members.filter((m) => m.unitId === unitId);
   const [firstId, secondId] = counselorCallings(kind);
-  const fixed = [topCalling[kind], firstId, secondId];
+  const fixed: readonly string[] = [topCalling[kind], firstId, secondId];
   const groups = groupByOrganization(
     unitMembers.filter((m) => m.section === 'unit_organizations'),
     'unit_organizations',
@@ -303,11 +336,18 @@ export function buildUnitTree(
       ),
     ),
   });
+  // One pass over the links instead of one scan per member.
+  const supervisorCallIds = new Set<string>();
+  for (const link of links) {
+    if (link.kind === 'high_council_unit' && link.targetUnitId === unitId) {
+      supervisorCallIds.add(link.memberCallId);
+    }
+  }
   const supervisors = members.filter(
     (m) =>
       m.unitId === STAKE_UNIT_ID &&
       m.section === 'high_council' &&
-      supervisedUnits(m.memberCallId, links).includes(unitId),
+      supervisorCallIds.has(m.memberCallId),
   );
   return {
     kind,

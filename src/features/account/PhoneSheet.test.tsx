@@ -6,8 +6,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import i18n from '@/i18n';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 
+import type { ReactElement } from 'react';
+
 import { AccountError, setMyPhone, type MyPhone } from './api';
-import { PhoneSheet } from './PhoneSheet';
+import { PhoneSheet, type PhoneSheetProps } from './PhoneSheet';
 
 jest.mock('./api', () => ({ ...jest.requireActual('./api'), setMyPhone: jest.fn() }));
 
@@ -16,20 +18,28 @@ const metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-async function setup(current: MyPhone | null = null) {
+function sheet(props: Partial<PhoneSheetProps> & { onClose: () => void }) {
+  return <PhoneSheet visible current={null} userId="u1" {...props} />;
+}
+
+async function setup(
+  current: MyPhone | null | undefined = null,
+  extra: Partial<PhoneSheetProps> = {},
+) {
   const onClose = jest.fn();
   const client = new QueryClient();
   const invalidate = jest.spyOn(client, 'invalidateQueries');
-  await render(
+  const wrap = (node: ReactElement) => (
     <SafeAreaProvider initialMetrics={metrics}>
       <QueryClientProvider client={client}>
-        <ToastProvider>
-          <PhoneSheet visible current={current} userId="u1" onClose={onClose} />
-        </ToastProvider>
+        <ToastProvider>{node}</ToastProvider>
       </QueryClientProvider>
-    </SafeAreaProvider>,
+    </SafeAreaProvider>
   );
-  return { onClose, invalidate };
+  const view = await render(wrap(sheet({ current, onClose, ...extra })));
+  const rerender = (next: Partial<PhoneSheetProps>) =>
+    view.rerender(wrap(sheet({ current, onClose, ...extra, ...next })));
+  return { onClose, invalidate, rerender };
 }
 
 const field = () => screen.getByPlaceholderText('(48) 99999-0000');
@@ -139,6 +149,27 @@ describe('PhoneSheet', () => {
     ).toBeTruthy();
     expect(onClose).not.toHaveBeenCalled();
     expect(field().props.value).toBe('(48) 99999-0000');
+  });
+
+  it('[leadership] while the saved phone loads, the form waits instead of starting empty', async () => {
+    // Via `extra`: an `undefined` first argument would fall back to the `null` default.
+    const { rerender } = await setup(null, { current: undefined });
+    expect(screen.getByTestId('phone-loading')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Salvar' })).toBeNull();
+    await rerender({ current: { phoneE164: '+5548999990000', showOnOrgChart: false } });
+    expect(field().props.value).toBe('(48) 99999-0000');
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    await waitFor(() => expect(setMyPhone).toHaveBeenCalledWith('+5548999990000', false));
+    expect(setMyPhone).not.toHaveBeenCalledWith(null, false);
+  });
+
+  it('[leadership] a failed load shows the error and retries, with no empty form', async () => {
+    const onRetry = jest.fn();
+    await setup(null, { current: undefined, loadError: true, onRetry });
+    expect(screen.getByText('Algo deu errado. Tente de novo.')).toBeTruthy();
+    expect(screen.queryByPlaceholderText('(48) 99999-0000')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
   it('[leadership] RF-22: a second press while saving does not send twice', async () => {

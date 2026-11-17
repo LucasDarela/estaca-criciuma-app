@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EmptyState } from '@/components/EmptyState';
 import { ListItem } from '@/components/ListItem';
-import { OfflineBanner } from '@/components/OfflineBanner';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { SearchField } from '@/components/SearchField';
 import { Segmented } from '@/components/Segmented';
@@ -25,11 +23,11 @@ import { space, theme, type, unitOrder, units } from '@/theme/theme';
 
 import { useViewer } from '../viewer/ViewerProvider';
 import { useOrgChart } from './api';
-import { EditBanner } from './EditBanner';
 import { HighCouncilorLinkSheet } from './HighCouncilorLinkSheet';
+import { OrgChartBody } from './OrgChartBody';
 import { PersonSheet } from './PersonSheet';
 import { StakeTree } from './StakeTree';
-import { TreeSkeleton } from './TreeSkeleton';
+import { useEditMode } from './useEditMode';
 
 type Segment = 'stake' | 'units';
 
@@ -47,43 +45,23 @@ export function LeadershipScreen() {
   const [segment, setSegment] = useState<Segment>('stake');
   const [term, setTerm] = useState('');
   const [person, setPerson] = useState<OrgChartMember | null>(null);
-  const [editing, setEditing] = useState(false);
   const [linking, setLinking] = useState<OrgChartMember | null>(null);
+  const edit = useEditMode({
+    canEdit: segment === 'stake' && isStakeLeader(viewer.memberships) && status === 'success',
+    online,
+    status,
+    onDone: () => void refetchLinks(),
+  });
+  const { editing } = edit;
 
   const stakeTree = useMemo(() => buildStakeTree(members, links), [members, links]);
-  const canEdit = segment === 'stake' && isStakeLeader(viewer.memberships) && status === 'success';
   const searching = normalizeSearch(term).length >= MIN_SEARCH_LENGTH;
   const results = searching ? searchMembers(members, term, locale) : [];
 
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
-      <ScreenHeader
-        title={t('leadership.title')}
-        showAvatar
-        actions={
-          canEdit && !editing
-            ? [
-                {
-                  icon: 'edit',
-                  accessibilityLabel: online
-                    ? t('leadership.edit.button')
-                    : t('leadership.edit.offline'),
-                  disabled: !online,
-                  onPress: () => setEditing(true),
-                },
-              ]
-            : undefined
-        }
-      />
-      {!online && status === 'success' ? <OfflineBanner /> : null}
-      {editing ? (
-        <EditBanner
-          onDone={() => {
-            setEditing(false);
-            void refetchLinks();
-          }}
-        />
-      ) : null}
+      <ScreenHeader title={t('leadership.title')} showAvatar actions={edit.actions} />
+      {edit.banners}
       <View style={styles.controls}>
         {editing ? null : (
           <SearchField
@@ -97,7 +75,7 @@ export function LeadershipScreen() {
           value={segment}
           onChange={(next) => {
             setSegment(next);
-            setEditing(false);
+            edit.exit();
           }}
           options={[
             { value: 'stake', label: t('leadership.segment.stake') },
@@ -110,66 +88,60 @@ export function LeadershipScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        {status === 'loading' ? (
-          <TreeSkeleton />
-        ) : status === 'error' || status === 'offline' ? (
-          <View style={styles.message}>
-            <EmptyState
-              message={t(status === 'error' ? 'leadership.error' : 'leadership.offlineEmpty')}
-              action={{ label: t('common.retry'), onPress: refetch }}
+        <OrgChartBody status={status} onRetry={() => void refetch()}>
+          {searching && !editing ? (
+            results.length === 0 ? (
+              <Text style={styles.noResults}>
+                {t('leadership.search.empty', { term: term.trim() })}
+              </Text>
+            ) : (
+              results.map((result) => (
+                <ListItem
+                  key={result.memberCallId}
+                  leading={{ kind: 'avatar', name: result.displayName }}
+                  title={result.displayName}
+                  subtitle={t('leadership.person.subtitle', {
+                    calling: callingName(result.calling, locale),
+                    unit: units[result.unitId].label,
+                  })}
+                  onPress={() => setPerson(result)}
+                />
+              ))
+            )
+          ) : segment === 'stake' ? (
+            <StakeTree
+              tree={stakeTree}
+              editing={editing}
+              onPersonPress={setPerson}
+              onEditHighCouncilor={setLinking}
             />
-          </View>
-        ) : searching && !editing ? (
-          results.length === 0 ? (
-            <Text style={styles.noResults}>
-              {t('leadership.search.empty', { term: term.trim() })}
-            </Text>
           ) : (
-            results.map((result) => (
-              <ListItem
-                key={result.memberCallId}
-                leading={{ kind: 'avatar', name: result.displayName }}
-                title={result.displayName}
-                subtitle={t('leadership.person.subtitle', {
-                  calling: callingName(result.calling, locale),
-                  unit: units[result.unitId].label,
-                })}
-                onPress={() => setPerson(result)}
-              />
-            ))
-          )
-        ) : segment === 'stake' ? (
-          <StakeTree
-            tree={stakeTree}
-            editing={editing}
-            onPersonPress={setPerson}
-            onEditHighCouncilor={setLinking}
-          />
-        ) : (
-          unitOrder
-            .filter((id) => id !== 'estaca')
-            .map((id) => (
-              <ListItem
-                key={id}
-                leading={{ kind: 'unitDot', unitId: id }}
-                title={units[id].label}
-                subtitle={t('leadership.units.subtitle', {
-                  group: t(
-                    `leadership.units.main.${unitKind(id) === 'branch' ? 'branch' : 'ward'}`,
-                  ),
-                  count: bishopricCount(members, id),
-                })}
-                trailing={{ kind: 'chevron' }}
-                onPress={() => router.push({ pathname: '/leadership/unit/[id]', params: { id } })}
-              />
-            ))
-        )}
+            unitOrder
+              .filter((id) => id !== 'estaca')
+              .map((id) => (
+                <ListItem
+                  key={id}
+                  leading={{ kind: 'unitDot', unitId: id }}
+                  title={units[id].label}
+                  subtitle={t('leadership.units.subtitle', {
+                    group: t(
+                      `leadership.units.main.${unitKind(id) === 'branch' ? 'branch' : 'ward'}`,
+                    ),
+                    count: bishopricCount(members, id),
+                  })}
+                  trailing={{ kind: 'chevron' }}
+                  onPress={() => router.push({ pathname: '/leadership/unit/[id]', params: { id } })}
+                />
+              ))
+          )}
+        </OrgChartBody>
       </ScrollView>
       <PersonSheet person={person} links={links} onClose={() => setPerson(null)} />
       <HighCouncilorLinkSheet
         person={linking}
         links={links}
         onSaved={() => void refetchLinks()}
+        onGone={() => void refetch()}
         onClose={() => setLinking(null)}
       />
     </SafeAreaView>

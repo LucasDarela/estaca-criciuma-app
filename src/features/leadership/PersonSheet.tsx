@@ -151,8 +151,12 @@ function PhoneActions({ phone, name }: { phone: string; name: string }) {
   }
 
   async function copy() {
-    await Clipboard.setStringAsync(formatted);
-    toast.show({ message: t('leadership.contact.copied'), tone: 'success' });
+    try {
+      await Clipboard.setStringAsync(formatted);
+      toast.show({ message: t('leadership.contact.copied'), tone: 'success' });
+    } catch {
+      toast.show({ message: t('common.genericError') });
+    }
   }
 
   return (

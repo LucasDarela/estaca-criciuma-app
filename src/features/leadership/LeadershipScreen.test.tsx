@@ -100,11 +100,14 @@ let client = newClient();
 
 async function setup(data: { members?: unknown[]; links?: unknown[] } = { members, links }) {
   mockRpc.mockImplementation(rpcFor(data));
-  await render(
+  // A fresh element each time, so a rerender is not skipped as unchanged.
+  const ui = () => (
     <Providers client={client}>
       <LeadershipScreen />
-    </Providers>,
+    </Providers>
   );
+  const view = await render(ui());
+  return { rerender: () => view.rerender(ui()) };
 }
 
 beforeEach(() => {
@@ -317,6 +320,44 @@ describe('LeadershipScreen', () => {
           before + 1,
         ),
       );
+    });
+
+    it('[leadership] RF-23: losing the connection while editing leaves edit mode', async () => {
+      const user = userEvent.setup();
+      mockMemberships = roles.estaca;
+      const { rerender } = await setup();
+      await user.press(await screen.findByRole('button', { name: 'Editar' }));
+      expect(screen.getByText('Modo de edição')).toBeOnTheScreen();
+      (useIsOnline as jest.Mock).mockReturnValue(false);
+      await rerender();
+      expect(screen.queryByText('Modo de edição')).not.toBeOnTheScreen();
+      expect(
+        screen.queryByLabelText('Editar acompanhamento de Caetano Sumo'),
+      ).not.toBeOnTheScreen();
+      expect(
+        screen.getByRole('button', { name: 'Editar indisponível sem conexão' }),
+      ).toBeDisabled();
+    });
+
+    it('[leadership] RF-26: a high councilor who left reloads the members too', async () => {
+      const user = userEvent.setup();
+      mockMemberships = roles.estaca;
+      await setup();
+      await user.press(await screen.findByRole('button', { name: 'Editar' }));
+      await user.press(screen.getByLabelText('Editar acompanhamento de Caetano Sumo'));
+      const count = (name: string) => mockRpc.mock.calls.filter(([n]) => n === name).length;
+      const before = count('org_chart_members');
+      const answer = mockRpc.getMockImplementation();
+      mockRpc.mockImplementation(async (name: string, ...rest: unknown[]) =>
+        name === 'set_high_councilor_links'
+          ? { data: null, error: { message: 'not_found' } }
+          : answer?.(name, ...rest),
+      );
+      await user.press(screen.getByRole('button', { name: 'Salvar' }));
+      expect(
+        await screen.findByText('Esta pessoa não está mais no sumo conselho.'),
+      ).toBeOnTheScreen();
+      await waitFor(() => expect(count('org_chart_members')).toBe(before + 1));
     });
 
     it('[leadership] CA-27: saving a high councilor sends the links and reloads', async () => {
